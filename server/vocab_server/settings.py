@@ -115,19 +115,6 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
-
-USE_I18N = True
-
-USE_TZ = True
-
-STATIC_URL = 'static/'
-    "xi-api-key",
-    "x-openrouter-key",
-]
-
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://localhost:5174",
     "http://localhost:5175",
