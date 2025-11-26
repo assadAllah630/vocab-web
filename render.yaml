@@ -1,0 +1,43 @@
+# Render Blueprint - Infrastructure as Code
+# https://render.com/docs/blueprint-spec
+
+services:
+  # PostgreSQL Database
+  - type: pserv
+    name: vocabmaster-db
+    plan: free
+    databaseName: vocabmaster
+    databaseUser: vocabmaster
+    region: frankfurt  # Choose closest region: oregon, frankfurt, singapore
+    ipAllowList: []  # Empty = allow all IPs
+
+  # Django Backend API
+  - type: web
+    name: vocabmaster-api
+    runtime: python
+    plan: free
+    region: frankfurt  # Must match database region
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn vocab_server.wsgi:application --bind 0.0.0.0:$PORT"
+    healthCheckPath: /api/health/
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: DEBUG
+        value: False
+      - key: DJANGO_SECRET_KEY
+        generateValue: true  # Auto-generate secure secret key
+      - key: DATABASE_URL
+        fromDatabase:
+          name: vocabmaster-db
+          property: connectionString
+      - key: ALLOWED_HOSTS
+        sync: false  # Set manually in Render dashboard
+      - key: GOOGLE_OAUTH_CLIENT_ID
+        sync: false  # Set manually in Render dashboard
+      - key: GOOGLE_OAUTH_CLIENT_SECRET
+        sync: false  # Set manually in Render dashboard
+      - key: GMAIL_USER
+        sync: false  # Set manually in Render dashboard
+      - key: GMAIL_APP_PASSWORD
+        sync: false  # Set manually in Render dashboard

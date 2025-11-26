@@ -1,0 +1,77 @@
+name: Weekly Database Backup
+
+on:
+  schedule:
+    # Run every Sunday at 2:00 AM UTC
+    - cron: '0 2 * * 0'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Create database backup
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "❌ DATABASE_URL secret not set"
+            exit 1
+          fi
+          
+          # Extract connection details from DATABASE_URL
+          # Format: postgresql://user:password@host:port/database
+          
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          BACKUP_FILE="vocabmaster_backup_${TIMESTAMP}.sql"
+          
+          echo "📦 Creating database backup: $BACKUP_FILE"
+          pg_dump "$DATABASE_URL" > "$BACKUP_FILE"
+          
+          # Compress the backup
+          gzip "$BACKUP_FILE"
+          BACKUP_FILE="${BACKUP_FILE}.gz"
+          
+          echo "✅ Backup created: $BACKUP_FILE"
+          echo "BACKUP_FILE=$BACKUP_FILE" >> $GITHUB_ENV
+
+      - name: Upload backup to GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: backup-${{ github.run_number }}
+          name: Database Backup - ${{ github.run_number }}
+          body: |
+            Automated database backup created on $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+            
+            **Important Notes:**
+            - Render's free PostgreSQL expires after 90 days
+            - Keep these backups to restore your data if needed
+            - Only the last 4 backups are kept automatically
+          files: ${{ env.BACKUP_FILE }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Clean up old backups
+        uses: dev-drprasad/delete-older-releases@v0.3.2
+        with:
+          keep_latest: 4
+          delete_tag_pattern: backup
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Backup summary
+        run: |
+          echo "✅ Database backup completed successfully!"
+          echo "📦 Backup file: ${{ env.BACKUP_FILE }}"
+          echo "🗄️ Keeping last 4 backups"

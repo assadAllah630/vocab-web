@@ -1,0 +1,75 @@
+name: Deploy Backend to Render
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'server/**'
+      - 'render.yaml'
+      - '.github/workflows/deploy-backend.yml'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          cd server
+          pip install -r requirements.txt
+
+      - name: Run linting (if available)
+        run: |
+          cd server
+          # Add your linting commands here if you have them
+          # pip install flake8
+          # flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        continue-on-error: true
+
+      - name: Trigger Render Deployment
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -n "$RENDER_DEPLOY_HOOK" ]; then
+            curl -X POST "$RENDER_DEPLOY_HOOK"
+            echo "✅ Deployment triggered on Render"
+          else
+            echo "⚠️ RENDER_DEPLOY_HOOK secret not set. Skipping deployment."
+            echo "Set this secret in GitHub: Settings > Secrets > Actions > New repository secret"
+          fi
+
+      - name: Wait for deployment
+        run: |
+          echo "⏳ Waiting 60 seconds for deployment to start..."
+          sleep 60
+
+      - name: Health check
+        env:
+          BACKEND_URL: ${{ secrets.BACKEND_URL }}
+        run: |
+          if [ -n "$BACKEND_URL" ]; then
+            echo "🔍 Checking backend health at $BACKEND_URL/api/health/"
+            for i in {1..10}; do
+              if curl -f "$BACKEND_URL/api/health/" > /dev/null 2>&1; then
+                echo "✅ Backend is healthy!"
+                exit 0
+              fi
+              echo "⏳ Attempt $i/10 failed, waiting 10 seconds..."
+              sleep 10
+            done
+            echo "❌ Backend health check failed after 10 attempts"
+            exit 1
+          else
+            echo "⚠️ BACKEND_URL secret not set. Skipping health check."
+          fi
+        continue-on-error: true

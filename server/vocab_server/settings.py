@@ -20,7 +20,11 @@ if not SECRET_KEY:
     else:
         raise ValueError("DJANGO_SECRET_KEY environment variable must be set in production")
 
+# ALLOWED_HOSTS: Support production domains
+# Format: comma-separated list, e.g., "localhost,127.0.0.1,your-app.onrender.com"
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
+if '*' not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -67,16 +71,32 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'vocab_server.wsgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME', 'vocab_db'),
-        'USER': os.environ.get('DB_USER', 'postgres'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', '123'),
-        'HOST': os.environ.get('DB_HOST', 'localhost'),
-        'PORT': os.environ.get('DB_PORT', '5432'),
+# Database Configuration
+# Support both DATABASE_URL (Render) and individual env vars (local)
+import dj_database_url
+
+DATABASE_URL = os.environ.get('DATABASE_URL')
+if DATABASE_URL:
+    # Production: Use Render's DATABASE_URL
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
     }
-}
+else:
+    # Local development: Use individual env vars
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('DB_NAME', 'vocab_db'),
+            'USER': os.environ.get('DB_USER', 'postgres'),
+            'PASSWORD': os.environ.get('DB_PASSWORD', '123'),
+            'HOST': os.environ.get('DB_HOST', 'localhost'),
+            'PORT': os.environ.get('DB_PORT', '5432'),
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -107,6 +127,10 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# CORS Configuration
+# Add production frontend URL from environment
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
+
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
@@ -115,6 +139,11 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5176",
     "http://localhost:5177",
 ]
+
+# Add production frontend URL if set
+if FRONTEND_URL and FRONTEND_URL not in CORS_ALLOWED_ORIGINS:
+    CORS_ALLOWED_ORIGINS.append(FRONTEND_URL)
+
 CORS_ALLOW_CREDENTIALS = True
 
 from corsheaders.defaults import default_headers
@@ -133,6 +162,10 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5176",
     "http://localhost:5177",
 ]
+
+# Add production frontend URL if set
+if FRONTEND_URL and FRONTEND_URL not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.append(FRONTEND_URL)
 
 # For API endpoints, we'll use session authentication
 REST_FRAMEWORK = {
@@ -163,7 +196,11 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Google OAuth Settings
 GOOGLE_OAUTH_CLIENT_ID = os.environ.get('GOOGLE_OAUTH_CLIENT_ID', '')
 GOOGLE_OAUTH_CLIENT_SECRET = os.environ.get('GOOGLE_OAUTH_CLIENT_SECRET', '')
-GOOGLE_OAUTH_REDIRECT_URI = 'http://localhost:5173/auth/callback'
+# Support both local and production redirect URIs
+GOOGLE_OAUTH_REDIRECT_URI = os.environ.get(
+    'GOOGLE_OAUTH_REDIRECT_URI',
+    f"{FRONTEND_URL}/auth/callback" if FRONTEND_URL else 'http://localhost:5173/auth/callback'
+)
 
 # Gmail Settings for Sending Emails
 # Using SMTP with VPN to bypass ISP blocking

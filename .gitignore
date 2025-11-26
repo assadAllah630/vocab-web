@@ -119,3 +119,12 @@ pnpm-lock.yaml
 
 # Antigravity
 .gemini/
+
+# Vercel
+.vercel
+.vercel/
+
+# Deployment
+.env.production.local
+*.sql.gz
+

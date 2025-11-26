@@ -101,6 +101,32 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
+## 🚀 Deployment
+
+VocabMaster can be deployed to production using **100% FREE services** (no credit card required):
+
+- **Backend**: Render (Free tier)
+- **Database**: Render PostgreSQL (Free tier)
+- **Frontend**: Vercel (Hobby tier)
+- **CI/CD**: GitHub Actions (Free)
+
+📖 **[Read the Complete Deployment Guide](DEPLOYMENT.md)**
+
+### Quick Deploy
+
+1. Push code to GitHub
+2. Deploy backend to Render
+3. Deploy frontend to Vercel
+4. Configure CI/CD with GitHub Actions
+
+**Estimated Time**: ~2 hours
+
+### Production URLs
+
+- **Live Demo**: [Coming Soon]
+- **Backend API**: [Your Render URL]
+- **Status**: ![Backend](https://img.shields.io/badge/backend-online-success) ![Frontend](https://img.shields.io/badge/frontend-online-success)
+
 ### Frontend Setup
 
 1. Navigate to client directory:
