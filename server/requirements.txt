@@ -1,0 +1,8 @@
+django-ratelimit>=4.1.0
+requests
+google-generativeai
+google-cloud-texttospeech>=2.14.0
+langgraph
+langchain-google-genai
+langchain-core
+pydantic

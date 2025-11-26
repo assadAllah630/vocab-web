@@ -1,0 +1,144 @@
+.grammar-viewer-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: white;
+  min-height: 100vh;
+}
+
+.grammar-header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #37352f;
+  line-height: 1.2;
+}
+
+.grammar-content {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  line-height: 1.8;
+  color: #37352f;
+  font-size: 1.0625rem;
+}
+
+.grammar-content h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.grammar-content h2 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  color: #1f2937;
+}
+
+.grammar-content h3 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  color: #374151;
+}
+
+.grammar-content p {
+  margin-bottom: 1rem;
+}
+
+.grammar-content ul, .grammar-content ol {
+  margin-bottom: 1rem;
+  padding-left: 1.5rem;
+}
+
+.grammar-content li {
+  margin-bottom: 0.5rem;
+}
+
+.grammar-content blockquote {
+  border-left: 4px solid #3b82f6;
+  padding-left: 1rem;
+  margin: 1.5rem 0;
+  color: #4b5563;
+  font-style: italic;
+  background: #f9fafb;
+  padding: 1rem;
+  border-radius: 0 8px 8px 0;
+}
+
+.grammar-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.95em;
+}
+
+.grammar-content th,
+.grammar-content td {
+  border: 1px solid #e5e7eb;
+  padding: 0.75rem;
+  text-align: left;
+}
+
+.grammar-content th {
+  background: #f9fafb;
+  font-weight: 600;
+  color: #374151;
+}
+
+.grammar-content tr:nth-child(even) {
+  background-color: #fcfcfc;
+}
+
+.grammar-content code {
+  background: #f3f4f6;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.9em;
+  font-family: 'Monaco', 'Courier New', monospace;
+  color: #ef4444;
+}
+
+.grammar-content pre {
+  background: #1f2937 !important;
+  padding: 1rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin-bottom: 1.5rem;
+}
+
+.grammar-content pre code {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  font-size: 0.9em;
+}
+
+.mermaid-container {
+  background: #fafafa;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+  overflow-x: auto;
+  display: flex;
+  justify-content: center;
+}
+
+/* Custom styling for specific grammar elements if needed */
+.grammar-example {
+  background: #f0fdf4;
+  border-left: 4px solid #22c55e;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.grammar-mistake {
+  background: #fef2f2;
+  border-left: 4px solid #ef4444;
+  padding: 1rem;
+  margin: 1rem 0;
+}
