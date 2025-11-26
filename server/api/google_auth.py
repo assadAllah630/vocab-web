@@ -106,14 +106,27 @@ def google_oauth_login(request):
                 )
             
             # Check if user exists
-            user, created = User.objects.get_or_create(
-                email=email,
-                defaults={
-                    'username': email.split('@')[0],
-                    'first_name': given_name,
-                    'last_name': family_name,
-                }
-            )
+            try:
+                user = User.objects.get(email=email)
+                created = False
+            except User.DoesNotExist:
+                # Create new user
+                base_username = email.split('@')[0]
+                username = base_username
+                counter = 1
+                
+                # Ensure username is unique
+                while User.objects.filter(username=username).exists():
+                    username = f"{base_username}{counter}"
+                    counter += 1
+                
+                user = User.objects.create_user(
+                    username=username,
+                    email=email,
+                    first_name=given_name,
+                    last_name=family_name
+                )
+                created = True
             
             # Update user profile
             profile, _ = UserProfile.objects.get_or_create(user=user)
