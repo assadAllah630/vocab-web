@@ -160,28 +160,42 @@ def resend_otp(request):
 @permission_classes([permissions.AllowAny])
 @ratelimit(key='ip', rate='5/m', block=True)
 def signin(request):
-    username = request.data.get('username')
-    password = request.data.get('password')
-    user = authenticate(username=username, password=password)
-    
-    if user:
-        if not hasattr(user, 'profile'):
-            UserProfile.objects.create(user=user)
-            
-        if not user.profile.is_email_verified:
-            # Trigger OTP flow if not verified
-            # For now, we'll just block login and ask to verify
-            # Ideally, we should trigger resend_otp here if needed
-            return Response({
-                'error': 'Email not verified', 
-                'email': user.email,
-                'requires_verification': True
-            }, status=status.HTTP_403_FORBIDDEN)
-            
-        login(request, user)
-        return Response(UserSerializer(user).data)
+    try:
+        username = request.data.get('username')
+        password = request.data.get('password')
         
-    return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
+        # Debug logging
+        print(f"Signin attempt for username: {username}")
+        
+        user = authenticate(username=username, password=password)
+        
+        if user:
+            if not hasattr(user, 'profile'):
+                UserProfile.objects.create(user=user)
+                
+            if not user.profile.is_email_verified:
+                # Trigger OTP flow if not verified
+                # For now, we'll just block login and ask to verify
+                # Ideally, we should trigger resend_otp here if needed
+                return Response({
+                    'error': 'Email not verified', 
+                    'email': user.email,
+                    'requires_verification': True
+                }, status=status.HTTP_403_FORBIDDEN)
+                
+            login(request, user)
+            return Response(UserSerializer(user).data)
+            
+        return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
+        print(f"Error in signin: {error_details}")
+        return Response({
+            'error': 'Internal Server Error',
+            'details': str(e),
+            'traceback': error_details
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 def enrich_vocabulary_with_ai(vocab, api_key):
     if not api_key:
