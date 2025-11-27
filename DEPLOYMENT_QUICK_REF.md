@@ -43,7 +43,19 @@ VITE_GOOGLE_CLIENT_ID=<from-google-console>
 
 # Database Backup
 DATABASE_URL=<external-database-url-from-render>
+
+### Database Access (Production)
+
+**Connection String:**
+```bash
+postgresql://vocabmaster:1RZ8xSDg5Acx599w1TRBdj2u74jMXjSv@dpg-d4jmdn0bdp1s73825mcg-a.oregon-postgres.render.com/vocabmaster
 ```
+
+**Render CLI Command:**
+```bash
+render psql dpg-d4jmdn0bdp1s73825mcg-a
+```
+
 
 ---
 
