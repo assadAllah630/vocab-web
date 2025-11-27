@@ -1,5 +1,24 @@
+"""
+Google OAuth and Email Services
+"""
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.authtoken.models import Token
+from django.contrib.auth.models import User
+from django.core.mail import send_mail
+from django.conf import settings
+from django.utils import timezone
+from datetime import timedelta
+import random
+import string
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
+from .models import UserProfile
+import logging
 
-def generate_otp():
+logger = logging.getLogger(__name__)
     """Generate a 6-digit OTP"""
     return ''.join(random.choices(string.digits, k=6))
 
