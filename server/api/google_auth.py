@@ -19,6 +19,9 @@ from .models import UserProfile
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+def generate_otp():
     """Generate a 6-digit OTP"""
     return ''.join(random.choices(string.digits, k=6))
 
