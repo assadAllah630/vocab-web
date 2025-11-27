@@ -21,6 +21,7 @@ from .prompts import ContextEngineer
 from django_ratelimit.decorators import ratelimit
 
 @api_view(['POST'])
+@authentication_classes([])  # Disable authentication for signup
 @permission_classes([permissions.AllowAny])
 @ratelimit(key='ip', rate='20/h', block=True)  # Increased for development
 def signup(request):

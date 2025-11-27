@@ -70,6 +70,7 @@ def send_notification_email(to_email, subject, message):
 
 
 @api_view(['POST'])
+@authentication_classes([])  # Disable authentication for OAuth login
 @permission_classes([AllowAny])
 def google_oauth_login(request):
     """
