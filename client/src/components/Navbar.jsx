@@ -15,7 +15,7 @@ function Navbar({ user, setUser }) {
     };
 
     const navLinks = [
-        { to: '/', label: 'Dashboard' },
+        { to: '/dashboard', label: 'Dashboard' },
         { to: '/vocab', label: 'Vocabulary' },
         { to: '/grammar', label: 'Grammar' },
         { to: '/text-generator', label: 'Text Generator' },
@@ -39,7 +39,7 @@ function Navbar({ user, setUser }) {
                     <div className="flex">
                         {/* Logo */}
                         <div className="flex-shrink-0 flex items-center">
-                            <Link to="/" className="flex items-center gap-2">
+                            <Link to="/dashboard" className="flex items-center gap-2">
                                 <Logo />
                             </Link>
                         </div>

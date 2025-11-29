@@ -29,6 +29,8 @@ if '*' not in ALLOWED_HOSTS:
     ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS]
 
 INSTALLED_APPS = [
+    'daphne',
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -51,6 +53,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'api.middleware.APIUsageMiddleware',
+    'api.middleware.UpdateLastActivityMiddleware',  # Track user activity for online status
+    'api.security_middleware.IPWhitelistMiddleware',
 ]
 
 ROOT_URLCONF = 'vocab_server.urls'
@@ -72,6 +77,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'vocab_server.wsgi.application'
+ASGI_APPLICATION = 'vocab_server.asgi.application'
 
 # Database Configuration
 # Support both DATABASE_URL (Render) and individual env vars (local)
@@ -175,7 +181,7 @@ if FRONTEND_URL and FRONTEND_URL not in CSRF_TRUSTED_ORIGINS:
 # For API endpoints, we'll use session authentication
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
+        'api.authentication.ExpiringTokenAuthentication',  # Custom token auth with 30-day expiration
         'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_RENDERER_CLASSES': [

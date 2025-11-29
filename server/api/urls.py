@@ -147,5 +147,8 @@ urlpatterns = [
     
     # Monitoring
     path('health/', health_check, name='health_check'),
+    
+    # Admin Panel API
+    path('admin/', include('api.admin_urls')),
 ]
 

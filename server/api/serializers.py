@@ -136,3 +136,10 @@ class UserRelationshipSerializer(serializers.ModelSerializer):
         model = UserRelationship
         fields = ['id', 'follower', 'following', 'created_at', 'follower_username', 'following_username', 'following_avatar', 'follower_avatar']
         read_only_fields = ['follower', 'created_at']
+
+class AdminUserSerializer(serializers.ModelSerializer):
+    role = serializers.CharField(source='admin_role.role', read_only=True)
+    
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'is_active', 'date_joined', 'last_login', 'role']

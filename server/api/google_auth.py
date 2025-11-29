@@ -137,6 +137,10 @@ def google_oauth_login(request):
             profile.is_email_verified = True  # Google emails are verified
             profile.save()
             
+            # Update last_login timestamp
+            user.last_login = timezone.now()
+            user.save(update_fields=['last_login'])
+            
             # Generate or get auth token
             token, _ = Token.objects.get_or_create(user=user)
             

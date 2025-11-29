@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'r
 
 // Eager load critical components (needed immediately)
 import Login from './pages/Login';
+import LandingPage from './pages/LandingPage';
 import Sidebar from './components/Sidebar';
 import AIAssistant from './components/AIAssistant';
 
@@ -46,7 +47,14 @@ const PageLoader = () => (
 function Layout({ children, user, setUser }) {
   const location = useLocation();
   const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
-  const showAuthComponents = user && !isAuthPage;
+  const isLandingPage = location.pathname === '/';
+
+  // Show sidebar only if user is logged in AND it's not an auth page AND it's not the landing page
+  const showAuthComponents = user && !isAuthPage && !isLandingPage;
+
+  if (isLandingPage) {
+    return <div className="min-h-screen bg-slate-50">{children}</div>;
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
@@ -98,7 +106,8 @@ function App() {
               <Routes>
                 <Route path="/login" element={<Login setUser={setUser} />} />
                 <Route path="/signup" element={<Login setUser={setUser} />} /> {/* Assuming Login handles both or separate Signup component */}
-                <Route path="/" element={<ProtectedRoute><Dashboard user={user} /></ProtectedRoute>} />
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/dashboard" element={<ProtectedRoute><Dashboard user={user} /></ProtectedRoute>} />
                 <Route path="/vocab" element={<ProtectedRoute><VocabList /></ProtectedRoute>} />
                 <Route path="/vocab/add" element={<ProtectedRoute><AddWord user={user} /></ProtectedRoute>} />
                 <Route path="/vocab/edit/:id" element={<ProtectedRoute><AddWord user={user} /></ProtectedRoute>} />

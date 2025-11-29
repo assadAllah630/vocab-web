@@ -36,7 +36,7 @@ function Sidebar({ user, setUser }) {
     };
 
     const navItems = [
-        { to: '/', label: 'Dashboard', icon: HomeIcon },
+        { to: '/dashboard', label: 'Dashboard', icon: HomeIcon },
         { to: '/vocab', label: 'Vocabulary', icon: BookOpenIcon },
         { to: '/grammar', label: 'Grammar', icon: AcademicCapIcon },
         { to: '/exams', label: 'AI Exams', icon: PencilSquareIcon },
@@ -58,7 +58,7 @@ function Sidebar({ user, setUser }) {
         <>
             {/* Logo */}
             <div className="p-6 border-b border-slate-200">
-                <Link to="/" className="flex items-center gap-2" onClick={() => setIsMobileOpen(false)}>
+                <Link to="/dashboard" className="flex items-center gap-2" onClick={() => setIsMobileOpen(false)}>
                     <Logo />
                 </Link>
             </div>

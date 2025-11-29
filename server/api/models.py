@@ -274,3 +274,6 @@ def save_user_profile(sender, instance, **kwargs):
 
 # Import GeneratedContent model for advanced text generator
 from .advanced_text_models import GeneratedContent
+
+# Import admin models to ensure they are registered
+from .admin_models import AdminRole, AdminAuditLog, SystemMetrics, APIUsageLog, UserActivityLog

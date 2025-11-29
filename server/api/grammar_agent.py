@@ -81,7 +81,7 @@ Create a comprehensive grammar explanation with the following parameters:
    - ALWAYS quote node labels: `id["Label Text"]`
    - Do NOT use special characters in node IDs (only A-Z, 0-9)
    - Keep node labels SHORT (max 3-4 words). Use `<br/>` for line breaks.
-   - Use rectangular nodes `[]` for longer text, avoid diamonds `{}` for long text.
+   - Use rectangular nodes `[]` for longer text, avoid diamonds for long text.
    - Keep diagrams simple and readable
 4. Provide 4-6 clear examples with translations
 5. Highlight common mistakes with ❌ and ✅
@@ -103,10 +103,10 @@ Create a comprehensive grammar explanation with the following parameters:
 - Sources
 
 **Output Format**:
-Return ONLY a JSON object with the following structure:
+Return ONLY a raw JSON object (no markdown code blocks) with the following structure:
 {{
   "title": "The Grammar Topic Title",
-  "content": "# Markdown Content...",
+  "content": "The full explanation in Markdown format (ensure all quotes are escaped)",
   "word_count": 450,
   "mermaid_diagrams_count": 1,
   "estimated_read_time": "3 min",
@@ -118,13 +118,30 @@ Return ONLY a JSON object with the following structure:
 }}
 """
 
-        response = self.model.generate_content(f"{system_prompt}\n\n{user_prompt}")
+        # Use JSON mode for reliable output
+        generation_config = {"response_mime_type": "application/json"}
+        response = self.model.generate_content(
+            f"{system_prompt}\n\n{user_prompt}",
+            generation_config=generation_config
+        )
         
         # Parse JSON from response
         text = response.text.strip()
-        if text.startswith('```json'):
-            text = text[7:]
-        if text.endswith('```'):
-            text = text[:-3]
-            
-        return json.loads(text)
+        logger.info(f"DEBUG: Raw Grammar Agent Response:\n{text}")
+        
+        # Robust JSON extraction
+        try:
+            # Try direct parse first
+            return json.loads(text)
+        except json.JSONDecodeError:
+            # Try to find JSON object bounds
+            try:
+                start = text.find('{')
+                end = text.rfind('}') + 1
+                if start != -1 and end != -1:
+                    json_str = text[start:end]
+                    return json.loads(json_str)
+            except:
+                pass
+            # Re-raise original error if fallback fails
+            raise

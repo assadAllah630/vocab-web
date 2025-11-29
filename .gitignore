@@ -128,3 +128,6 @@ pnpm-lock.yaml
 .env.production.local
 *.sql.gz
 
+# Admin Panel (Local Only - Not for Production)
+admin-client/
+
