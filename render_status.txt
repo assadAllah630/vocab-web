@@ -1,0 +1,61 @@
+
+✅ Found 5 service(s)
+
+📌 Service: vocab-web
+   ID: srv-d4jmik6mcj7s73blejj0
+   Type: web_service
+
+   🚀 Latest Deploy:
+      Status: live
+      Commit: Feat: Pro-level testing upgrade (CACHES, Logging, CI/CD tests)
+      Created: 2025-11-27T07:41:45.646357Z
+      ✅ LIVE
+
+============================================================
+
+📌 Service: ai-agent-docker
+   ID: srv-d1vuneuuk2gs73er2f10
+   Type: web_service
+
+   🚀 Latest Deploy:
+      Status: build_failed
+      Commit: Complete merge
+      Created: 2025-07-22T19:51:25.868634Z
+      ❌ BUILD FAILED!
+
+============================================================
+
+📌 Service: ismail-1
+   ID: srv-d1baij3e5dus73edoh8g
+   Type: web_service
+
+   🚀 Latest Deploy:
+      Status: live
+      Commit: Update config.py
+      Created: 2025-06-21T13:02:34.366346Z
+      ✅ LIVE
+
+============================================================
+
+📌 Service: ismail
+   ID: srv-d1bahlje5dus73edneug
+   Type: web_service
+
+   🚀 Latest Deploy:
+      Status: live
+      Commit: Update app.py
+      Created: 2025-06-21T13:29:32.728411Z
+      ✅ LIVE
+
+============================================================
+
+📌 Service: my-telegram-gpt-bot
+   ID: srv-d0fofs3e5dus73f48540
+   Type: web_service
+
+   🚀 Latest Deploy:
+      Status: update_failed
+      Commit: Update main.py
+      Created: 2025-05-11T06:06:30.256695Z
+
+============================================================
