@@ -2,7 +2,7 @@
  * User Analytics Dashboard - Upgraded with shadcn/ui & Recharts
  */
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../api';
 import { motion } from 'framer-motion';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '../../components/ui/Card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/Select';
@@ -33,9 +33,7 @@ export default function UserAnalytics() {
 
             if (!token) throw new Error('Not authenticated');
 
-            const response = await axios.get(`http://localhost:8000/api/admin/analytics/users/?days=${days}`, {
-                headers: { Authorization: `Token ${token}` }
-            });
+            const response = await api.get(`/api/admin/analytics/users/?days=${days}`);
             setData(response.data);
         } catch (err) {
             console.error('Failed to fetch user analytics', err);

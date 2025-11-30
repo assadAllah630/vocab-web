@@ -3,7 +3,7 @@
  */
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import axios from 'axios';
+import api from '../../api';
 import { format } from 'date-fns';
 import UserSheet from './UserSheet';
 import { useToast } from '../../components/ui/Toast';
@@ -41,9 +41,8 @@ export default function EnhancedUserManagement() {
         try {
             setLoading(true);
             const token = localStorage.getItem('adminToken');
-            const response = await axios.get(
-                'http://localhost:8000/api/admin/users/filter/',
-                { headers: { Authorization: `Token ${token}` } }
+            const response = await api.get(
+                '/api/admin/users/filter/'
             );
             setUsers(Array.isArray(response.data.results) ? response.data.results : []);
         } catch (err) {
@@ -115,10 +114,9 @@ export default function EnhancedUserManagement() {
 
         try {
             const token = localStorage.getItem('adminToken');
-            await axios.post(
-                'http://localhost:8000/api/admin/users/bulk/',
-                { action, user_ids: Array.from(selectedUsers) },
-                { headers: { Authorization: `Token ${token}` } }
+            await api.post(
+                '/api/admin/users/bulk/',
+                { action, user_ids: Array.from(selectedUsers) }
             );
             showToast(`Successfully ${action}ed ${selectedUsers.size} users`, 'success');
             setSelectedUsers(new Set());

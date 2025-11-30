@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../api';
 
 export default function Settings() {
     const [config, setConfig] = useState({
@@ -17,9 +17,7 @@ export default function Settings() {
     const fetchConfig = async () => {
         try {
             const token = localStorage.getItem('adminToken');
-            const response = await axios.get('http://localhost:8000/api/admin/config/', {
-                headers: { Authorization: `Token ${token}` }
-            });
+            const response = await api.get('/api/admin/config/');
             setConfig(response.data);
         } catch (error) {
             console.error('Failed to fetch settings', error);
@@ -33,9 +31,7 @@ export default function Settings() {
         setSaving(true);
         try {
             const token = localStorage.getItem('adminToken');
-            await axios.post('http://localhost:8000/api/admin/config/', config, {
-                headers: { Authorization: `Token ${token}` }
-            });
+            await api.post('/api/admin/config/', config);
             alert('Settings saved successfully');
         } catch (error) {
             alert('Failed to save settings');

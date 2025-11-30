@@ -2,7 +2,7 @@
  * Content Analytics Dashboard - Upgraded with shadcn/ui & Recharts
  */
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../api';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '../../components/ui/Card';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { useToast } from '../../components/ui/Toast';
@@ -33,9 +33,7 @@ export default function ContentAnalytics() {
 
             if (!token) throw new Error('Not authenticated');
 
-            const response = await axios.get('http://localhost:8000/api/admin/analytics/content/', {
-                headers: { Authorization: `Token ${token}` }
-            });
+            const response = await api.get('/api/admin/analytics/content/');
             setData(response.data);
         } catch (err) {
             console.error('Failed to fetch content analytics', err);

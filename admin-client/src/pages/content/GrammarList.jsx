@@ -3,7 +3,7 @@
  * @module GrammarList
  */
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import axios from 'axios';
+import api from '../../api';
 import { motion } from 'framer-motion';
 import { DataTable } from '../../components/common/DataTable';
 import { Card, CardContent } from '../../components/ui/Card';
@@ -37,9 +37,7 @@ export default function GrammarList() {
 
             if (!token) throw new Error('Not authenticated');
 
-            const response = await axios.get('http://localhost:8000/api/admin/content/grammar/', {
-                headers: { Authorization: `Token ${token}` }
-            });
+            const response = await api.get('/api/admin/content/grammar/');
 
             const data = response.data.results || response.data || [];
             setItems(Array.isArray(data) ? data : []);

@@ -2,7 +2,7 @@
  * Error Logs Page - Upgraded with shadcn/ui
  */
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import axios from 'axios';
+import api from '../../api';
 import { motion } from 'framer-motion';
 import { DataTable } from '../../components/common/DataTable';
 import { Card, CardContent } from '../../components/ui/Card';
@@ -41,9 +41,7 @@ export default function ErrorLogs() {
 
             if (!token) throw new Error('Not authenticated');
 
-            const response = await axios.get('http://localhost:8000/api/admin/error-logs/', {
-                headers: { Authorization: `Token ${token}` }
-            });
+            const response = await api.get('/api/admin/error-logs/');
 
             const data = response.data.results || response.data || [];
             setLogs(Array.isArray(data) ? data : []);

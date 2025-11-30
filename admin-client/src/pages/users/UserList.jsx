@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import axios from 'axios';
+import api from '../../api';
 import { format } from 'date-fns';
 import { DataTable } from '../../components/common/DataTable';
 import { Badge } from '../../components/ui/Badge';
@@ -22,9 +22,7 @@ export default function UserList() {
         try {
             setLoading(true);
             const token = localStorage.getItem('adminToken');
-            const response = await axios.get('http://localhost:8000/api/admin/users/', {
-                headers: { Authorization: `Token ${token}` }
-            });
+            const response = await api.get('/api/admin/users/');
             setUsers(response.data.results);
         } catch (error) {
             console.error('Failed to fetch users', error);

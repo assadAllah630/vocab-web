@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../api';
 import { format } from 'date-fns';
 
 export default function UserDetail() {
@@ -17,9 +17,7 @@ export default function UserDetail() {
     const fetchUser = async () => {
         try {
             const token = localStorage.getItem('adminToken');
-            const response = await axios.get(`http://localhost:8000/api/admin/users/${id}/`, {
-                headers: { Authorization: `Token ${token}` }
-            });
+            const response = await api.get(`/api/admin/users/${id}/`);
             setUser(response.data);
         } catch (error) {
             console.error('Failed to fetch user', error);
@@ -34,9 +32,7 @@ export default function UserDetail() {
         try {
             setActionLoading(true);
             const token = localStorage.getItem('adminToken');
-            await axios.post(`http://localhost:8000/api/admin/users/${id}/${action}/`, {}, {
-                headers: { Authorization: `Token ${token}` }
-            });
+            await api.post(`/api/admin/users/${id}/${action}/`, {});
             fetchUser(); // Refresh data
             alert('Action successful');
         } catch (error) {

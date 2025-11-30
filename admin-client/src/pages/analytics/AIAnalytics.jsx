@@ -2,7 +2,7 @@
  * AI Analytics Dashboard - Upgraded with shadcn/ui & Recharts
  */
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../api';
 import { motion } from 'framer-motion';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '../../components/ui/Card';
 import { Progress } from '../../components/ui/Progress';
@@ -34,9 +34,7 @@ export default function AIAnalytics() {
 
             if (!token) throw new Error('Not authenticated');
 
-            const response = await axios.get('http://localhost:8000/api/admin/analytics/ai/', {
-                headers: { Authorization: `Token ${token}` }
-            });
+            const response = await api.get('/api/admin/analytics/ai/');
             setData(response.data);
         } catch (err) {
             console.error('Failed to fetch AI analytics', err);

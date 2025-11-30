@@ -2,7 +2,7 @@
  * Admin Users Management Page - Upgraded with shadcn/ui
  */
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import axios from 'axios';
+import api from '../../api';
 import { motion } from 'framer-motion';
 import { DataTable } from '../../components/common/DataTable';
 import { Card, CardContent } from '../../components/ui/Card';
@@ -49,9 +49,7 @@ export default function AdminUsers() {
 
             if (!token) throw new Error('Not authenticated');
 
-            const response = await axios.get('http://localhost:8000/api/admin/admins/', {
-                headers: { Authorization: `Token ${token}` }
-            });
+            const response = await api.get('/api/admin/admins/');
 
             const data = response.data.results || response.data || [];
             setAdmins(Array.isArray(data) ? data : []);
@@ -74,9 +72,7 @@ export default function AdminUsers() {
         setCreating(true);
         try {
             const token = localStorage.getItem('adminToken');
-            await axios.post('http://localhost:8000/api/admin/admins/', newUser, {
-                headers: { Authorization: `Token ${token}` }
-            });
+            await api.post('/api/admin/admins/', newUser);
 
             showToast('Admin user added successfully', 'success');
             setShowModal(false);

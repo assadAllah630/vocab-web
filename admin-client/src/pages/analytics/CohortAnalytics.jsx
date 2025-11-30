@@ -2,7 +2,7 @@
  * Cohort Analytics Dashboard - Upgraded with shadcn/ui & Recharts
  */
 import { useState, useEffect, useMemo } from 'react';
-import axios from 'axios';
+import api from '../../api';
 import { motion } from 'framer-motion';
 import {
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -39,10 +39,10 @@ export default function CohortAnalytics() {
             const headers = { Authorization: `Token ${token}` };
 
             const [retentionRes, funnelRes, churnRes, growthRes] = await Promise.all([
-                axios.get('http://localhost:8000/api/admin/analytics/cohorts/', { headers }),
-                axios.get('http://localhost:8000/api/admin/analytics/engagement/', { headers }),
-                axios.get('http://localhost:8000/api/admin/analytics/churn/', { headers }),
-                axios.get('http://localhost:8000/api/admin/analytics/growth/', { headers })
+                api.get('/api/admin/analytics/cohorts/'),
+                api.get('/api/admin/analytics/engagement/'),
+                api.get('/api/admin/analytics/churn/'),
+                api.get('/api/admin/analytics/growth/')
             ]);
 
             setRetentionData(retentionRes.data);

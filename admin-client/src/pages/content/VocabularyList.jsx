@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import axios from 'axios';
+import api from '../../api';
 import { format } from 'date-fns';
 import { useToast } from '../../components/ui/Toast';
 import {
@@ -31,9 +31,7 @@ export default function VocabularyList() {
         try {
             setLoading(true);
             const token = localStorage.getItem('adminToken');
-            const response = await axios.get('http://localhost:8000/api/admin/content/vocabulary/', {
-                headers: { Authorization: `Token ${token}` }
-            });
+            const response = await api.get('/api/admin/content/vocabulary/');
             // Handle both array and paginated results
             const data = Array.isArray(response.data) ? response.data : (response.data.results || []);
             setItems(data);
@@ -55,9 +53,7 @@ export default function VocabularyList() {
 
         try {
             const token = localStorage.getItem('adminToken');
-            await axios.delete(`http://localhost:8000/api/admin/content/vocabulary/${id}/`, {
-                headers: { Authorization: `Token ${token}` }
-            });
+            await api.delete(`/api/admin/content/vocabulary/${id}/`);
             showToast('Word deleted successfully', 'success');
             fetchItems();
         } catch (err) {

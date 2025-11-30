@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../api';
 import { format } from 'date-fns';
 import {
     Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter
@@ -33,9 +33,8 @@ export default function UserSheet({ userId, isOpen, onClose, onUserUpdated }) {
         try {
             setLoading(true);
             const token = localStorage.getItem('adminToken');
-            const response = await axios.get(
-                `http://localhost:8000/api/admin/users/${userId}/`,
-                { headers: { Authorization: `Token ${token}` } }
+            const response = await api.get(
+                `/api/admin/users/${userId}/`
             );
             setUser(response.data);
         } catch (error) {
@@ -52,10 +51,9 @@ export default function UserSheet({ userId, isOpen, onClose, onUserUpdated }) {
         try {
             setActionLoading(true);
             const token = localStorage.getItem('adminToken');
-            await axios.post(
-                `http://localhost:8000/api/admin/users/${userId}/${action}/`,
-                {},
-                { headers: { Authorization: `Token ${token}` } }
+            await api.post(
+                `/api/admin/users/${userId}/${action}/`,
+                {}
             );
             showToast(`User ${actionText}d successfully`, 'success');
             fetchUser();

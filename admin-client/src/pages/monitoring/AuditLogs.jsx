@@ -2,7 +2,7 @@
  * Audit Logs Page - Upgraded with shadcn/ui
  */
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import axios from 'axios';
+import api from '../../api';
 import { motion } from 'framer-motion';
 import { DataTable } from '../../components/common/DataTable';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
@@ -63,9 +63,7 @@ export default function AuditLogs() {
             if (dateRange?.from) params.append('start_date', dateRange.from.toISOString());
             if (dateRange?.to) params.append('end_date', dateRange.to.toISOString());
 
-            const response = await axios.get(`http://localhost:8000/api/admin/audit-logs/?${params.toString()}`, {
-                headers: { Authorization: `Token ${token}` }
-            });
+            const response = await api.get(`/api/admin/audit-logs/?${params.toString()}`);
 
             const data = response.data.results || response.data || [];
             setLogs(Array.isArray(data) ? data : []);

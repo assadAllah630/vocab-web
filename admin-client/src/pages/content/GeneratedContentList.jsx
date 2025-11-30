@@ -3,7 +3,7 @@
  * @module GeneratedContentList
  */
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import axios from 'axios';
+import api from '../../api';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DataTable } from '../../components/common/DataTable';
 import { Card, CardContent } from '../../components/ui/Card';
@@ -42,9 +42,8 @@ export default function GeneratedContentList() {
 
             if (!token) throw new Error('Not authenticated');
 
-            const response = await axios.get('http://localhost:8000/api/admin/content/generated/', {
-                params: { search },
-                headers: { Authorization: `Token ${token}` }
+            const response = await api.get('/api/admin/content/generated/', {
+                params: { search }
             });
 
             const data = response.data.results || response.data || [];
@@ -72,9 +71,7 @@ export default function GeneratedContentList() {
 
         try {
             const token = localStorage.getItem('adminToken');
-            await axios.delete(`http://localhost:8000/api/admin/content/generated/${id}/`, {
-                headers: { Authorization: `Token ${token}` }
-            });
+            await api.delete(`/api/admin/content/generated/${id}/`);
 
             showToast('Content deleted successfully', 'success');
             fetchItems();

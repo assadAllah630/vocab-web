@@ -3,7 +3,7 @@
  * Fetches actual system metrics from the server via API
  */
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api';
 
 export const useSystemHealth = () => {
     const [metrics, setMetrics] = useState({
@@ -20,9 +20,8 @@ export const useSystemHealth = () => {
         const fetchMetrics = async () => {
             try {
                 const token = localStorage.getItem('adminToken');
-                const response = await axios.get(
-                    'http://localhost:8000/api/admin/monitoring/health/',
-                    { headers: { Authorization: `Token ${token}` } }
+                const response = await api.get(
+                    '/api/admin/monitoring/health/'
                 );
 
                 const newData = {
