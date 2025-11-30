@@ -37,7 +37,7 @@ function Login({ setUser }) {
                 const user = response.data;
                 localStorage.setItem('user', JSON.stringify(user));
                 setUser(user);
-                navigate('/');
+                navigate('/dashboard');
             } else {
                 // Login or Signup
                 const endpoint = isLogin ? 'auth/signin/' : 'auth/signup/';
@@ -51,7 +51,7 @@ function Login({ setUser }) {
                     const user = response.data;
                     localStorage.setItem('user', JSON.stringify(user));
                     setUser(user);
-                    navigate('/');
+                    navigate('/dashboard');
                 } else {
                     // Signup successful, switch to verification
                     setVerificationMode(true);
@@ -330,7 +330,7 @@ function Login({ setUser }) {
                                     <GoogleAuthButton
                                         onSuccess={(data) => {
                                             setUser(data.user);
-                                            navigate('/');
+                                            navigate('/dashboard');
                                         }}
                                         onError={(error) => {
                                             setError('Google login failed. Please try again.');
