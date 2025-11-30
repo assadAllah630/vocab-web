@@ -7,7 +7,7 @@ import {
     ChevronLeftIcon, PaperAirplaneIcon, BookmarkIcon
 } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleIconSolid, XCircleIcon as XCircleIconSolid, PlayIcon as PlayIconSolid } from '@heroicons/react/24/solid';
-import confetti from 'canvas-confetti';
+
 
 // --- Simulated Data ---
 

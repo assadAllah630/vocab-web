@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+
 
 function ActivityHeatmap({ activityLog }) {
     // Generate dates for the last 365 days
