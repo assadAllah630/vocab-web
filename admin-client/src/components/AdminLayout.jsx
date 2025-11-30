@@ -12,7 +12,7 @@ import {
     Bars3Icon,
     XMarkIcon
 } from '@heroicons/react/24/outline';
-import axios from 'axios';
+import api from '../api';
 import { ToastProvider } from './ui/Toast';
 import { CommandPalette } from './common/CommandPalette';
 import { ThemeToggle } from './ui/ThemeToggle';
@@ -43,9 +43,7 @@ export default function AdminLayout() {
 
     const handleLogout = async () => {
         try {
-            await axios.post('http://localhost:8000/api/admin/auth/logout/', {}, {
-                headers: { Authorization: `Token ${localStorage.getItem('adminToken')}` }
-            });
+            await api.post('/api/admin/auth/logout/');
         } catch (error) {
             console.error('Logout failed', error);
         } finally {

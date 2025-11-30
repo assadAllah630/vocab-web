@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import api from '../api';
 import { UserIcon, LockClosedIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 
 export default function Login() {
@@ -8,6 +9,7 @@ export default function Login() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [focusedInput, setFocusedInput] = useState(null);
+    const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -15,7 +17,7 @@ export default function Login() {
         setError('');
 
         try {
-            const response = await axios.post('http://localhost:8000/api/admin/auth/login/', {
+            const response = await api.post('/api/admin/auth/login/', {
                 username,
                 password
             });

@@ -3,7 +3,7 @@
  * Replicating the exact structure and design of the official example
  */
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
@@ -26,13 +26,10 @@ export default function Dashboard() {
 
     const fetchData = async () => {
         try {
-            const token = localStorage.getItem('adminToken');
-            const headers = { Authorization: `Token ${token}` };
-
             const [statsRes, growthRes, aiRes] = await Promise.all([
-                axios.get('http://localhost:8000/api/admin/analytics/dashboard/', { headers }),
-                axios.get('http://localhost:8000/api/admin/analytics/users/?days=30', { headers }),
-                axios.get('http://localhost:8000/api/admin/analytics/ai/', { headers })
+                api.get('/api/admin/analytics/dashboard/'),
+                api.get('/api/admin/analytics/users/?days=30'),
+                api.get('/api/admin/analytics/ai/')
             ]);
 
             setStats(statsRes.data);

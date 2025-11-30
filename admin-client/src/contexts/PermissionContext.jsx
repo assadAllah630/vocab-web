@@ -1,10 +1,7 @@
-/**
- * Permission context for admin panel RBAC
- */
-import { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import api from '../api';
 
-const PermissionContext = createContext();
+const PermissionContext = createContext(null);
 
 export function PermissionProvider({ children }) {
     const [permissions, setPermissions] = useState([]);
@@ -17,11 +14,7 @@ export function PermissionProvider({ children }) {
 
     const fetchPermissions = async () => {
         try {
-            const token = localStorage.getItem('adminToken');
-            const response = await axios.get('http://localhost:8000/api/admin/auth/me/', {
-                headers: { Authorization: `Token ${token}` }
-            });
-
+            const response = await api.get('/api/admin/auth/me/');
             setPermissions(response.data.permissions || []);
             setRole(response.data.role);
         } catch (error) {
