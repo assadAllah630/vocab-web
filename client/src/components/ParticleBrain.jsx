@@ -9,6 +9,9 @@ const ParticleBrain = () => {
         let animationFrameId;
         let particles = [];
         let mouse = { x: null, y: null, radius: 200 };
+        let lastTime = 0;
+        let frameCount = 0;
+        let fps = 60;
 
         const resizeCanvas = () => {
             canvas.width = window.innerWidth;
@@ -78,8 +81,9 @@ const ParticleBrain = () => {
 
         const initParticles = () => {
             particles = [];
-            // Reduced density for cleaner look
-            let numberOfParticles = (canvas.width * canvas.height) / 15000;
+            // Reduced density for cleaner look and performance
+            // Was (width * height) / 15000, now / 20000
+            let numberOfParticles = (canvas.width * canvas.height) / 20000;
             for (let i = 0; i < numberOfParticles; i++) {
                 let size = (Math.random() * 1.5) + 0.5;
                 let x = Math.random() * canvas.width;
@@ -93,6 +97,9 @@ const ParticleBrain = () => {
         };
 
         const connect = () => {
+            // Skip expensive connection calculation if FPS drops below 40
+            if (fps < 40) return;
+
             for (let a = 0; a < particles.length; a++) {
                 for (let b = a; b < particles.length; b++) {
                     let distance = ((particles[a].x - particles[b].x) * (particles[a].x - particles[b].x))
@@ -113,14 +120,24 @@ const ParticleBrain = () => {
             }
         };
 
-        const animate = () => {
-            requestAnimationFrame(animate);
+        const animate = (time) => {
+            // Calculate FPS
+            const delta = time - lastTime;
+            lastTime = time;
+            if (delta > 0) {
+                const currentFps = 1000 / delta;
+                // Smooth FPS reading
+                fps = fps * 0.9 + currentFps * 0.1;
+            }
+
             ctx.clearRect(0, 0, innerWidth, innerHeight);
 
             for (let i = 0; i < particles.length; i++) {
                 particles[i].update();
             }
             connect();
+
+            animationFrameId = requestAnimationFrame(animate);
         };
 
         window.addEventListener('resize', resizeCanvas);
@@ -134,7 +151,7 @@ const ParticleBrain = () => {
         });
 
         resizeCanvas();
-        animate();
+        animationFrameId = requestAnimationFrame(animate);
 
         return () => {
             window.removeEventListener('resize', resizeCanvas);

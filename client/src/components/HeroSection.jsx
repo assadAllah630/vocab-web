@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRightIcon, SparklesIcon } from '@heroicons/react/24/solid';
 import ParticleBrain from './ParticleBrain';
 import HeroDashboardPreview from './HeroDashboardPreview';
+import MobileHeroDashboardPreview from './MobileHeroDashboardPreview';
 
 const RotatingTitle = () => {
     const words = ["Supercharged", "Optimized", "Unleashed", "Intelligent"];
@@ -36,12 +37,12 @@ const RotatingTitle = () => {
 
 const HeroSection = () => {
     return (
-        <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-slate-50 pt-20 lg:pt-0">
+        <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-slate-50 pt-32 lg:pt-0">
             {/* Organic Particle Background */}
             <ParticleBrain />
 
             {/* Content Container */}
-            <div className="container mx-auto px-6 relative z-10">
+            <div className="container mx-auto px-4 md:px-6 relative z-10">
                 <div className="grid lg:grid-cols-2 gap-12 items-center">
 
                     {/* Left Column: Text */}
@@ -67,7 +68,7 @@ const HeroSection = () => {
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.8, delay: 0.4 }}
-                            className="text-5xl md:text-7xl font-bold text-slate-900 tracking-tighter leading-tight mb-8"
+                            className="text-4xl md:text-5xl lg:text-7xl font-bold text-slate-900 tracking-tighter leading-tight mb-8"
                         >
                             Your Language Brain. <br />
                             <RotatingTitle />
@@ -78,7 +79,7 @@ const HeroSection = () => {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.8, delay: 0.6 }}
-                            className="text-xl text-slate-600 max-w-xl mb-10 leading-relaxed font-light"
+                            className="text-lg md:text-xl text-slate-600 max-w-xl mb-10 leading-relaxed font-light"
                         >
                             Stop memorizing lists. Start building a neural network for language.
                             VocabMaster uses <span className="font-semibold text-slate-800">adaptive AI</span> to wire fluency directly into your brain.
@@ -93,9 +94,9 @@ const HeroSection = () => {
                         >
                             <Link
                                 to="/signup"
-                                className="group relative px-8 py-4 bg-slate-900 text-white text-lg font-bold rounded-full overflow-hidden shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300"
+                                className="group relative px-8 py-4 bg-slate-900 text-white text-lg font-bold rounded-full overflow-hidden shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 w-full sm:w-auto text-center"
                             >
-                                <span className="relative z-10 flex items-center gap-2">
+                                <span className="relative z-10 flex items-center justify-center gap-2">
                                     Start Wiring
                                     <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                                 </span>
@@ -104,7 +105,7 @@ const HeroSection = () => {
 
                             <Link
                                 to="/demo"
-                                className="group px-8 py-4 bg-white text-slate-900 text-lg font-bold rounded-full border border-slate-200 hover:border-indigo-200 hover:bg-indigo-50 transition-all duration-300 flex items-center gap-2"
+                                className="group px-8 py-4 bg-white text-slate-900 text-lg font-bold rounded-full border border-slate-200 hover:border-indigo-200 hover:bg-indigo-50 transition-all duration-300 flex items-center justify-center gap-2 w-full sm:w-auto"
                             >
                                 <SparklesIcon className="w-5 h-5 text-indigo-500" />
                                 See How It Works
@@ -117,14 +118,19 @@ const HeroSection = () => {
                         initial={{ opacity: 0, x: 50 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 1, delay: 0.5, type: "spring" }}
-                        className="relative hidden lg:block pointer-events-none select-none"
+                        className="relative mt-12 lg:mt-0 pointer-events-none select-none"
                     >
                         {/* Glow Effect */}
                         <div className="absolute -inset-4 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl blur-2xl opacity-20 animate-pulse"></div>
 
-                        {/* Live Dashboard Component - Flat & Large */}
-                        <div className="relative rounded-xl overflow-hidden shadow-2xl border border-slate-200/50 bg-white">
+                        {/* Desktop Simulation */}
+                        <div className="hidden lg:block relative rounded-xl overflow-hidden shadow-2xl border border-slate-200/50 bg-white">
                             <HeroDashboardPreview />
+                        </div>
+
+                        {/* Mobile Simulation */}
+                        <div className="block lg:hidden flex justify-center">
+                            <MobileHeroDashboardPreview />
                         </div>
                     </motion.div>
 

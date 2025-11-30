@@ -96,7 +96,7 @@ const PricingSection = () => {
     ];
 
     return (
-        <section id="pricing" className="py-32 bg-slate-50 relative overflow-hidden">
+        <section id="pricing" className="py-16 md:py-32 bg-slate-50 relative overflow-hidden">
             {/* Background Decorations */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
                 <div className="absolute top-1/4 -left-64 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-3xl"></div>

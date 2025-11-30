@@ -94,7 +94,7 @@ const MemoryGame = () => {
                 </button>
             </div>
 
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-4 gap-2 md:gap-3">
                 {cards.map((card) => {
                     const isFlipped = flipped.includes(card.id) || matched.includes(card.id);
                     const isMatched = matched.includes(card.id);
@@ -124,8 +124,8 @@ const MemoryGame = () => {
                                 {/* Back (Revealed) */}
                                 <div
                                     className={`absolute w-full h-full backface-hidden rounded-xl flex items-center justify-center border-2 ${isMatched
-                                            ? 'bg-green-50 border-green-500 text-green-700'
-                                            : 'bg-white border-indigo-500 text-indigo-700'
+                                        ? 'bg-green-50 border-green-500 text-green-700'
+                                        : 'bg-white border-indigo-500 text-indigo-700'
                                         }`}
                                     style={{
                                         backfaceVisibility: 'hidden',
@@ -196,13 +196,13 @@ const Leaderboard = () => {
                                 src={user.avatar}
                                 alt={user.name}
                                 className={`rounded-full border-4 ${user.rank === 1 ? 'w-20 h-20 border-yellow-400 shadow-yellow-200' :
-                                        user.rank === 2 ? 'w-16 h-16 border-slate-300' :
-                                            'w-14 h-14 border-orange-300'
+                                    user.rank === 2 ? 'w-16 h-16 border-slate-300' :
+                                        'w-14 h-14 border-orange-300'
                                     } shadow-lg`}
                             />
                             <div className={`absolute -bottom-2 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white ${user.rank === 1 ? 'bg-yellow-500' :
-                                    user.rank === 2 ? 'bg-slate-400' :
-                                        'bg-orange-400'
+                                user.rank === 2 ? 'bg-slate-400' :
+                                    'bg-orange-400'
                                 }`}>
                                 {user.rank}
                             </div>
@@ -215,8 +215,8 @@ const Leaderboard = () => {
                             initial={{ height: 0 }}
                             whileInView={{ height: user.rank === 1 ? 80 : user.rank === 2 ? 50 : 30 }}
                             className={`w-full rounded-t-lg mt-2 ${user.rank === 1 ? 'bg-gradient-to-t from-yellow-100 to-yellow-50' :
-                                    user.rank === 2 ? 'bg-gradient-to-t from-slate-100 to-slate-50' :
-                                        'bg-gradient-to-t from-orange-100 to-orange-50'
+                                user.rank === 2 ? 'bg-gradient-to-t from-slate-100 to-slate-50' :
+                                    'bg-gradient-to-t from-orange-100 to-orange-50'
                                 }`}
                         />
                     </div>
@@ -228,14 +228,14 @@ const Leaderboard = () => {
 
 const ArcadeSection = () => {
     return (
-        <section className="py-24 bg-slate-50 relative overflow-hidden">
+        <section className="py-16 md:py-24 bg-slate-50 relative overflow-hidden">
             {/* Background Elements */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
                 <div className="absolute top-10 left-10 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl"></div>
                 <div className="absolute bottom-10 right-10 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl"></div>
             </div>
 
-            <div className="container mx-auto px-4 relative z-10">
+            <div className="container mx-auto px-4 md:px-6 relative z-10">
                 <div className="text-center max-w-3xl mx-auto mb-16">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
