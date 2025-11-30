@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-    HomeIcon, BookOpenIcon, PhotoIcon,
-    ChatBubbleLeftRightIcon, SpeakerWaveIcon, LanguageIcon,
-    CheckCircleIcon, XCircleIcon, SparklesIcon,
+    HomeIcon, BookOpenIcon,
+    ChatBubbleLeftRightIcon, SpeakerWaveIcon,
+    CheckCircleIcon,
     ChevronLeftIcon, PaperAirplaneIcon, BookmarkIcon
 } from '@heroicons/react/24/outline';
-import { CheckCircleIcon as CheckCircleIconSolid, XCircleIcon as XCircleIconSolid, PlayIcon as PlayIconSolid } from '@heroicons/react/24/solid';
+import { CheckCircleIcon as CheckCircleIconSolid } from '@heroicons/react/24/solid';
 
 
 // --- Simulated Data ---
