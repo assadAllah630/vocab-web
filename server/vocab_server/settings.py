@@ -151,6 +151,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5175",
     "http://localhost:5176",
     "http://localhost:5177",
+    "https://vocab-admin-panel.vercel.app",
 ]
 
 # Add production frontend URL if set
@@ -172,6 +173,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5175",
     "http://localhost:5176",
     "http://localhost:5177",
+    "https://vocab-admin-panel.vercel.app",
 ]
 
 # Add production frontend URL if set
