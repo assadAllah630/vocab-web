@@ -107,16 +107,18 @@ function QuizPlay({ user }) {
 
         try {
             if (useHLR) {
-                // Use HLR endpoint to record result
+                // Use HLR endpoint to record result with difficulty parameter
                 await api.post('practice/result/', {
                     word_id: currentWord.id,
-                    was_correct: correct
+                    difficulty: correct  // Send difficulty ('again'/'hard'/'good'/'easy' or boolean)
                 });
             } else {
                 // Use standard progress endpoint
+                // Convert difficulty to boolean for SM2
+                const wasCorrect = typeof correct === 'boolean' ? correct : ['good', 'easy'].includes(correct);
                 await api.post('progress/update/', {
                     vocab_id: currentWord.id,
-                    correct: correct
+                    correct: wasCorrect
                 });
             }
         } catch (err) {

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform, useSpring, useInView } from 'framer-motion';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
@@ -95,13 +95,33 @@ const FeatureSection = ({ title, subtitle, description, component: Component, al
 };
 
 const LandingPage = () => {
+    const navigate = useNavigate();
+
+    // Redirect to dashboard if user is already logged in
     useEffect(() => {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser && storedUser !== 'undefined' && storedUser !== 'null') {
+            try {
+                const user = JSON.parse(storedUser);
+                // Check if user has valid data (username is required)
+                if (user && user.username) {
+                    navigate('/dashboard');
+                    return;
+                }
+            } catch (error) {
+                console.error('Failed to parse user data:', error);
+                // Clear invalid user data
+                localStorage.removeItem('user');
+            }
+        }
+
+        // Initialize AOS animations
         AOS.init({
             duration: 1000,
             once: true,
             easing: 'ease-out-cubic',
         });
-    }, []);
+    }, [navigate]);
 
     const { scrollYProgress } = useScroll();
     const scaleX = useSpring(scrollYProgress, {
