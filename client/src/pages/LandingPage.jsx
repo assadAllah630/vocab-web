@@ -212,29 +212,29 @@ const LandingPage = () => {
 
             {/* CTA Section */}
             <section className="py-16 md:py-32 bg-slate-50 border-t border-slate-200">
-                <div className="container mx-auto px-4">
-                    <div className="text-center mb-16 md:mb-24">
-                        <h3 className="text-3xl md:text-5xl font-bold text-slate-900 mb-6">Beyond Vocabulary</h3>
-                        <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto">Complete tools for total language immersion. Everything you need to go from beginner to fluent.</p>
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="text-center mb-12 sm:mb-16 md:mb-20 lg:mb-24">
+                        <h3 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-4 sm:mb-6">Beyond Vocabulary</h3>
+                        <p className="text-base sm:text-lg md:text-xl text-slate-600 max-w-2xl mx-auto px-4">Complete tools for total language immersion. Everything you need to go from beginner to fluent.</p>
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-8 md:gap-16 max-w-6xl mx-auto">
+                    <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 md:gap-12 lg:gap-16 max-w-6xl mx-auto">
                         {/* Podcast Creator Feature */}
                         <motion.div
                             initial={{ opacity: 0, x: -50 }}
                             whileInView={{ opacity: 1, x: 0 }}
                             viewport={{ once: true }}
-                            className="h-full"
+                            className="w-full"
                         >
-                            <SpotlightCard className="p-6 md:p-10 h-full shadow-2xl hover:shadow-3xl transition-shadow duration-500">
-                                <div className="w-14 h-14 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mb-8">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8">
+                            <SpotlightCard className="p-6 sm:p-8 md:p-10 h-full shadow-2xl hover:shadow-3xl transition-shadow duration-500">
+                                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mb-6 sm:mb-8">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 sm:w-8 sm:h-8">
                                         <path d="M8.25 4.5a3.75 3.75 0 1 1 7.5 0v8.25a3.75 3.75 0 1 1-7.5 0V4.5Z" />
                                         <path d="M6 10.5a.75.75 0 0 1 .75.75v1.5a5.25 5.25 0 1 0 10.5 0v-1.5a.75.75 0 0 1 1.5 0v1.5a6.751 6.751 0 0 1-6 6.709v2.291h3a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1 0-1.5h3v-2.291a6.751 6.751 0 0 1-6-6.709v-1.5A.75.75 0 0 1 6 10.5Z" />
                                     </svg>
                                 </div>
-                                <h4 className="text-2xl md:text-3xl font-bold text-slate-900 mb-4">Podcast Creator</h4>
-                                <p className="text-base md:text-lg text-slate-600 mb-10 leading-relaxed">
+                                <h4 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 mb-3 sm:mb-4">Podcast Creator</h4>
+                                <p className="text-sm sm:text-base md:text-lg text-slate-600 mb-6 sm:mb-8 md:mb-10 leading-relaxed">
                                     Turn any text into a high-quality audio lesson. Listen on your commute, at the gym, or while cooking.
                                 </p>
                                 <PodcastDemo />
@@ -246,14 +246,14 @@ const LandingPage = () => {
                             initial={{ opacity: 0, x: 50 }}
                             whileInView={{ opacity: 1, x: 0 }}
                             viewport={{ once: true }}
-                            className="h-full"
+                            className="w-full"
                         >
-                            <SpotlightCard className="p-6 md:p-10 h-full shadow-2xl hover:shadow-3xl transition-shadow duration-500">
-                                <div className="w-14 h-14 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mb-8">
-                                    <ChartBarIcon className="w-8 h-8" />
+                            <SpotlightCard className="p-6 sm:p-8 md:p-10 h-full shadow-2xl hover:shadow-3xl transition-shadow duration-500">
+                                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mb-6 sm:mb-8">
+                                    <ChartBarIcon className="w-6 h-6 sm:w-8 sm:h-8" />
                                 </div>
-                                <h4 className="text-2xl md:text-3xl font-bold text-slate-900 mb-4">Deep Analytics</h4>
-                                <p className="text-base md:text-lg text-slate-600 mb-10 leading-relaxed">
+                                <h4 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 mb-3 sm:mb-4">Deep Analytics</h4>
+                                <p className="text-sm sm:text-base md:text-lg text-slate-600 mb-6 sm:mb-8 md:mb-10 leading-relaxed">
                                     Track every word, every session, and every milestone. Watch your fluency grow with detailed insights.
                                 </p>
                                 <StatsDemo />

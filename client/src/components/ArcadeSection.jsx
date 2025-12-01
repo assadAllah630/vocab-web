@@ -228,82 +228,95 @@ const Leaderboard = () => {
 
 const ArcadeSection = () => {
     return (
-        <section className="py-16 md:py-24 bg-slate-50 relative overflow-hidden">
+        <section className="py-12 sm:py-16 md:py-24 bg-slate-50 relative overflow-hidden">
             {/* Background Elements */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-                <div className="absolute top-10 left-10 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl"></div>
-                <div className="absolute bottom-10 right-10 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl"></div>
+                <div className="absolute top-10 left-10 w-48 h-48 sm:w-64 sm:h-64 bg-indigo-500/5 rounded-full blur-3xl"></div>
+                <div className="absolute bottom-10 right-10 w-64 h-64 sm:w-96 sm:h-96 bg-purple-500/5 rounded-full blur-3xl"></div>
             </div>
 
-            <div className="container mx-auto px-4 md:px-6 relative z-10">
-                <div className="text-center max-w-3xl mx-auto mb-16">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold uppercase tracking-wide mb-4"
-                    >
-                        <UserGroupIcon className="w-4 h-4" />
-                        The Arcade
-                    </motion.div>
-                    <motion.h2
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.1 }}
-                        className="text-4xl md:text-5xl font-bold text-slate-900 mb-6"
-                    >
-                        Learning is better <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">together</span>.
-                    </motion.h2>
-                    <motion.p
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.2 }}
-                        className="text-lg text-slate-600"
-                    >
-                        Join a community of learners, compete on global leaderboards, and play mini-games that make vocabulary stick.
-                    </motion.p>
-                </div>
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                <div className="flex flex-col lg:flex-row items-start gap-8 sm:gap-12 lg:gap-16">
 
-                <div className="grid md:grid-cols-2 gap-12 items-center">
-                    {/* Left: Game */}
-                    <motion.div
-                        initial={{ opacity: 0, x: -50 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.3 }}
-                    >
-                        <MemoryGame />
-                    </motion.div>
+                    {/* Text Content - Natural Flow */}
+                    <div className="w-full lg:w-5/12 space-y-4 sm:space-y-6">
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold uppercase tracking-wide"
+                        >
+                            <UserGroupIcon className="w-4 h-4" />
+                            The Arcade
+                        </motion.div>
+                        <motion.h2
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 0.1 }}
+                            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 leading-[1.1] tracking-tight"
+                        >
+                            Learning is better <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">together</span>.
+                        </motion.h2>
+                        <motion.p
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 0.2 }}
+                            className="text-sm sm:text-base md:text-lg text-slate-600 leading-relaxed"
+                        >
+                            Join a community of learners, compete on global leaderboards, and play mini-games that make vocabulary stick.
+                        </motion.p>
 
-                    {/* Right: Leaderboard & Stats */}
-                    <motion.div
-                        initial={{ opacity: 0, x: 50 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.4 }}
-                        className="space-y-8"
-                    >
-                        <Leaderboard />
-
-                        <div className="bg-indigo-600 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden">
-                            <div className="relative z-10 flex items-center justify-between">
-                                <div>
-                                    <div className="text-3xl font-bold mb-1">12,405</div>
-                                    <div className="text-indigo-200 text-sm">Words Mastered Today</div>
+                        {/* Stats Card - Integrated into text flow */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 0.3 }}
+                            className="bg-white rounded-xl p-4 shadow-lg border border-indigo-50 inline-block mt-4"
+                        >
+                            <div className="flex items-center gap-4">
+                                <div className="h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                                    <SparklesIcon className="w-5 h-5 text-indigo-600" />
                                 </div>
-                                <div className="h-12 w-12 bg-white/20 rounded-full flex items-center justify-center">
-                                    <SparklesIcon className="w-6 h-6 text-white" />
+                                <div>
+                                    <div className="text-xl font-bold text-slate-900">12,405</div>
+                                    <div className="text-xs text-slate-500 font-medium">Words Mastered Today</div>
                                 </div>
                             </div>
-                        </div>
-                    </motion.div>
+                        </motion.div>
+                    </div>
+
+                    {/* Interactive Components - Organic Layout */}
+                    <div className="w-full lg:w-7/12 grid sm:grid-cols-2 gap-6 items-start">
+                        {/* Game - Slightly rotated for organic feel */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 40, rotate: -2 }}
+                            whileInView={{ opacity: 1, y: 0, rotate: -2 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 0.3, type: "spring" }}
+                            className="w-full max-w-sm mx-auto sm:mx-0"
+                        >
+                            <MemoryGame />
+                        </motion.div>
+
+                        {/* Leaderboard - Offset for asymmetry */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 60, rotate: 2 }}
+                            whileInView={{ opacity: 1, y: 0, rotate: 2 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 0.4, type: "spring" }}
+                            className="w-full max-w-sm mx-auto sm:mx-0 sm:mt-12"
+                        >
+                            <Leaderboard />
+                        </motion.div>
+                    </div>
                 </div>
             </div>
 
             {/* Ticker at bottom */}
-            <div className="mt-16">
+            <div className="mt-12 sm:mt-16">
                 <CommunityTicker />
             </div>
         </section>

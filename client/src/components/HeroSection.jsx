@@ -37,12 +37,12 @@ const RotatingTitle = () => {
 
 const HeroSection = () => {
     return (
-        <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-slate-50 pt-32 lg:pt-0">
+        <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-slate-50 pt-24 sm:pt-32 lg:pt-0">
             {/* Organic Particle Background */}
             <ParticleBrain />
 
             {/* Content Container */}
-            <div className="container mx-auto px-4 md:px-6 relative z-10">
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <div className="grid lg:grid-cols-2 gap-12 items-center">
 
                     {/* Left Column: Text */}
@@ -52,13 +52,13 @@ const HeroSection = () => {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.6, delay: 0.2 }}
-                            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 backdrop-blur-md border border-indigo-100 shadow-sm mb-8"
+                            className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-white/80 backdrop-blur-md border border-indigo-100 shadow-sm mb-6 sm:mb-8"
                         >
                             <span className="relative flex h-3 w-3">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
                                 <span className="relative inline-flex rounded-full h-3 w-3 bg-indigo-500"></span>
                             </span>
-                            <span className="text-sm font-semibold text-slate-600 tracking-wide">
+                            <span className="text-xs sm:text-sm font-semibold text-slate-600 tracking-wide">
                                 New: AI Story Generation 2.0
                             </span>
                         </motion.div>
@@ -68,7 +68,7 @@ const HeroSection = () => {
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.8, delay: 0.4 }}
-                            className="text-4xl md:text-5xl lg:text-7xl font-bold text-slate-900 tracking-tighter leading-tight mb-8"
+                            className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-slate-900 tracking-tighter leading-[1.2] mb-6 sm:mb-8"
                         >
                             Your Language Brain. <br />
                             <RotatingTitle />
@@ -79,7 +79,7 @@ const HeroSection = () => {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.8, delay: 0.6 }}
-                            className="text-lg md:text-xl text-slate-600 max-w-xl mb-10 leading-relaxed font-light"
+                            className="text-base sm:text-lg md:text-xl text-slate-600 max-w-xl mb-8 sm:mb-10 leading-relaxed font-light"
                         >
                             Stop memorizing lists. Start building a neural network for language.
                             VocabMaster uses <span className="font-semibold text-slate-800">adaptive AI</span> to wire fluency directly into your brain.
@@ -90,11 +90,11 @@ const HeroSection = () => {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.8, delay: 0.8 }}
-                            className="flex flex-col sm:flex-row items-start gap-6"
+                            className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6"
                         >
                             <Link
                                 to="/signup"
-                                className="group relative px-8 py-4 bg-slate-900 text-white text-lg font-bold rounded-full overflow-hidden shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 w-full sm:w-auto text-center"
+                                className="group relative px-6 sm:px-8 py-3.5 sm:py-4 bg-slate-900 text-white text-base sm:text-lg font-bold rounded-full overflow-hidden shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 w-full sm:w-auto text-center min-h-[50px] sm:min-h-[56px] flex items-center justify-center"
                             >
                                 <span className="relative z-10 flex items-center justify-center gap-2">
                                     Start Wiring
@@ -105,7 +105,7 @@ const HeroSection = () => {
 
                             <Link
                                 to="/demo"
-                                className="group px-8 py-4 bg-white text-slate-900 text-lg font-bold rounded-full border border-slate-200 hover:border-indigo-200 hover:bg-indigo-50 transition-all duration-300 flex items-center justify-center gap-2 w-full sm:w-auto"
+                                className="group px-6 sm:px-8 py-3.5 sm:py-4 bg-white text-slate-900 text-base sm:text-lg font-bold rounded-full border border-slate-200 hover:border-indigo-200 hover:bg-indigo-50 transition-all duration-300 flex items-center justify-center gap-2 w-full sm:w-auto min-h-[50px] sm:min-h-[56px]"
                             >
                                 <SparklesIcon className="w-5 h-5 text-indigo-500" />
                                 See How It Works
@@ -129,17 +129,17 @@ const HeroSection = () => {
                         </div>
 
                         {/* Mobile Simulation */}
-                        <div className="block lg:hidden w-full flex justify-center px-4 mt-8 md:mt-12">
+                        <div className="block lg:hidden w-full flex justify-center px-0 mt-12 sm:mt-16">
                             <MobileHeroDashboardPreview />
                         </div>
                     </motion.div>
 
-                </div>
-            </div>
+                </div >
+            </div >
 
             {/* Bottom Fade */}
-            <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
-        </section>
+            < div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-white to-transparent pointer-events-none" ></div >
+        </section >
     );
 };
 
