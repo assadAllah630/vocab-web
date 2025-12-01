@@ -65,7 +65,7 @@ const FeatureSection = ({ title, subtitle, description, component: Component, al
                         className="flex-1 w-full max-w-3xl perspective-1000"
                     >
                         <SpotlightCard className={`shadow-2xl shadow-${color}-500/20 transform transition-transform hover:rotate-y-1 hover:rotate-x-1 duration-700`}>
-                            <div className="min-h-[400px] lg:min-h-0 lg:aspect-[16/9] h-full">
+                            <div className="min-h-[400px] lg:min-h-0 lg:aspect-[16/9] h-full w-full">
                                 <Component />
                             </div>
                         </SpotlightCard>

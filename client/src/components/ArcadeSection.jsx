@@ -80,7 +80,7 @@ const MemoryGame = () => {
     const isGameOver = matched.length === CARDS_DATA.length;
 
     return (
-        <div className="bg-white p-6 rounded-2xl shadow-xl border border-slate-100 max-w-md mx-auto">
+        <div className="bg-white p-6 rounded-2xl shadow-xl border border-slate-100 w-full max-w-md mx-auto">
             <div className="flex justify-between items-center mb-4">
                 <h3 className="font-bold text-slate-800 flex items-center gap-2">
                     <SparklesIcon className="w-5 h-5 text-indigo-500" />
@@ -94,7 +94,7 @@ const MemoryGame = () => {
                 </button>
             </div>
 
-            <div className="grid grid-cols-4 gap-2 md:gap-3">
+            <div className="grid grid-cols-4 gap-1 md:gap-3">
                 {cards.map((card) => {
                     const isFlipped = flipped.includes(card.id) || matched.includes(card.id);
                     const isMatched = matched.includes(card.id);

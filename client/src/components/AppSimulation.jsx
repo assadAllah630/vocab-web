@@ -4,7 +4,8 @@ import {
     HomeIcon, BookOpenIcon,
     ChatBubbleLeftRightIcon, SpeakerWaveIcon,
     CheckCircleIcon,
-    ChevronLeftIcon, PaperAirplaneIcon, BookmarkIcon
+    ChevronLeftIcon, PaperAirplaneIcon, BookmarkIcon,
+    SparklesIcon, BoltIcon
 } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleIconSolid } from '@heroicons/react/24/solid';
 
@@ -15,90 +16,155 @@ const MOCK_STORY = {
     title: "The Martian Garden",
     level: "B2",
     topic: "Sci-Fi",
-    content: "Commander Lewis looked out at the **red landscape**. 'The soil here is rich in iron,' she noted, adjusting her **gloves**. 'But can it sustain life?' The **greenhouse** hummed softly behind her, a beacon of hope in the desolate wasteland.",
-    vocabulary: ["red landscape", "gloves", "greenhouse"],
-    image: "https://images.unsplash.com/photo-1614728853913-1e22ba6190fe?q=80&w=2070&auto=format&fit=crop" // Placeholder
+    scenes: [
+        {
+            id: 1,
+            text: "Commander Lewis looked out at the **red landscape**. 'The soil here is rich in iron,' she noted. 'But can it sustain life?'",
+            image: "https://images.unsplash.com/photo-1540611025311-01df3cef54b5?q=80&w=2664&auto=format&fit=crop", // Mars landscape
+            highlights: ["red landscape"]
+        },
+        {
+            id: 2,
+            text: "The **greenhouse** hummed softly behind her. Inside, the air was thick with humidity. Rows of **hydroponic** trays stretched into the distance.",
+            image: "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?q=80&w=2832&auto=format&fit=crop", // Greenhouse
+            highlights: ["greenhouse", "hydroponic"]
+        },
+        // Filler scenes for fast forward
+        { id: 3, text: "She checked the nutrient levels...", image: "https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?q=80&w=2670&auto=format&fit=crop" }, // Lab/Science
+        { id: 4, text: "The plants were thriving...", image: "https://images.unsplash.com/photo-1592419044706-39796d40f98c?q=80&w=2779&auto=format&fit=crop" }, // Plants
+        { id: 5, text: "Life on Mars was possible.", image: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop" } // Space/Planet
+    ]
 };
 
 const MOCK_EXAM = {
-    question: "Select the correct synonym for 'Ephemeral':",
-    options: ["Permanent", "Transient", "Tangible", "Eternal"],
-    correctAnswer: "Transient"
+    question: "What does 'hydroponic' mean?",
+    options: ["Growing plants in sand", "Growing plants in water", "Growing plants in space", "Growing plants in darkness"],
+    correctAnswer: "Growing plants in water"
 };
 
-// --- Desktop Components ---
+// --- Components ---
 
-const DesktopStoryViewer = () => {
-    const [tooltipOpen, setTooltipOpen] = useState(false);
-    const [savedCount, setSavedCount] = useState(124);
-    const [cursorPos, setCursorPos] = useState({ x: '90%', y: '90%' });
-    const [cursorScale, setCursorScale] = useState(1);
-    const [flyingWord, setFlyingWord] = useState(null);
-
-    useEffect(() => {
-        let timeouts = [];
-        const runDemo = () => {
-            setTooltipOpen(false);
-            setCursorPos({ x: '90%', y: '90%' });
-            setFlyingWord(null);
-
-            // Step 1: Move Cursor to "greenhouse"
-            timeouts.push(setTimeout(() => {
-                setCursorPos({ x: '65%', y: '45%' });
-            }, 1000));
-
-            // Step 2: Click "greenhouse"
-            timeouts.push(setTimeout(() => {
-                setCursorScale(0.8);
-            }, 2500));
-            timeouts.push(setTimeout(() => {
-                setCursorScale(1);
-                setTooltipOpen(true);
-            }, 2700));
-
-            // Step 3: Move Cursor to "Save" button
-            timeouts.push(setTimeout(() => {
-                setCursorPos({ x: '68%', y: '42%' });
-            }, 3500));
-
-            // Step 4: Click "Save"
-            timeouts.push(setTimeout(() => {
-                setCursorScale(0.8);
-            }, 4500));
-            timeouts.push(setTimeout(() => {
-                setCursorScale(1);
-                setTooltipOpen(false);
-                setFlyingWord({ x: '65%', y: '45%' });
-            }, 4700));
-
-            // Step 5: Word Flies to Counter
-            timeouts.push(setTimeout(() => {
-                setSavedCount(prev => prev + 1);
-                setFlyingWord(null);
-            }, 5500));
-        };
-
-        runDemo();
-        const loopInterval = setInterval(runDemo, 8000);
-
-        return () => {
-            timeouts.forEach(clearTimeout);
-            clearInterval(loopInterval);
-        };
-    }, []);
-
+const StoryCreationView = ({ title, instruction, grammar, visualsOn, onGenerate }) => {
     return (
-        <div className="w-full h-full bg-slate-900 text-white overflow-hidden flex flex-col rounded-xl border border-slate-700 shadow-2xl relative">
-            {/* Fake Cursor */}
-            <motion.div
-                className="absolute z-50 pointer-events-none drop-shadow-xl text-white"
-                animate={{ left: cursorPos.x, top: cursorPos.y, scale: cursorScale }}
-                transition={{ duration: 1.5, ease: "easeInOut", scale: { duration: 0.1 } }}
+        <div className="w-full h-full bg-slate-50 flex flex-col justify-center p-8">
+            <div className="bg-white p-8 rounded-3xl shadow-2xl border border-slate-100 space-y-6 max-w-md mx-auto w-full">
+                <div className="text-center mb-4">
+                    <h2 className="text-2xl font-bold text-slate-900">Create Story</h2>
+                    <p className="text-slate-500 text-sm">AI-Powered Immersion</p>
+                </div>
+
+                <div className="space-y-4">
+                    <div>
+                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Story Title</label>
+                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-800 font-medium min-h-[3rem] flex items-center">
+                            {title || <span className="text-slate-300">Enter title...</span>}
+                            {title && <span className="animate-pulse ml-0.5">|</span>}
+                        </div>
+                    </div>
+                    <div>
+                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Instruction / Level</label>
+                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-800 font-medium min-h-[3rem] flex items-center">
+                            {instruction || <span className="text-slate-300">e.g. Sci-Fi, B2</span>}
+                        </div>
+                    </div>
+                    <div>
+                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Grammar Focus</label>
+                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-800 font-medium min-h-[3rem] flex items-center">
+                            {grammar || <span className="text-slate-300">Select grammar...</span>}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex items-center justify-between py-2">
+                    <span className="text-sm font-bold text-slate-700">Visual Representation</span>
+                    <div className={`w-12 h-7 rounded-full p-1 transition-colors duration-300 ${visualsOn ? 'bg-indigo-600' : 'bg-slate-200'}`}>
+                        <div className={`w-5 h-5 bg-white rounded-full shadow-sm transition-transform duration-300 ${visualsOn ? 'translate-x-5' : 'translate-x-0'}`} />
+                    </div>
+                </div>
+
+                <button
+                    onClick={onGenerate}
+                    className="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 mt-4 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                >
+                    <SparklesIcon className="w-5 h-5" />
+                    Generate Story
+                </button>
+            </div>
+        </div>
+    );
+};
+
+const BookPage = ({ content, image, pageNumber, isFlipping, zIndex, rotation }) => {
+    return (
+        <motion.div
+            className="absolute inset-0 origin-left"
+            style={{
+                zIndex: zIndex,
+                transformStyle: 'preserve-3d',
+            }}
+            animate={{ rotateY: rotation }}
+            transition={{ duration: 0.8, ease: "easeInOut" }}
+        >
+            {/* Front of Page */}
+            <div className="absolute inset-0 backface-hidden w-full h-full bg-white flex shadow-2xl overflow-hidden rounded-r-xl" style={{ backfaceVisibility: 'hidden' }}>
+                {/* Left Page: Text */}
+                <div className="w-1/2 p-8 flex flex-col justify-center relative border-r border-slate-100 bg-[#faf9f6]">
+                    {/* Spine Gradient */}
+                    <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-black/10 to-transparent pointer-events-none"></div>
+
+                    <div className="absolute top-6 right-6">
+                        <button className="p-2 bg-indigo-50 text-indigo-600 rounded-full hover:bg-indigo-100 transition-colors">
+                            <SpeakerWaveIcon className="w-5 h-5" />
+                        </button>
+                    </div>
+                    <div className="prose prose-slate prose-lg leading-loose">
+                        {content}
+                    </div>
+                    <span className="absolute bottom-6 left-1/2 -translate-x-1/2 text-slate-400 text-xs font-serif italic">
+                        {pageNumber * 2 - 1}
+                    </span>
+                </div>
+
+                {/* Right Page: Image */}
+                <div className="w-1/2 relative bg-slate-100">
+                    <img src={image} alt="Scene" className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-l from-black/10 to-transparent pointer-events-none"></div>
+                    {/* Spine Gradient (Right side of spread) */}
+                    <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-black/20 to-transparent pointer-events-none z-10"></div>
+
+                    <span className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/80 text-xs font-serif italic drop-shadow-md z-20">
+                        {pageNumber * 2}
+                    </span>
+                </div>
+            </div>
+
+            {/* Back of Page (for flipping effect) */}
+            <div
+                className="absolute inset-0 w-full h-full bg-slate-100 rounded-l-xl shadow-xl overflow-hidden flex"
+                style={{
+                    backfaceVisibility: 'hidden',
+                    transform: 'rotateY(180deg)'
+                }}
             >
-                <svg className="w-8 h-8 fill-current stroke-black stroke-1" viewBox="0 0 24 24">
-                    <path d="M5.5 3.21l10.08 5.11c1.23.62 1.25 2.38.04 3.03l-3.3 1.78 3.32 6.55c.6.94-.37 2.1-1.37 1.6l-2.67-1.35-3.32-6.55-2.7 2.68c-.9.89-2.43.25-2.43-1.02v-11c0-1.28 1.4-1.9 2.35-1.42z" />
-                </svg>
-            </motion.div>
+                <div className="w-full h-full bg-[#faf9f6] border-r border-slate-200 relative">
+                    <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-black/5 to-transparent pointer-events-none"></div>
+                </div>
+            </div>
+        </motion.div>
+    );
+};
+
+const StoryBookView = ({ sceneIndex, savedWords, isFlipping, flyingWord, onWordClick }) => {
+    return (
+        <div className="w-full h-full bg-slate-800 flex items-center justify-center p-10 perspective-[1500px] overflow-hidden relative">
+            {/* Background Texture/Gradient */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-slate-700 to-slate-900"></div>
+
+            {/* Saved Words Counter */}
+            <div className="absolute top-8 right-8 z-50 flex items-center gap-3 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 text-white shadow-xl transition-all duration-300 hover:bg-white/20">
+                <BookOpenIcon className="w-5 h-5 text-indigo-300" />
+                <span className="font-bold">{savedWords.length}</span>
+            </div>
 
             {/* Flying Word Animation */}
             <AnimatePresence>
@@ -107,70 +173,335 @@ const DesktopStoryViewer = () => {
                         initial={{ left: flyingWord.x, top: flyingWord.y, opacity: 1, scale: 1 }}
                         animate={{ left: '90%', top: '5%', opacity: 0, scale: 0.5 }}
                         transition={{ duration: 0.8, ease: "easeIn" }}
-                        className="absolute z-40 bg-indigo-500 text-white px-2 py-1 rounded text-xs font-bold pointer-events-none"
+                        className="absolute z-50 bg-indigo-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold pointer-events-none shadow-lg shadow-indigo-500/50"
                     >
-                        +1 greenhouse
+                        +1 {flyingWord.word}
                     </motion.div>
                 )}
             </AnimatePresence>
 
-            {/* Header */}
-            <div className="p-4 flex items-center justify-between z-10 bg-slate-900/50 backdrop-blur-md border-b border-white/10">
-                <button className="p-2 rounded-full hover:bg-white/10 transition-colors">
-                    <HomeIcon className="h-5 w-5 text-slate-400" />
-                </button>
-                <div className="flex flex-col items-center">
-                    <h1 className="font-bold text-sm md:text-base">{MOCK_STORY.title}</h1>
-                    <span className="text-[10px] md:text-xs text-white/60">{MOCK_STORY.level} • {MOCK_STORY.topic}</span>
-                </div>
-                <div className="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700">
-                    <BookOpenIcon className="w-4 h-4 text-indigo-400" />
-                    <span className="text-xs font-bold text-white">{savedCount}</span>
-                </div>
+            <div className="relative w-full max-w-5xl aspect-[16/9] shadow-2xl rounded-xl">
+                {/* Page 2 (Next Scene) - Behind */}
+                {sceneIndex < MOCK_STORY.scenes.length - 1 && (
+                    <BookPage
+                        content={<p className="text-lg leading-relaxed font-serif text-slate-800" dangerouslySetInnerHTML={{ __html: MOCK_STORY.scenes[sceneIndex + 1].text.replace(/\*\*(.*?)\*\*/g, '<span class="font-bold text-indigo-700 border-b-2 border-indigo-200">$1</span>') }} />}
+                        image={MOCK_STORY.scenes[sceneIndex + 1].image}
+                        pageNumber={sceneIndex + 2}
+                        zIndex={5}
+                        rotation={0}
+                    />
+                )}
+
+                {/* Page 1 (Current Scene) - Flipping */}
+                <BookPage
+                    content={
+                        <p className="text-lg leading-relaxed font-serif text-slate-800">
+                            {MOCK_STORY.scenes[sceneIndex].text.split(' ').map((word, i) => {
+                                const cleanWord = word.replace(/[^a-zA-Z]/g, "");
+                                const isHighlight = MOCK_STORY.scenes[sceneIndex].highlights?.some(h => word.includes(h) || h.includes(cleanWord));
+
+                                if (isHighlight) {
+                                    return (
+                                        <span
+                                            key={i}
+                                            onClick={(e) => onWordClick && onWordClick(e, cleanWord)}
+                                            className="font-bold text-indigo-700 border-b-2 border-indigo-200 cursor-pointer hover:bg-indigo-50 transition-colors inline-block mr-1"
+                                        >
+                                            {word}
+                                        </span>
+                                    );
+                                }
+                                return word + " ";
+                            })}
+                        </p>
+                    }
+                    image={MOCK_STORY.scenes[sceneIndex].image}
+                    pageNumber={sceneIndex + 1}
+                    zIndex={10}
+                    rotation={isFlipping ? -180 : 0}
+                />
+            </div>
+        </div>
+    );
+};
+
+const EndOptionsView = ({ onQuizStart }) => {
+    const [countdown, setCountdown] = useState(8);
+
+    useEffect(() => {
+        // Countdown timer
+        const interval = setInterval(() => {
+            setCountdown(prev => Math.max(0, prev - 1));
+        }, 1000);
+        return () => clearInterval(interval);
+    }, []);
+
+    const circumference = 2 * Math.PI * 28; // radius = 28
+    const offset = circumference - (countdown / 8) * circumference;
+
+    return (
+        <div className="w-full h-full bg-slate-900 flex flex-col items-center justify-center p-6 relative overflow-hidden">
+            {/* Background Elements */}
+            <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
+                <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-600 rounded-full blur-[120px]"></div>
+                <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-600 rounded-full blur-[120px]"></div>
             </div>
 
-            {/* Content */}
-            <div className="flex-1 relative flex flex-col md:flex-row overflow-hidden">
-                <div className="w-full md:w-1/2 bg-slate-800 relative overflow-hidden">
-                    <div className="w-full h-full bg-gradient-to-br from-orange-900 to-slate-900 opacity-50 absolute inset-0"></div>
-                    <div className="absolute inset-0 flex items-center justify-center text-white/20 font-bold text-4xl">SCENE</div>
-                </div>
-
-                <div className="w-full md:w-1/2 p-6 md:p-8 flex flex-col overflow-y-auto bg-white text-slate-900 relative">
-                    <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-4 leading-tight">
-                        The Arrival
-                    </h2>
-
-                    <div className="prose prose-sm prose-indigo max-w-none flex-1 text-slate-600 leading-relaxed relative">
-                        <p>
-                            Commander Lewis looked out at the <span className="bg-indigo-50 text-indigo-800 px-1 rounded font-semibold">red landscape</span>.
-                            'The soil here is rich in iron,' she noted, adjusting her <span className="bg-indigo-50 text-indigo-800 px-1 rounded font-semibold">gloves</span>.
-                            'But can it sustain life?' The
-                            <span className="relative inline-block mx-1">
-                                <span className="bg-indigo-100 text-indigo-800 px-1 rounded font-semibold cursor-pointer border-b-2 border-indigo-300">greenhouse</span>
-                                <AnimatePresence>
-                                    {tooltipOpen && (
-                                        <motion.div
-                                            initial={{ opacity: 0, y: 10, scale: 0.9 }}
-                                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                                            exit={{ opacity: 0, y: 10, scale: 0.9 }}
-                                            className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-48 bg-slate-900 text-white p-3 rounded-xl shadow-xl z-50 text-xs text-left"
-                                        >
-                                            <div className="font-bold text-sm mb-1">greenhouse</div>
-                                            <div className="text-slate-300 italic mb-2">noun • /'grin.haʊs/</div>
-                                            <button className="w-full bg-indigo-600 text-white py-1.5 rounded-lg font-bold flex items-center justify-center gap-1">
-                                                <CheckCircleIcon className="w-3 h-3" />
-                                                Save to Deck
-                                            </button>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-                            </span>
-                            hummed softly behind her.
-                        </p>
+            {/* Countdown Timer - Prominent */}
+            <div className="absolute top-6 right-6 z-20">
+                <div className="relative w-16 h-16">
+                    {/* Circular progress */}
+                    <svg className="transform -rotate-90 w-full h-full" viewBox="0 0 64 64">
+                        <circle cx="32" cy="32" r="28" stroke="rgba(255,255,255,0.1)" strokeWidth="4" fill="none" />
+                        <circle
+                            cx="32" cy="32" r="28"
+                            stroke="white"
+                            strokeWidth="4"
+                            fill="none"
+                            strokeDasharray={circumference}
+                            strokeDashoffset={offset}
+                            className="transition-all duration-1000 ease-linear"
+                        />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center text-white font-bold text-xl">
+                        {countdown}
                     </div>
                 </div>
             </div>
+
+            {/* Cards Grid - Responsive */}
+            <div className="relative z-10 w-full max-w-md flex flex-col md:grid md:grid-cols-2 gap-4">
+                {/* Practice Card */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="min-h-[140px] bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 flex flex-col justify-center hover:bg-white/15 transition-colors cursor-pointer"
+                >
+                    <BookOpenIcon className="w-8 h-8 text-white mb-3" />
+                    <h3 className="text-xl font-bold text-white mb-1">Practice Words</h3>
+                    <p className="text-sm text-slate-300">Review saved vocabulary</p>
+                </motion.div>
+
+                {/* Quiz Card - Highlighted */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ delay: 0.1 }}
+                    className="min-h-[140px] bg-gradient-to-br from-indigo-500 to-purple-600 border border-white/30 rounded-2xl p-6 flex flex-col justify-center relative overflow-hidden shadow-xl"
+                >
+                    {/* Pulsing ring effect */}
+                    <motion.div
+                        animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.8, 0.5] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                        className="absolute inset-0 border-4 border-white/50 rounded-2xl"
+                    />
+                    <div className="relative z-10">
+                        <BoltIcon className="w-8 h-8 text-white mb-3" />
+                        <h3 className="text-2xl font-bold text-white mb-1">AI Quiz</h3>
+                        <p className="text-sm text-white/90 font-medium">Starting in {countdown}s...</p>
+                    </div>
+                </motion.div>
+            </div>
+
+            {/* Skip Button */}
+            <button
+                onClick={onQuizStart}
+                className="mt-6 text-white/60 hover:text-white text-sm font-medium transition-colors relative z-10"
+            >
+                Skip wait →
+            </button>
+        </div>
+    );
+};
+
+const QuizPreview = () => {
+    return (
+        <div className="w-full h-full bg-slate-50 flex flex-col justify-center p-8">
+            <div className="max-w-md mx-auto w-full">
+                <motion.div
+                    initial={{ opacity: 0, x: 50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="mb-8"
+                >
+                    <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider mb-2 block">Question 1 of 5</span>
+                    <h2 className="text-2xl font-bold text-slate-900 leading-tight">{MOCK_EXAM.question}</h2>
+                </motion.div>
+
+                <div className="space-y-3">
+                    {MOCK_EXAM.options.map((opt, i) => (
+                        <motion.button
+                            key={i}
+                            initial={{ opacity: 0, x: 50 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: i * 0.1 + 0.2 }}
+                            className="w-full p-4 rounded-xl border-2 border-slate-200 bg-white text-slate-700 font-bold text-lg text-left hover:border-indigo-500 hover:text-indigo-600 transition-all active:scale-[0.98]"
+                        >
+                            {opt}
+                        </motion.button>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// --- Desktop Components (Wrapper) ---
+
+const DesktopStoryViewer = () => {
+    const [phase, setPhase] = useState('create'); // create, book, end, quiz
+    const [sceneIndex, setSceneIndex] = useState(0);
+    const [savedWords, setSavedWords] = useState([]);
+    const [isFlipping, setIsFlipping] = useState(false);
+    const [flyingWord, setFlyingWord] = useState(null);
+
+    // Creation State
+    const [creationState, setCreationState] = useState({
+        title: '',
+        instruction: '',
+        grammar: '',
+        visualsOn: false
+    });
+
+    useEffect(() => {
+        let isMounted = true;
+        const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        const runSimulation = async () => {
+            // --- Phase 1: Creation ---
+            setPhase('create');
+            await wait(1000);
+
+            // Type Title
+            const title = "The Martian Garden";
+            for (let i = 0; i <= title.length; i++) {
+                if (!isMounted) return;
+                setCreationState(prev => ({ ...prev, title: title.slice(0, i) }));
+                await wait(50);
+            }
+            await wait(500);
+
+            // Type Instruction
+            const instruction = "Sci-Fi • B2";
+            for (let i = 0; i <= instruction.length; i++) {
+                if (!isMounted) return;
+                setCreationState(prev => ({ ...prev, instruction: instruction.slice(0, i) }));
+                await wait(50);
+            }
+            await wait(500);
+
+            // Type Grammar
+            const grammar = "Future Tense";
+            for (let i = 0; i <= grammar.length; i++) {
+                if (!isMounted) return;
+                setCreationState(prev => ({ ...prev, grammar: grammar.slice(0, i) }));
+                await wait(50);
+            }
+            await wait(800);
+
+            // Toggle Visuals
+            if (!isMounted) return;
+            setCreationState(prev => ({ ...prev, visualsOn: true }));
+            await wait(1000);
+
+            // Click Generate
+            setPhase('book');
+
+            // --- Phase 2: Scene 1 ---
+            await wait(3000); // Read Scene 1
+
+            // --- Phase 3: Flip to Scene 2 ---
+            if (!isMounted) return;
+            setIsFlipping(true);
+            await wait(800); // Wait for half flip
+            if (!isMounted) return;
+            setSceneIndex(1);
+            setIsFlipping(false);
+
+            // --- Phase 4: Word Interaction (Scene 2) ---
+            await wait(1500);
+            // Simulate click handled by UI (visual only here)
+            // We'll trigger the flying word programmatically to simulate user action
+            if (!isMounted) return;
+            const word = "greenhouse";
+            // Calculate fake position for demo
+            setFlyingWord({ word, x: '40%', y: '40%' });
+            setSavedWords(prev => [...prev, word]);
+
+            await wait(1000);
+            if (!isMounted) return;
+            setFlyingWord(null);
+
+            await wait(2000);
+
+            // --- Phase 5: Fast Forward ---
+            // Rapidly flip through remaining scenes
+            for (let i = 2; i < MOCK_STORY.scenes.length; i++) {
+                if (!isMounted) return;
+                setSceneIndex(i);
+                await wait(500); // Slower flip for better visibility
+            }
+
+            // --- Phase 6: End Options ---
+            await wait(500);
+            if (!isMounted) return;
+            setPhase('end');
+
+            // --- Phase 7: Quiz Start (Automated) ---
+            await wait(3000);
+            if (!isMounted) return;
+            setPhase('quiz');
+
+            // Loop back
+            await wait(5000);
+            if (isMounted) runSimulation();
+        };
+
+        runSimulation();
+
+        return () => { isMounted = false; };
+    }, []);
+
+    return (
+        <div className="w-full h-full bg-slate-900">
+            <AnimatePresence mode="wait">
+                {phase === 'create' && (
+                    <motion.div key="create" className="w-full h-full" exit={{ opacity: 0 }}>
+                        <StoryCreationView
+                            {...creationState}
+                            onGenerate={() => { }}
+                        />
+                    </motion.div>
+                )}
+                {phase === 'book' && (
+                    <motion.div key="book" className="w-full h-full" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                        <StoryBookView
+                            sceneIndex={sceneIndex}
+                            savedWords={savedWords}
+                            isFlipping={isFlipping}
+                            flyingWord={flyingWord}
+                            onWordClick={(e, word) => {
+                                // Interactive mode support
+                                const rect = e.target.getBoundingClientRect();
+                                setFlyingWord({ word, x: rect.left, y: rect.top });
+                                setSavedWords(prev => [...prev, word]);
+                                setTimeout(() => setFlyingWord(null), 1000);
+                            }}
+                        />
+                    </motion.div>
+                )}
+                {phase === 'end' && (
+                    <motion.div key="end" className="w-full h-full" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                        <EndOptionsView onQuizStart={() => setPhase('quiz')} />
+                    </motion.div>
+                )}
+                {phase === 'quiz' && (
+                    <motion.div key="quiz" className="w-full h-full" initial={{ x: '100%' }} animate={{ x: 0 }} transition={{ type: "spring", damping: 25, stiffness: 200 }}>
+                        <QuizPreview />
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
@@ -265,168 +596,191 @@ const DesktopGrammar = () => {
     );
 };
 
-// --- Mobile Components (New) ---
-
 const MobileStoryViewer = () => {
-    const [scene, setScene] = useState(0);
-    const [selectedWord, setSelectedWord] = useState(null);
-    const [savedCount, setSavedCount] = useState(12);
+    const [phase, setPhase] = useState('create');
+    const [sceneIndex, setSceneIndex] = useState(0);
+    const [savedWords, setSavedWords] = useState([]);
+    const [flyingWord, setFlyingWord] = useState(null);
     const [touchPos, setTouchPos] = useState({ x: '50%', y: '80%' });
     const [isTouching, setIsTouching] = useState(false);
-    const [showSheet, setShowSheet] = useState(false);
-    const [flyingWord, setFlyingWord] = useState(null);
 
-    // Simulation Loop
+    const [creationState, setCreationState] = useState({
+        title: '',
+        instruction: '',
+        grammar: '',
+        visualsOn: false
+    });
+
     useEffect(() => {
+        let isMounted = true;
         const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
         const runSimulation = async () => {
-            // Reset
-            setScene(0);
-            setSelectedWord(null);
-            setShowSheet(false);
-            setTouchPos({ x: '80%', y: '80%' });
-
-            // 1. Read Phase
-            await wait(2000);
-
-            // 2. Move to "greenhouse"
-            setTouchPos({ x: '75%', y: '45%' }); // Approx word location
+            // --- Phase 1: Creation ---
+            setPhase('create');
+            setTouchPos({ x: '50%', y: '80%' });
             await wait(1000);
 
-            // 3. Tap Word
-            setIsTouching(true);
-            await wait(200);
-            setIsTouching(false);
-            setSelectedWord('greenhouse');
-            setShowSheet(true);
-
-            // 4. Read Definition
-            await wait(1500);
-
-            // 5. Move to "Save" button in sheet
-            setTouchPos({ x: '50%', y: '85%' });
-            await wait(1000);
-
-            // 6. Tap Save
-            setIsTouching(true);
-            await wait(200);
-            setIsTouching(false);
-            setShowSheet(false);
-            setFlyingWord({ x: '50%', y: '85%' }); // Start from button
-
-            // 7. Animate Word Flying
-            await wait(100);
-            setSavedCount(prev => prev + 1);
+            // Type Title
+            const title = "The Martian Garden";
+            for (let i = 0; i <= title.length; i++) {
+                if (!isMounted) return;
+                setCreationState(prev => ({ ...prev, title: title.slice(0, i) }));
+                await wait(50);
+            }
             await wait(500);
-            setFlyingWord(null);
 
-            // 8. Swipe Gesture (Right to Left)
+            // Type Instruction
+            const instruction = "Sci-Fi • B2";
+            for (let i = 0; i <= instruction.length; i++) {
+                if (!isMounted) return;
+                setCreationState(prev => ({ ...prev, instruction: instruction.slice(0, i) }));
+                await wait(50);
+            }
+            await wait(500);
+
+            // Toggle Visuals
+            if (!isMounted) return;
+            setCreationState(prev => ({ ...prev, visualsOn: true }));
             await wait(1000);
+
+            // Click Generate
+            setTouchPos({ x: '50%', y: '90%' }); // Move to button
+            await wait(500);
+            setIsTouching(true);
+            await wait(200);
+            setIsTouching(false);
+            setPhase('book');
+
+            // --- Phase 2: Scene 1 ---
+            await wait(3000);
+
+            // --- Phase 3: Flip (Swipe) to Scene 2 ---
+            if (!isMounted) return;
             setTouchPos({ x: '90%', y: '50%' });
             await wait(500);
             setIsTouching(true);
-            setTouchPos({ x: '10%', y: '50%' }); // Drag across
-            await wait(800);
+            await wait(200);
+            setTouchPos({ x: '10%', y: '50%' }); // Swipe left
+            await wait(500);
             setIsTouching(false);
-            setScene(1); // Change Scene
+            setSceneIndex(1);
 
-            // 9. Read Scene 2
-            await wait(3000);
+            // --- Phase 4: Word Interaction ---
+            await wait(1500);
+            // Tap word
+            setTouchPos({ x: '40%', y: '40%' });
+            await wait(500);
+            setIsTouching(true);
+            await wait(200);
+            setIsTouching(false);
 
-            // Loop
-            runSimulation();
+            // Fly word
+            if (!isMounted) return;
+            setFlyingWord({ word: "greenhouse", x: '40%', y: '40%' });
+            setSavedWords(prev => [...prev, "greenhouse"]);
+            await wait(1000);
+            setFlyingWord(null);
+
+            // --- Phase 5: Fast Forward ---
+            await wait(2000);
+            for (let i = 2; i < MOCK_STORY.scenes.length; i++) {
+                if (!isMounted) return;
+                setSceneIndex(i);
+                await wait(1200); // Slower for mobile visibility
+            }
+
+            // --- Phase 6: End Options ---
+            await wait(500);
+            setPhase('end');
+
+            // --- Phase 7: Quiz (Automated) ---
+            await wait(8000); // Extended to 8s for better UX
+            if (!isMounted) return;
+            setPhase('quiz');
+
+            // Loop back
+            await wait(5000);
+            if (isMounted) runSimulation();
         };
 
         runSimulation();
+        return () => { isMounted = false; };
     }, []);
 
-    const scenes = [
-        {
-            id: 0,
-            image: "https://images.unsplash.com/photo-1614728853913-1e22ba6190fe?q=80&w=2070&auto=format&fit=crop",
-            text: (
-                <>
-                    Commander Lewis looked out at the <span className="font-bold text-indigo-900 border-b-2 border-indigo-100">red landscape</span>.
-                    'The soil here is rich in iron,' she noted. 'But can it sustain life?' The <span className={`font-bold px-1 rounded transition-colors ${selectedWord === 'greenhouse' ? 'bg-indigo-600 text-white' : 'text-indigo-600 bg-indigo-50'}`}>greenhouse</span> hummed softly behind her.
-                </>
-            )
-        },
-        {
-            id: 1,
-            image: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop",
-            text: (
-                <>
-                    Inside, the air was thick with humidity. Rows of <span className="font-bold text-indigo-900 border-b-2 border-indigo-100">hydroponic</span> trays stretched into the distance. It was a fragile <span className="font-bold text-indigo-600 bg-indigo-50 px-1 rounded">ecosystem</span>, but it was theirs.
-                </>
-            )
-        }
-    ];
-
     return (
-        <div className="w-full h-full bg-white flex flex-col relative overflow-hidden font-sans select-none">
-            {/* Header / Bookmark */}
-            <div className="absolute top-4 right-4 z-30 flex items-center gap-2 bg-white/90 backdrop-blur px-3 py-1.5 rounded-full shadow-sm border border-slate-100">
-                <BookOpenIcon className="w-4 h-4 text-indigo-600" />
-                <span className="text-xs font-bold text-slate-800">{savedCount}</span>
+        <div className="w-full h-full bg-slate-900 overflow-hidden relative">
+            {/* Header */}
+            <div className="absolute top-0 left-0 right-0 p-4 z-20 flex justify-between items-center bg-gradient-to-b from-black/50 to-transparent pointer-events-none">
+                <button className="p-2 bg-white/10 backdrop-blur-md rounded-full text-white">
+                    <HomeIcon className="w-5 h-5" />
+                </button>
+                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20">
+                    <BookOpenIcon className="w-4 h-4 text-indigo-300" />
+                    <span className="text-xs font-bold text-white">{savedWords.length}</span>
+                </div>
             </div>
 
-            {/* Scenes */}
             <AnimatePresence mode="wait">
-                <motion.div
-                    key={scene}
-                    initial={{ opacity: 0, x: 100 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -100 }}
-                    transition={{ duration: 0.5, ease: "easeInOut" }}
-                    className="flex-1 flex flex-col h-full"
-                >
-                    {/* Image */}
-                    <div className="h-[45%] w-full relative overflow-hidden">
-                        <img src={scenes[scene].image} alt="Scene" className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent"></div>
-                    </div>
+                {phase === 'create' && (
+                    <motion.div key="create" className="w-full h-full" exit={{ opacity: 0 }}>
+                        <StoryCreationView {...creationState} onGenerate={() => { }} />
+                    </motion.div>
+                )}
 
-                    {/* Text */}
-                    <div className="flex-1 p-6 -mt-12 relative z-10">
-                        <div className="bg-white/80 backdrop-blur-sm p-1 rounded-full inline-block mb-4 border border-slate-100">
-                            <span className="px-3 py-1 bg-slate-900 text-white text-[10px] font-bold rounded-full uppercase tracking-wider">Sci-Fi • B2</span>
+                {phase === 'book' && (
+                    <motion.div key="book" className="w-full h-full flex flex-col" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                        {/* Image Top */}
+                        <div className="h-1/2 relative">
+                            <motion.img
+                                key={sceneIndex}
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ duration: 0.8 }}
+                                src={MOCK_STORY.scenes[sceneIndex].image}
+                                className="w-full h-full object-cover"
+                                alt="Scene"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent"></div>
                         </div>
-                        <h2 className="text-2xl font-bold text-slate-900 mb-4 leading-tight font-serif">The Martian Garden</h2>
-                        <p className="text-lg text-slate-700 leading-relaxed font-serif">
-                            {scenes[scene].text}
-                        </p>
-                    </div>
-                </motion.div>
-            </AnimatePresence>
 
-            {/* Bottom Sheet Definition */}
-            <AnimatePresence>
-                {showSheet && (
-                    <motion.div
-                        initial={{ y: "100%" }}
-                        animate={{ y: 0 }}
-                        exit={{ y: "100%" }}
-                        transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                        className="absolute bottom-0 left-0 w-full bg-white rounded-t-3xl shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.2)] z-40 p-6 border-t border-slate-100"
-                    >
-                        <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6"></div>
-                        <div className="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 className="text-2xl font-bold text-slate-900">greenhouse</h3>
-                                <p className="text-slate-500 italic">noun • /ˈɡriːn.haʊs/</p>
+                        {/* Text Bottom */}
+                        <div className="h-1/2 p-6 bg-slate-900 text-slate-200 overflow-y-auto relative">
+                            <div className="prose prose-invert prose-sm">
+                                <p className="text-lg leading-relaxed font-serif">
+                                    {MOCK_STORY.scenes[sceneIndex].text.split(' ').map((word, i) => {
+                                        const cleanWord = word.replace(/[^a-zA-Z]/g, "");
+                                        const isHighlight = MOCK_STORY.scenes[sceneIndex].highlights?.some(h => word.includes(h) || h.includes(cleanWord));
+
+                                        if (isHighlight) {
+                                            return (
+                                                <span key={i} className="text-indigo-400 font-bold border-b border-indigo-500/50 inline-block mr-1">
+                                                    {word}
+                                                </span>
+                                            );
+                                        }
+                                        return word + " ";
+                                    })}
+                                </p>
                             </div>
-                            <button className="p-2 bg-indigo-50 text-indigo-600 rounded-full">
+
+                            {/* Audio Button */}
+                            <button className="absolute top-6 right-6 p-3 bg-indigo-600 rounded-full shadow-lg shadow-indigo-900/50 text-white">
                                 <SpeakerWaveIcon className="w-5 h-5" />
                             </button>
                         </div>
-                        <p className="text-slate-600 text-sm mb-6 leading-relaxed">
-                            A glass building in which plants are grown that need protection from cold weather.
-                        </p>
-                        <button className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 flex items-center justify-center gap-2 active:scale-95 transition-transform">
-                            <CheckCircleIcon className="w-5 h-5" />
-                            Save to Collection
-                        </button>
+                    </motion.div>
+                )}
+
+                {phase === 'end' && (
+                    <motion.div key="end" className="w-full h-full" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                        <EndOptionsView onQuizStart={() => setPhase('quiz')} />
+                    </motion.div>
+                )}
+
+                {phase === 'quiz' && (
+                    <motion.div key="quiz" className="w-full h-full" initial={{ x: '100%' }} animate={{ x: 0 }} transition={{ type: "spring", damping: 25, stiffness: 200 }}>
+                        <QuizPreview />
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -435,19 +789,17 @@ const MobileStoryViewer = () => {
             <AnimatePresence>
                 {flyingWord && (
                     <motion.div
-                        initial={{ left: flyingWord.x, top: flyingWord.y, scale: 1, opacity: 1 }}
-                        animate={{ left: '90%', top: '5%', scale: 0.2, opacity: 0 }}
-                        transition={{ duration: 0.8, ease: "easeInOut" }}
-                        className="absolute z-50 pointer-events-none"
+                        initial={{ left: flyingWord.x, top: flyingWord.y, opacity: 1, scale: 1 }}
+                        animate={{ left: '85%', top: '20px', opacity: 0, scale: 0.5 }}
+                        transition={{ duration: 0.8, ease: "easeIn" }}
+                        className="absolute z-50 bg-indigo-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold pointer-events-none shadow-lg"
                     >
-                        <div className="bg-indigo-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
-                            +1 Word
-                        </div>
+                        +1 {flyingWord.word}
                     </motion.div>
                 )}
             </AnimatePresence>
 
-            {/* Touch Simulator */}
+            {/* Fake Touch Cursor */}
             <motion.div
                 className="absolute z-50 pointer-events-none"
                 animate={{
@@ -456,7 +808,7 @@ const MobileStoryViewer = () => {
                     scale: isTouching ? 0.8 : 1
                 }}
                 transition={{
-                    left: { duration: isTouching ? 0.8 : 1, ease: "easeInOut" }, // Faster when swiping
+                    left: { duration: isTouching ? 0.2 : 1, ease: "easeInOut" },
                     top: { duration: 1, ease: "easeInOut" },
                     scale: { duration: 0.1 }
                 }}
@@ -469,45 +821,342 @@ const MobileStoryViewer = () => {
     );
 };
 
-const MobileDialogueViewer = () => (
-    <div className="w-full h-full bg-slate-50 flex flex-col">
-        {/* Mobile Chat Header */}
-        <div className="bg-white p-4 shadow-sm flex items-center gap-3 z-10">
-            <ChevronLeftIcon className="w-6 h-6 text-slate-400" />
-            <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold">B</div>
-            <div>
-                <h3 className="font-bold text-slate-900 text-sm">Barista</h3>
-                <p className="text-[10px] text-green-500 font-bold flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span> Online
-                </p>
-            </div>
-        </div>
+const MobileDialogueViewer = () => {
+    const [phase, setPhase] = useState('create'); // create, chat
+    const [topic, setTopic] = useState('');
+    const [characters, setCharacters] = useState('');
+    const [messages, setMessages] = useState([]);
+    const [typing, setTyping] = useState(false);
+    const [showReplyOptions, setShowReplyOptions] = useState(false);
+    const [savedWords, setSavedWords] = useState([]);
+    const [showTranslate, setShowTranslate] = useState(null);
+    const [isMounted, setIsMounted] = useState(false);
+    const [flyingWord, setFlyingWord] = useState(null);
+    const [showExamButton, setShowExamButton] = useState(false);
 
-        {/* Chat Area */}
-        <div className="flex-1 p-4 space-y-4 overflow-y-auto">
-            <div className="flex justify-start">
-                <div className="bg-white p-3 rounded-2xl rounded-tl-none border border-slate-100 shadow-sm max-w-[80%]">
-                    <p className="text-sm text-slate-800">Bonjour! Que puis-je vous servir aujourd'hui?</p>
-                </div>
-            </div>
-            <div className="flex justify-end">
-                <div className="bg-indigo-600 p-3 rounded-2xl rounded-tr-none shadow-md max-w-[80%]">
-                    <p className="text-sm text-white">Je voudrais un grand café, s'il vous plaît.</p>
-                </div>
-            </div>
-        </div>
+    useEffect(() => {
+        setIsMounted(true);
+        return () => setIsMounted(false);
+    }, []);
 
-        {/* Input Area */}
-        <div className="p-3 bg-white border-t border-slate-200 flex items-center gap-2">
-            <div className="flex-1 h-10 bg-slate-100 rounded-full px-4 flex items-center text-sm text-slate-400">
-                Type a message...
-            </div>
-            <div className="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white shadow-lg shadow-indigo-200">
-                <PaperAirplaneIcon className="w-5 h-5" />
-            </div>
+    useEffect(() => {
+        if (!isMounted) return;
+
+        const runSimulation = async () => {
+            const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+            // Phase 1: Creation
+            setPhase('create');
+            setTopic('');
+            setCharacters('');
+            setMessages([]);
+            setSavedWords([]);
+            setShowExamButton(false);
+
+            await wait(1000); // Faster start
+            // Type Topic
+            const fullTopic = "Negotiating a price";
+            for (let i = 0; i <= fullTopic.length; i++) {
+                if (!isMounted) return;
+                setTopic(fullTopic.slice(0, i));
+                await wait(40); // Faster typing
+            }
+
+            await wait(800);
+            // Type Characters
+            const fullChars = "Buyer, Merchant";
+            for (let i = 0; i <= fullChars.length; i++) {
+                if (!isMounted) return;
+                setCharacters(fullChars.slice(0, i));
+                await wait(40); // Faster typing
+            }
+
+            await wait(1000); // Faster
+            if (!isMounted) return;
+            // Click Generate
+            setPhase('chat');
+
+            // Phase 2: Chat
+            await wait(1000); // Faster
+            if (!isMounted) return;
+            setTyping(true);
+            await wait(1200); // Faster typing indicator
+            if (!isMounted) return;
+            setTyping(false);
+            setMessages([{
+                id: 1,
+                role: 'other',
+                text: "Bonjour! Ce tapis est fait main. Très rare.",
+                translation: "Hello! This rug is handmade. Very rare.",
+                keywords: ['tapis', 'rare']
+            }]);
+
+            await wait(1000); // Faster
+            if (!isMounted) return;
+            // Simulate User Reading / Translation Click
+            setShowTranslate(1);
+            await wait(1200); // Faster
+
+            if (!isMounted) return;
+            // Simulate Word Save (New Step)
+            setSavedWords(prev => [...prev, 'tapis']);
+            setFlyingWord({ x: '20%', y: '30%' }); // Approx position
+            await wait(800); // Faster animation wait
+            setFlyingWord(null);
+
+            await wait(1000); // Faster
+            if (!isMounted) return;
+            // Simulate User Reply Choice
+            setShowReplyOptions(true);
+            await wait(1500); // Faster - less time to read options
+            if (!isMounted) return;
+            setShowReplyOptions(false);
+
+            // User Reply
+            setMessages(prev => [...prev, {
+                id: 2,
+                role: 'self',
+                text: "C'est beau, mais c'est un peu cher pour moi.",
+                translation: "It's beautiful, but it's a bit expensive for me."
+            }]);
+
+            await wait(1000); // Faster
+            if (!isMounted) return;
+            setTyping(true);
+            await wait(1200); // Faster
+            if (!isMounted) return;
+            setTyping(false);
+            setMessages(prev => [...prev, {
+                id: 3,
+                role: 'other',
+                text: "Je peux vous faire un prix. 200 euros?",
+                translation: "I can give you a price. 200 euros?",
+                keywords: ['prix', 'euros']
+            }]);
+
+            // End of Chat - Show Exam Button
+            await wait(1000); // Faster
+            if (!isMounted) return;
+            setShowExamButton(true);
+
+            // Wait before restarting
+            await wait(5000);
+            if (isMounted) runSimulation();
+        };
+
+        runSimulation();
+    }, [isMounted]);
+
+    return (
+        <div className="w-full h-full bg-white flex flex-col relative overflow-hidden font-sans">
+            {/* Flying Word Animation */}
+            <AnimatePresence>
+                {flyingWord && (
+                    <motion.div
+                        initial={{ left: flyingWord.x, top: flyingWord.y, scale: 1, opacity: 1 }}
+                        animate={{ left: '85%', top: '60px', scale: 0.2, opacity: 0 }}
+                        transition={{ duration: 1.2, ease: "easeInOut" }}
+                        className="absolute z-50 pointer-events-none"
+                    >
+                        <div className="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+                            +1 Word
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Saved Words Counter - Always Visible in Chat Phase */}
+            {phase === 'chat' && (
+                <div className="absolute top-16 right-4 z-30 flex items-center gap-2 bg-white/90 backdrop-blur px-3 py-1.5 rounded-full shadow-sm border border-slate-100">
+                    <BookOpenIcon className="w-4 h-4 text-indigo-600" />
+                    <span className="text-xs font-bold text-slate-800">{savedWords.length}</span>
+                </div>
+            )}
+
+            {phase === 'create' ? (
+                <div className="p-6 flex flex-col justify-center h-full bg-slate-50">
+                    <div className="bg-white p-6 rounded-2xl shadow-xl border border-slate-100 space-y-6">
+                        <div>
+                            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Topic</label>
+                            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-800 font-medium min-h-[3rem] flex items-center">
+                                {topic}<span className="animate-pulse">|</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Characters</label>
+                            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-800 font-medium min-h-[3rem] flex items-center">
+                                {characters}
+                            </div>
+                        </div>
+                        <div className="flex bg-slate-50 p-1 rounded-xl border border-slate-100">
+                            <button className="flex-1 py-2 rounded-lg text-sm font-bold bg-white shadow-sm text-indigo-600 transition-all">Solo</button>
+                            <button className="flex-1 py-2 rounded-lg text-sm font-bold text-slate-400 hover:text-slate-600 transition-all">Partner</button>
+                        </div>
+                        <button className="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 mt-4 flex items-center justify-center gap-2">
+                            <SparklesIcon className="w-5 h-5" />
+                            Generate Scenario
+                        </button>
+                    </div>
+                </div>
+            ) : (
+                <>
+                    {/* WhatsApp Header */}
+                    <div className="bg-[#075E54] p-3 flex items-center gap-3 text-white shadow-md z-20">
+                        <ChevronLeftIcon className="w-6 h-6" />
+                        <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-bold text-lg">
+                            M
+                        </div>
+                        <div className="flex-1">
+                            <h3 className="font-bold text-base leading-tight">Merchant</h3>
+                            <p className="text-[11px] opacity-80 flex items-center gap-1">
+                                {typing ? 'typing...' : 'online'}
+                            </p>
+                        </div>
+                        <div className="flex gap-4 pr-2">
+                            <div className="w-5 h-5 rounded-full border-2 border-white/30"></div>
+                            <div className="w-1 h-5 bg-white/30 rounded-full"></div>
+                        </div>
+                    </div>
+
+                    {/* Chat Area */}
+                    <div className="flex-1 p-4 space-y-4 overflow-y-auto relative z-10 pb-20">
+                        <AnimatePresence>
+                            {messages.map((msg) => (
+                                <motion.div
+                                    key={msg.id}
+                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    className={`flex ${msg.role === 'self' ? 'justify-end' : 'justify-start'}`}
+                                >
+                                    <div className={`max-w-[85%] rounded-lg p-2 shadow-sm relative ${msg.role === 'self' ? 'bg-[#DCF8C6] rounded-tr-none' : 'bg-white rounded-tl-none'
+                                        }`}>
+                                        {/* Message Text */}
+                                        <p className="text-sm text-slate-800 leading-relaxed px-1">
+                                            {msg.text.split(' ').map((word, i) => {
+                                                const cleanWord = word.replace(/[^a-zA-ZÀ-ÿ]/g, "");
+                                                const isKeyword = msg.keywords?.some(k => cleanWord.toLowerCase().includes(k));
+                                                const isSaved = savedWords.includes(cleanWord.toLowerCase());
+
+                                                if (!isKeyword) return word + " ";
+
+                                                return (
+                                                    <span key={i} className={`
+                                                                    inline-block px-1 rounded cursor-pointer transition-colors
+                                                                    ${isSaved ? 'bg-green-200 text-green-800' : 'bg-indigo-50 text-indigo-700 border-b border-indigo-300'}
+                                                                `}
+                                                        onClick={() => setSavedWords(prev => [...prev, cleanWord.toLowerCase()])}
+                                                    >
+                                                        {word}
+                                                    </span>
+                                                )
+                                            })}
+                                        </p>
+
+                                        {/* Translation Toggle */}
+                                        {msg.role === 'other' && (
+                                            <div className="mt-1 pt-1 border-t border-slate-100 flex items-center justify-between">
+                                                {showTranslate === msg.id ? (
+                                                    <motion.p
+                                                        initial={{ opacity: 0, height: 0 }}
+                                                        animate={{ opacity: 1, height: 'auto' }}
+                                                        className="text-xs text-slate-500 italic"
+                                                    >
+                                                        {msg.translation}
+                                                    </motion.p>
+                                                ) : (
+                                                    <button className="text-[10px] font-bold text-indigo-500 uppercase tracking-wide flex items-center gap-1">
+                                                        <span className="w-3 h-3 rounded-full border border-indigo-500 flex items-center justify-center text-[8px]">T</span>
+                                                        Translate
+                                                    </button>
+                                                )}
+                                                <span className="text-[10px] text-slate-400 ml-auto">10:0{msg.id} AM</span>
+                                            </div>
+                                        )}
+
+                                        {msg.role === 'self' && (
+                                            <div className="flex justify-end items-center gap-1 mt-1">
+                                                <span className="text-[10px] text-slate-500">10:0{msg.id} AM</span>
+                                                <CheckCircleIconSolid className="w-3 h-3 text-blue-500" />
+                                            </div>
+                                        )}
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </AnimatePresence>
+
+                        {typing && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="flex justify-start"
+                            >
+                                <div className="bg-white rounded-lg rounded-tl-none p-3 shadow-sm flex gap-1">
+                                    <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></div>
+                                    <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce delay-75"></div>
+                                    <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce delay-150"></div>
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {/* Exam Button Overlay */}
+                        <AnimatePresence>
+                            {showExamButton && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 20 }}
+                                    className="sticky bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-white via-white to-transparent pt-10"
+                                >
+                                    <button className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 flex items-center justify-center gap-2 animate-bounce">
+                                        <SparklesIcon className="w-5 h-5" />
+                                        Take Quick Exam
+                                    </button>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+
+                    {/* Input / Reply Area - Fixed at bottom */}
+                    <div className="sticky bottom-0 p-2 bg-[#F0F0F0] flex items-center gap-2 z-30 shadow-lg">
+                        {showReplyOptions ? (
+                            <div className="w-full space-y-2 p-2">
+                                <p className="text-xs font-bold text-slate-500 uppercase text-center mb-1">AI Suggested Replies</p>
+                                {[
+                                    "Je vais le prendre.",
+                                    "C'est beau, mais c'est un peu cher pour moi.",
+                                    "Est-ce qu'il est ancien ?"
+                                ].map((opt, i) => (
+                                    <motion.button
+                                        key={i}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: i * 0.1 }}
+                                        className={`w-full p-3 text-left text-sm rounded-xl border shadow-sm transition-colors ${i === 1 ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-700 border-slate-200'
+                                            }`}
+                                    >
+                                        {opt}
+                                    </motion.button>
+                                ))}
+                            </div>
+                        ) : (
+                            <>
+                                <div className="w-8 h-8 text-slate-500 flex items-center justify-center">
+                                    <span className="text-xl">+</span>
+                                </div>
+                                <div className="flex-1 h-10 bg-white rounded-full px-4 flex items-center text-sm text-slate-400 shadow-sm">
+                                    Type a message...
+                                </div>
+                                <div className="w-10 h-10 bg-[#075E54] rounded-full flex items-center justify-center text-white shadow-md">
+                                    <PaperAirplaneIcon className="w-5 h-5" />
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </>
+            )}
         </div>
-    </div>
-);
+    );
+};
 
 const MobileExam = () => (
     <div className="w-full h-full bg-white flex flex-col p-6">
