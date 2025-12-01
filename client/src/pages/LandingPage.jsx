@@ -31,7 +31,7 @@ const MobileMenu = ({ isOpen, onClose }) => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                     transition={{ duration: 0.3 }}
-                    className="fixed inset-0 z-50 bg-white/90 backdrop-blur-2xl flex flex-col items-center justify-center"
+                    className="fixed inset-0 z-50 bg-white/90 backdrop-blur-2xl flex flex-col items-center justify-center overflow-y-auto"
                 >
                     <button
                         onClick={onClose}

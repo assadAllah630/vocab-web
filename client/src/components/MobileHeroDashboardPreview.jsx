@@ -76,7 +76,7 @@ const MobileHeroDashboardPreview = () => {
     }, []);
 
     return (
-        <div className="relative w-[300px] h-[600px] mx-auto bg-slate-900 rounded-[3rem] border-[8px] border-slate-800 shadow-2xl overflow-hidden select-none">
+        <div className="relative w-full max-w-[320px] aspect-[9/19] mx-auto bg-slate-900 rounded-[2.5rem] border-[8px] border-slate-800 shadow-2xl overflow-hidden select-none transform transition-transform hover:scale-[1.02]">
             {/* Status Bar */}
             <div className="absolute top-0 left-0 w-full h-8 bg-slate-900/90 backdrop-blur-md z-20 flex justify-between items-center px-6 pt-2">
                 <span className="text-[10px] font-bold text-white">9:41</span>

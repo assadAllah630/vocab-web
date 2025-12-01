@@ -18,7 +18,7 @@ const RotatingTitle = () => {
     }, []);
 
     return (
-        <div className="h-[1.4em] overflow-hidden inline-block align-bottom relative min-w-[600px] [mask-image:linear-gradient(transparent,black_10%,black_90%,transparent)]">
+        <div className="h-[1.4em] overflow-hidden inline-block align-bottom relative w-full max-w-[600px] [mask-image:linear-gradient(transparent,black_10%,black_90%,transparent)]">
             <AnimatePresence mode="wait">
                 <motion.span
                     key={words[index]}
@@ -129,7 +129,7 @@ const HeroSection = () => {
                         </div>
 
                         {/* Mobile Simulation */}
-                        <div className="block lg:hidden flex justify-center">
+                        <div className="block lg:hidden w-full flex justify-center px-4 mt-8 md:mt-12">
                             <MobileHeroDashboardPreview />
                         </div>
                     </motion.div>
