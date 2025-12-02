@@ -23,7 +23,7 @@ const PodcastDemo = () => {
     }, [isPlaying]);
 
     return (
-        <div className="bg-slate-900 rounded-2xl p-6 shadow-2xl border border-slate-800 max-w-md mx-auto relative overflow-hidden">
+        <div className="bg-slate-900 rounded-2xl p-4 sm:p-6 shadow-2xl border border-slate-800 max-w-md w-full mx-auto relative overflow-hidden">
             {/* Background Glow */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-rose-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
 
@@ -41,7 +41,7 @@ const PodcastDemo = () => {
                 </div>
 
                 {/* Visualizer */}
-                <div className="h-24 flex items-center justify-center gap-1 mb-6">
+                <div className="h-24 flex items-center justify-center gap-0.5 sm:gap-1 mb-6">
                     {[...Array(30)].map((_, i) => (
                         <motion.div
                             key={i}
@@ -55,7 +55,7 @@ const PodcastDemo = () => {
                                 delay: i * 0.05,
                                 ease: "easeInOut"
                             }}
-                            className="w-1.5 bg-gradient-to-t from-rose-600 to-rose-400 rounded-full"
+                            className="w-1 sm:w-1.5 bg-gradient-to-t from-rose-600 to-rose-400 rounded-full"
                             style={{ height: '10px' }}
                         />
                     ))}

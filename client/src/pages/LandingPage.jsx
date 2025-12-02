@@ -156,9 +156,9 @@ const LandingPage = () => {
             <div id="features">
                 {/* Feature 1: Story Mode */}
                 <FeatureSection
-                    title="One Click. Infinite Worlds."
-                    subtitle="Stories • Dialogues • Articles"
-                    description="Why wait for a textbook? Generate custom stories, articles, and dialogues in seconds. Your topics, your level, your obsession. It's not just reading; it's living the language."
+                    title="Your Personal Library, Generated Instantly"
+                    subtitle="AI Storyteller & Comprehension Coach"
+                    description="Forget boring textbooks. Generate captivating stories on any topic—from sci-fi thrillers to historical mysteries—tailored exactly to your level. Read, tap to translate, and test your understanding with AI-generated quizzes. It's reading practice that actually feels like play."
                     component={SimulatedStoryViewer}
                     align="left"
                     color="indigo"
@@ -166,9 +166,9 @@ const LandingPage = () => {
 
                 {/* Feature 2: Dialogue Generator */}
                 <FeatureSection
-                    title="Talk to Anyone. Anywhere."
-                    subtitle="AI Dialogue Generator"
-                    description="Create realistic conversations on any topic. From ordering coffee in Paris to business negotiations in Tokyo. Practice speaking, not just reading."
+                    title="Speak Like a Local"
+                    subtitle="AI Roleplay & Pronunciation Coach"
+                    description="Immerse yourself in realistic scenarios. From casual coffee chats to high-stakes business meetings, our AI adapts to your level. Practice speaking with real-time feedback on pronunciation, grammar, and cultural nuance. It's like having a native tutor in your pocket 24/7."
                     component={SimulatedDialogueViewer}
                     align="right"
                     color="purple"
@@ -176,9 +176,9 @@ const LandingPage = () => {
 
                 {/* Feature 3: Smart Exam */}
                 <FeatureSection
-                    title="University-Grade Exams"
-                    subtitle="Scientific Spaced Repetition"
-                    description="We don't do basic quizzes. We generate rigorous, multi-format exams that challenge you like a university professor. Powered by the world's best algorithm that knows exactly when you'll forget."
+                    title="Exams That Adapt to You"
+                    subtitle="AI-Generated • CEFR Aligned"
+                    description="Tell our AI Agent exactly what you want to test—'Space Exploration at B2 level'—and watch it build a custom exam in seconds. Multiple choice, cloze tests, and reading comprehension, all generated on the fly to challenge your specific weak points."
                     component={SimulatedExam}
                     align="left"
                     color="green"
@@ -186,9 +186,9 @@ const LandingPage = () => {
 
                 {/* Feature 4: Grammar */}
                 <FeatureSection
-                    title="The AI Grammar Organizer"
-                    subtitle="Notion-Style • Instantly Generated"
-                    description="Just type a topic, and our AI generates a concise, beautiful guide with tables and graphs. It's a Notion-style page that writes itself. Read the explanation, then click to generate examples or test your knowledge instantly."
+                    title="Grammar That Finally Makes Sense"
+                    subtitle="Visual Timelines & Contextual Examples"
+                    description="Stop struggling with abstract rules. Our AI visualizes complex grammar with intuitive timelines and color-coded breakdowns. Switch topics instantly and get clear, context-aware explanations that stick. It's like having a linguistics professor explain it just for you."
                     component={SimulatedGrammar}
                     align="right"
                     color="pink"
@@ -227,16 +227,18 @@ const LandingPage = () => {
                             className="w-full"
                         >
                             <SpotlightCard className="p-6 sm:p-8 md:p-10 h-full shadow-2xl hover:shadow-3xl transition-shadow duration-500">
-                                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mb-6 sm:mb-8">
+                                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mb-6 sm:mb-8 mx-auto md:mx-0">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 sm:w-8 sm:h-8">
                                         <path d="M8.25 4.5a3.75 3.75 0 1 1 7.5 0v8.25a3.75 3.75 0 1 1-7.5 0V4.5Z" />
                                         <path d="M6 10.5a.75.75 0 0 1 .75.75v1.5a5.25 5.25 0 1 0 10.5 0v-1.5a.75.75 0 0 1 1.5 0v1.5a6.751 6.751 0 0 1-6 6.709v2.291h3a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1 0-1.5h3v-2.291a6.751 6.751 0 0 1-6-6.709v-1.5A.75.75 0 0 1 6 10.5Z" />
                                     </svg>
                                 </div>
-                                <h4 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 mb-3 sm:mb-4">Podcast Creator</h4>
-                                <p className="text-sm sm:text-base md:text-lg text-slate-600 mb-6 sm:mb-8 md:mb-10 leading-relaxed">
-                                    Turn any text into a high-quality audio lesson. Listen on your commute, at the gym, or while cooking.
-                                </p>
+                                <div className="text-center md:text-left">
+                                    <h4 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 mb-3 sm:mb-4">Podcast Creator</h4>
+                                    <p className="text-sm sm:text-base md:text-lg text-slate-600 mb-6 sm:mb-8 md:mb-10 leading-relaxed">
+                                        Turn any text into a high-quality audio lesson. Listen on your commute, at the gym, or while cooking.
+                                    </p>
+                                </div>
                                 <PodcastDemo />
                             </SpotlightCard>
                         </motion.div>
@@ -249,13 +251,15 @@ const LandingPage = () => {
                             className="w-full"
                         >
                             <SpotlightCard className="p-6 sm:p-8 md:p-10 h-full shadow-2xl hover:shadow-3xl transition-shadow duration-500">
-                                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mb-6 sm:mb-8">
+                                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mb-6 sm:mb-8 mx-auto md:mx-0">
                                     <ChartBarIcon className="w-6 h-6 sm:w-8 sm:h-8" />
                                 </div>
-                                <h4 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 mb-3 sm:mb-4">Deep Analytics</h4>
-                                <p className="text-sm sm:text-base md:text-lg text-slate-600 mb-6 sm:mb-8 md:mb-10 leading-relaxed">
-                                    Track every word, every session, and every milestone. Watch your fluency grow with detailed insights.
-                                </p>
+                                <div className="text-center md:text-left">
+                                    <h4 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 mb-3 sm:mb-4">Deep Analytics</h4>
+                                    <p className="text-sm sm:text-base md:text-lg text-slate-600 mb-6 sm:mb-8 md:mb-10 leading-relaxed">
+                                        Track every word, every session, and every milestone. Watch your fluency grow with detailed insights.
+                                    </p>
+                                </div>
                                 <StatsDemo />
                             </SpotlightCard>
                         </motion.div>

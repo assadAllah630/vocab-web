@@ -11,6 +11,7 @@ from datetime import timedelta
 from django.utils import timezone
 from django.utils import timezone
 from django.db.models import Q
+from django.db import transaction
 from django.http import HttpResponse
 import csv
 import io
@@ -37,52 +38,57 @@ def signup(request):
     if User.objects.filter(email=email).exists():
         return Response({'error': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Create user but keep inactive until verified (optional, or just use is_email_verified)
-    user = User.objects.create_user(username=username, password=password, email=email)
-    user.is_active = True # We'll use is_email_verified flag instead of deactivating
-    user.save()
-
-    # Profile setup
-    if hasattr(user, 'profile'):
-        profile = user.profile
-        profile.native_language = native_language
-        profile.target_language = target_language
-        profile.is_email_verified = False
-        profile.save()
-    else:
-        UserProfile.objects.create(
-            user=user, 
-            native_language=native_language, 
-            target_language=target_language,
-            is_email_verified=False
-        )
-    
-    # Generate OTP
-    import random
-    otp = f"{random.randint(100000, 999999)}"
-    user.profile.otp_code = otp
-    user.profile.otp_created_at = timezone.now()
-    user.profile.save()
-    
-    # Send Email (Console Backend)
-    from django.core.mail import send_mail
     try:
-        send_mail(
-            'Verify your Vocabulary App Account',
-            f'Your verification code is: {otp}',
-            'noreply@vocabapp.com',
-            [email],
-            fail_silently=False,
-        )
-    except Exception as e:
-        print(f"Failed to send email: {e}")
-        # In dev, we can just print it
-        print(f"DEBUG OTP: {otp}")
+        with transaction.atomic():
+            # Create user but keep inactive until verified (optional, or just use is_email_verified)
+            user = User.objects.create_user(username=username, password=password, email=email)
+            user.is_active = True # We'll use is_email_verified flag instead of deactivating
+            user.save()
 
-    return Response({
-        'message': 'Account created. Please verify your email.',
-        'email': email
-    }, status=status.HTTP_201_CREATED)
+            # Profile setup
+            if hasattr(user, 'profile'):
+                profile = user.profile
+                profile.native_language = native_language
+                profile.target_language = target_language
+                profile.is_email_verified = False
+                profile.save()
+            else:
+                UserProfile.objects.create(
+                    user=user, 
+                    native_language=native_language, 
+                    target_language=target_language,
+                    is_email_verified=False
+                )
+            
+            # Generate OTP
+            import random
+            otp = f"{random.randint(100000, 999999)}"
+            user.profile.otp_code = otp
+            user.profile.otp_created_at = timezone.now()
+            user.profile.save()
+            
+            # Send Email (Console Backend)
+            from django.core.mail import send_mail
+            try:
+                send_mail(
+                    'Verify your Vocabulary App Account',
+                    f'Your verification code is: {otp}',
+                    'noreply@vocabapp.com',
+                    [email],
+                    fail_silently=False,
+                )
+            except Exception as e:
+                print(f"Failed to send email: {e}")
+                # In dev, we can just print it
+                print(f"DEBUG OTP: {otp}")
+
+            return Response({
+                'message': 'Account created. Please verify your email.',
+                'email': email
+            }, status=status.HTTP_201_CREATED)
+            
+    except Exception as e:
+        return Response({'error': f'Registration failed: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])

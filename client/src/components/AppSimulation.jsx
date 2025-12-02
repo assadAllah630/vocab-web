@@ -5,7 +5,8 @@ import {
     ChatBubbleLeftRightIcon, SpeakerWaveIcon,
     CheckCircleIcon,
     ChevronLeftIcon, PaperAirplaneIcon, BookmarkIcon,
-    SparklesIcon, BoltIcon
+    SparklesIcon, BoltIcon, MicrophoneIcon, PlayIcon, PauseIcon, LanguageIcon,
+    PencilSquareIcon, CpuChipIcon
 } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleIconSolid } from '@heroicons/react/24/solid';
 
@@ -371,6 +372,9 @@ const DesktopStoryViewer = () => {
         const runSimulation = async () => {
             // --- Phase 1: Creation ---
             setPhase('create');
+            setSceneIndex(0);
+            setSavedWords([]);
+            setCreationState({ title: '', instruction: '', grammar: '', visualsOn: false });
             await wait(1000);
 
             // Type Title
@@ -421,11 +425,8 @@ const DesktopStoryViewer = () => {
 
             // --- Phase 4: Word Interaction (Scene 2) ---
             await wait(1500);
-            // Simulate click handled by UI (visual only here)
-            // We'll trigger the flying word programmatically to simulate user action
             if (!isMounted) return;
             const word = "greenhouse";
-            // Calculate fake position for demo
             setFlyingWord({ word, x: '40%', y: '40%' });
             setSavedWords(prev => [...prev, word]);
 
@@ -435,13 +436,15 @@ const DesktopStoryViewer = () => {
 
             await wait(2000);
 
-            // --- Phase 5: Fast Forward ---
-            // Rapidly flip through remaining scenes
-            for (let i = 2; i < MOCK_STORY.scenes.length; i++) {
-                if (!isMounted) return;
-                setSceneIndex(i);
-                await wait(500); // Slower flip for better visibility
-            }
+            // --- Phase 5: Flip to Scene 3 (No Fast Forward) ---
+            if (!isMounted) return;
+            setIsFlipping(true);
+            await wait(800);
+            if (!isMounted) return;
+            setSceneIndex(2);
+            setIsFlipping(false);
+
+            await wait(3000); // Read Scene 3
 
             // --- Phase 6: End Options ---
             await wait(500);
@@ -507,94 +510,599 @@ const DesktopStoryViewer = () => {
 };
 
 const DesktopDialogueViewer = () => {
-    // ... (Existing Desktop Dialogue Code - Simplified for brevity but keeping logic)
-    const [messages, setMessages] = useState([
-        { id: 1, role: 'Barista', content: "Bonjour! Que puis-je vous servir aujourd'hui?", translation: "Hello! What can I get for you today?" },
-        { id: 2, role: 'You', content: "Bonjour. Je voudrais un grand café crème, s'il vous plaît.", translation: "Hello. I would like a large coffee with cream, please." }
-    ]);
+    const [activeStep, setActiveStep] = useState(0);
+    const [isRecording, setIsRecording] = useState(false);
+    const [isPlaying, setIsPlaying] = useState(false);
+
+    // Simulation loop
+    useEffect(() => {
+        let isMounted = true;
+        const loop = async () => {
+            if (!isMounted) return;
+            // Step 0: Reset
+            setActiveStep(0);
+            await new Promise(r => setTimeout(r, 1000));
+            if (!isMounted) return;
+
+            // Step 1: AI Speaks
+            setIsPlaying(true);
+            await new Promise(r => setTimeout(r, 1500));
+            if (!isMounted) return;
+            setIsPlaying(false);
+            setActiveStep(1); // AI Message visible
+
+            // Step 2: User Records
+            await new Promise(r => setTimeout(r, 1000));
+            if (!isMounted) return;
+            setIsRecording(true);
+            await new Promise(r => setTimeout(r, 2000)); // Recording...
+            if (!isMounted) return;
+            setIsRecording(false);
+            setActiveStep(2); // User Message visible
+
+            // Step 3: Feedback
+            await new Promise(r => setTimeout(r, 500));
+            if (!isMounted) return;
+            setActiveStep(3); // Feedback visible
+
+            // Step 4: AI Responds
+            await new Promise(r => setTimeout(r, 1500));
+            if (!isMounted) return;
+            setIsPlaying(true);
+            await new Promise(r => setTimeout(r, 1500));
+            if (!isMounted) return;
+            setIsPlaying(false);
+            setActiveStep(4); // Final state
+
+            // Loop
+            await new Promise(r => setTimeout(r, 5000));
+            if (isMounted) loop();
+        };
+        loop();
+        return () => { isMounted = false; };
+    }, []);
 
     return (
-        <div className="w-full h-full bg-white rounded-xl overflow-hidden border border-slate-200 shadow-2xl relative flex flex-col">
-            <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                <div className="flex items-center gap-2">
-                    <ChatBubbleLeftRightIcon className="w-5 h-5 text-indigo-600" />
-                    <span className="font-bold text-slate-700 text-sm">Dialogue Viewer</span>
-                </div>
-                <div className="flex gap-1">
-                    <div className="w-2 h-2 rounded-full bg-red-400"></div>
-                    <div className="w-2 h-2 rounded-full bg-yellow-400"></div>
-                    <div className="w-2 h-2 rounded-full bg-green-400"></div>
-                </div>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50">
-                {messages.map((msg) => (
-                    <div key={msg.id} className={`flex ${msg.role === 'You' ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[85%] rounded-2xl p-3 shadow-sm ${msg.role === 'You' ? 'bg-indigo-600 text-white rounded-br-none' : 'bg-white text-slate-800 border border-slate-200 rounded-bl-none'}`}>
-                            <div className="text-[10px] opacity-70 mb-1 font-bold uppercase tracking-wider">{msg.role}</div>
-                            <p className="text-sm leading-relaxed">{msg.content}</p>
+        <div className="w-full h-full bg-slate-50 flex rounded-xl overflow-hidden border border-slate-200 shadow-2xl">
+            {/* Left: Chat Interface */}
+            <div className="flex-1 flex flex-col relative">
+                {/* Header */}
+                <div className="h-16 border-b border-slate-100 bg-white flex items-center justify-between px-6 z-10">
+                    <div>
+                        <h3 className="font-bold text-slate-800">Le Petit Café</h3>
+                        <div className="flex items-center gap-2 text-xs text-slate-500">
+                            <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                            Online • Paris, France
                         </div>
                     </div>
-                ))}
+                    <div className="px-3 py-1 bg-indigo-50 text-indigo-600 text-xs font-bold rounded-full uppercase tracking-wider">
+                        B2 Intermediate
+                    </div>
+                </div>
+
+                {/* Messages Area */}
+                <div className="flex-1 p-6 space-y-6 overflow-hidden bg-slate-50/50 relative">
+                    {/* Background Pattern */}
+                    <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#4f46e5_1px,transparent_1px)] [background-size:16px_16px]"></div>
+
+                    {/* AI Message 1 */}
+                    <AnimatePresence>
+                        {activeStep >= 1 && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 10, x: -10 }}
+                                animate={{ opacity: 1, y: 0, x: 0 }}
+                                className="flex gap-4 max-w-[90%]"
+                            >
+                                <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0 border-2 border-white shadow-sm overflow-hidden">
+                                    <span className="text-lg">👩‍🎨</span>
+                                </div>
+                                <div>
+                                    <div className="bg-white p-4 rounded-2xl rounded-tl-none shadow-sm border border-slate-100 text-slate-800">
+                                        <p className="font-medium">Bonjour! Vous avez choisi?</p>
+                                    </div>
+                                    <div className="flex items-center gap-2 mt-1 ml-1">
+                                        <button className="text-slate-400 hover:text-indigo-600 transition-colors"><SpeakerWaveIcon className="w-4 h-4" /></button>
+                                        <span className="text-[10px] text-slate-400 font-medium cursor-pointer hover:text-indigo-600">Translate</span>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
+                    {/* User Message */}
+                    <AnimatePresence>
+                        {activeStep >= 2 && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 10, x: 10 }}
+                                animate={{ opacity: 1, y: 0, x: 0 }}
+                                className="flex flex-col items-end self-end ml-auto max-w-[90%]"
+                            >
+                                <div className="flex gap-4 flex-row-reverse">
+                                    <div className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center flex-shrink-0 border-2 border-white shadow-sm">
+                                        <span className="text-white font-bold text-xs">YOU</span>
+                                    </div>
+                                    <div className="bg-indigo-600 p-4 rounded-2xl rounded-tr-none shadow-md text-white">
+                                        <p className="font-medium">Oui, un croissant s'il vous plaît.</p>
+                                    </div>
+                                </div>
+
+                                {/* Feedback Badge */}
+                                {activeStep >= 3 && (
+                                    <motion.div
+                                        initial={{ opacity: 0, scale: 0.8 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        className="mt-2 mr-14 bg-green-50 text-green-700 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 border border-green-100 shadow-sm"
+                                    >
+                                        <CheckCircleIconSolid className="w-4 h-4" />
+                                        Pronunciation: 98%
+                                    </motion.div>
+                                )}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
+                    {/* AI Message 2 */}
+                    <AnimatePresence>
+                        {activeStep >= 4 && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 10, x: -10 }}
+                                animate={{ opacity: 1, y: 0, x: 0 }}
+                                className="flex gap-4 max-w-[90%]"
+                            >
+                                <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0 border-2 border-white shadow-sm overflow-hidden">
+                                    <span className="text-lg">👩‍🎨</span>
+                                </div>
+                                <div>
+                                    <div className="bg-white p-4 rounded-2xl rounded-tl-none shadow-sm border border-slate-100 text-slate-800">
+                                        <p className="font-medium">Très bien. Sur place ou à emporter?</p>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+
+                {/* Input Area */}
+                <div className="h-20 bg-white border-t border-slate-100 px-6 flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-colors cursor-pointer">
+                        <LanguageIcon className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1 h-12 bg-slate-50 rounded-full border border-slate-200 flex items-center px-4 text-slate-400 text-sm">
+                        {isRecording ? (
+                            <div className="flex items-center gap-2">
+                                <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                                <span className="text-slate-700 font-medium">Listening...</span>
+                                <div className="flex gap-0.5 items-end h-4 ml-2">
+                                    {[1, 2, 3, 4, 5].map(i => (
+                                        <motion.div
+                                            key={i}
+                                            animate={{ height: [4, 16, 4] }}
+                                            transition={{ duration: 0.5, repeat: Infinity, delay: i * 0.1 }}
+                                            className="w-1 bg-red-400 rounded-full"
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        ) : (
+                            "Type or speak..."
+                        )}
+                    </div>
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white shadow-lg transition-all ${isRecording ? 'bg-red-500 scale-110 shadow-red-200' : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-200'}`}>
+                        <MicrophoneIcon className="w-6 h-6" />
+                    </div>
+                </div>
+            </div>
+
+            {/* Right: Context Panel (Desktop Only) */}
+            <div className="w-64 bg-white border-l border-slate-100 flex flex-col">
+                <div className="p-5 border-b border-slate-100">
+                    <h4 className="font-bold text-slate-800 text-sm uppercase tracking-wider mb-1">Vocabulary</h4>
+                    <p className="text-xs text-slate-400">Key words for this lesson</p>
+                </div>
+                <div className="flex-1 p-4 space-y-3 overflow-y-auto">
+                    {[
+                        { word: "choisi", trans: "chosen", type: "verb" },
+                        { word: "croissant", trans: "pastry", type: "noun" },
+                        { word: "sur place", trans: "for here", type: "phrase" },
+                        { word: "à emporter", trans: "to go", type: "phrase" }
+                    ].map((item, i) => (
+                        <div key={i} className="p-3 rounded-xl bg-slate-50 border border-slate-100 hover:border-indigo-200 transition-colors group cursor-pointer">
+                            <div className="flex justify-between items-start mb-1">
+                                <span className="font-bold text-slate-700 group-hover:text-indigo-600 transition-colors">{item.word}</span>
+                                <span className="text-[10px] font-mono text-slate-400 bg-white px-1.5 py-0.5 rounded border border-slate-100">{item.type}</span>
+                            </div>
+                            <div className="text-xs text-slate-500">{item.trans}</div>
+                        </div>
+                    ))}
+                </div>
+                <div className="p-4 bg-slate-50 border-t border-slate-100">
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-bold text-slate-500">Lesson Progress</span>
+                        <span className="text-xs font-bold text-indigo-600">45%</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
+                        <div className="h-full bg-indigo-600 w-[45%] rounded-full"></div>
+                    </div>
+                </div>
             </div>
         </div>
     );
 };
 
 const DesktopExam = () => {
-    // ... (Existing Desktop Exam Code)
+    const [phase, setPhase] = useState('form'); // form, agent, exam
+    const [formState, setFormState] = useState({ topic: '', level: '', types: [] });
+    const [agentLogs, setAgentLogs] = useState([]);
+    const [selectedOption, setSelectedOption] = useState(null);
+    const [showResult, setShowResult] = useState(false);
+
+    useEffect(() => {
+        let isMounted = true;
+        const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        const runSimulation = async () => {
+            if (!isMounted) return;
+
+            // --- Phase 1: Form Filling ---
+            setPhase('form');
+            setFormState({ topic: '', level: '', types: [] });
+            setAgentLogs([]);
+            setSelectedOption(null);
+            setShowResult(false);
+
+            await wait(1000);
+
+            // Type Topic
+            const topic = "Space Exploration";
+            for (let i = 0; i <= topic.length; i++) {
+                if (!isMounted) return;
+                setFormState(prev => ({ ...prev, topic: topic.slice(0, i) }));
+                await wait(50);
+            }
+            await wait(500);
+
+            // Select Level
+            if (!isMounted) return;
+            setFormState(prev => ({ ...prev, level: 'B2' }));
+            await wait(500);
+
+            // Select Types
+            if (!isMounted) return;
+            setFormState(prev => ({ ...prev, types: ['Multiple Choice'] }));
+            await wait(800);
+
+            // Click Generate
+            if (!isMounted) return;
+            setPhase('agent');
+
+            // --- Phase 2: Agent Generation ---
+            const logs = [
+                "Analyzing topic 'Space Exploration'...",
+                "Identifying key vocabulary (B2)...",
+                "Structuring exam blueprint...",
+                "Generating questions...",
+                "Finalizing exam..."
+            ];
+
+            for (const log of logs) {
+                if (!isMounted) return;
+                setAgentLogs(prev => [...prev, log]);
+                await wait(800);
+            }
+
+            // --- Phase 3: Taking Exam ---
+            if (!isMounted) return;
+            setPhase('exam');
+            await wait(1500);
+
+            // Select Option
+            if (!isMounted) return;
+            setSelectedOption(1); // Option B
+            await wait(500);
+            setShowResult(true);
+
+            // --- Reset ---
+            await wait(4000);
+            if (isMounted) runSimulation();
+        };
+
+        runSimulation();
+        return () => { isMounted = false; };
+    }, []);
+
     return (
-        <div className="w-full h-full bg-white flex flex-col items-center justify-center p-6 rounded-xl border border-slate-200 shadow-xl">
-            <div className="w-full max-w-md">
-                <div className="mb-6 flex justify-between items-center">
-                    <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider bg-indigo-50 px-2 py-1 rounded">Question 5/10</span>
+        <div className="w-full h-full bg-slate-50 flex items-center justify-center p-6 rounded-xl border border-slate-200 shadow-xl relative overflow-hidden">
+            <AnimatePresence mode="wait">
+                {phase === 'form' && (
+                    <motion.div
+                        key="form"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="w-full max-w-md bg-white rounded-2xl shadow-lg border border-slate-100 p-6 space-y-5"
+                    >
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="p-2 bg-indigo-100 text-indigo-600 rounded-lg">
+                                <PencilSquareIcon className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-slate-800">New Exam</h3>
+                                <p className="text-xs text-slate-500">Generate a custom test</p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-3">
+                            <div>
+                                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 block">Topic</label>
+                                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-800 font-medium h-12 flex items-center">
+                                    {formState.topic || <span className="text-slate-300">Enter topic...</span>}
+                                    {phase === 'form' && formState.topic.length < "Space Exploration".length && <span className="animate-pulse ml-0.5">|</span>}
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 block">Level</label>
+                                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-800 font-medium h-12 flex items-center justify-between">
+                                        {formState.level || <span className="text-slate-300">Select...</span>}
+                                        <ChevronLeftIcon className="w-4 h-4 -rotate-90 text-slate-400" />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 block">Type</label>
+                                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-800 font-medium h-12 flex items-center">
+                                        {formState.types.length > 0 ? "Mixed" : <span className="text-slate-300">Any</span>}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 mt-2 flex items-center justify-center gap-2">
+                            <SparklesIcon className="w-5 h-5" />
+                            Generate Exam
+                        </button>
+                    </motion.div>
+                )}
+
+                {phase === 'agent' && (
+                    <motion.div
+                        key="agent"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="w-full max-w-md bg-slate-900 rounded-2xl shadow-2xl border border-slate-800 p-6 text-slate-300 font-mono text-sm relative overflow-hidden"
+                    >
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 animate-pulse"></div>
+                        <div className="flex items-center gap-3 mb-6 border-b border-slate-800 pb-4">
+                            <CpuChipIcon className="w-6 h-6 text-indigo-400" />
+                            <span className="font-bold text-white">AI Agent Working</span>
+                        </div>
+                        <div className="space-y-3">
+                            {agentLogs.map((log, i) => (
+                                <motion.div
+                                    key={i}
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    className="flex gap-2"
+                                >
+                                    <span className="text-indigo-500">➜</span>
+                                    <span>{log}</span>
+                                </motion.div>
+                            ))}
+                            <motion.div
+                                animate={{ opacity: [0, 1, 0] }}
+                                transition={{ repeat: Infinity, duration: 0.8 }}
+                                className="w-2 h-4 bg-indigo-500"
+                            />
+                        </div>
+                    </motion.div>
+                )}
+
+                {phase === 'exam' && (
+                    <motion.div
+                        key="exam"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="w-full max-w-md bg-white rounded-2xl shadow-lg border border-slate-100 p-6"
+                    >
+                        <div className="flex justify-between items-center mb-6">
+                            <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider bg-indigo-50 px-2 py-1 rounded">Question 1/5</span>
+                            <div className="flex gap-1">
+                                <div className="w-2 h-2 rounded-full bg-slate-200"></div>
+                                <div className="w-2 h-2 rounded-full bg-slate-200"></div>
+                                <div className="w-2 h-2 rounded-full bg-slate-200"></div>
+                            </div>
+                        </div>
+
+                        <h3 className="text-lg font-bold text-slate-900 mb-6 leading-relaxed">
+                            The astronaut <span className="border-b-2 border-indigo-200 px-2 text-indigo-600 font-mono bg-indigo-50 mx-1">_____</span> the hatch to enter the station.
+                        </h3>
+
+                        <div className="space-y-3">
+                            {["opened", "opening", "opens", "open"].map((opt, idx) => {
+                                const isSelected = selectedOption === idx;
+                                const isCorrect = idx === 1; // "opening" is wrong, "opened" (0) is correct? Let's say 0 is correct.
+                                // Let's make 0 the correct answer.
+                                const isCorrectAnswer = idx === 0;
+
+                                let stateClass = "border-slate-200 hover:border-indigo-200 hover:bg-slate-50";
+                                if (showResult && isCorrectAnswer) stateClass = "border-green-500 bg-green-50 text-green-700";
+                                if (showResult && isSelected && !isCorrectAnswer) stateClass = "border-red-500 bg-red-50 text-red-700";
+                                if (isSelected && !showResult) stateClass = "border-indigo-500 bg-indigo-50 text-indigo-700";
+
+                                return (
+                                    <div
+                                        key={idx}
+                                        className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${stateClass}`}
+                                    >
+                                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center text-xs font-bold ${showResult && isCorrectAnswer ? "border-green-500 bg-green-500 text-white" :
+                                            showResult && isSelected && !isCorrectAnswer ? "border-red-500 bg-red-500 text-white" :
+                                                isSelected ? "border-indigo-500 bg-indigo-500 text-white" : "border-slate-300 text-slate-400"
+                                            }`}>
+                                            {String.fromCharCode(65 + idx)}
+                                        </div>
+                                        <span className="font-medium flex-1">{opt}</span>
+                                        {showResult && isCorrectAnswer && <CheckCircleIconSolid className="w-5 h-5 text-green-500" />}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+}
+
+const DesktopGrammar = () => {
+    const [activeTopic, setActiveTopic] = useState('Present Perfect');
+    const [isLoading, setIsLoading] = useState(false);
+
+    // Simulate topic switch
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setIsLoading(true);
+            setTimeout(() => {
+                setActiveTopic(prev => prev === 'Present Perfect' ? 'Conditionals' : 'Present Perfect');
+                setIsLoading(false);
+            }, 800);
+        }, 8000);
+        return () => clearInterval(interval);
+    }, []);
+
+    return (
+        <div className="w-full h-full bg-white rounded-xl overflow-hidden border border-slate-200 shadow-xl flex">
+            {/* Sidebar */}
+            <div className="w-48 border-r border-slate-100 bg-slate-50 flex flex-col">
+                <div className="p-4 border-b border-slate-100">
+                    <div className="flex items-center gap-2 text-slate-700 font-bold">
+                        <BookOpenIcon className="w-5 h-5 text-indigo-600" />
+                        <span>Grammar</span>
+                    </div>
                 </div>
-                <h3 className="text-lg font-bold text-slate-900 mb-6">{MOCK_EXAM.question}</h3>
-                <div className="space-y-3">
-                    {MOCK_EXAM.options.map((opt, idx) => (
-                        <div key={idx} className="flex items-center gap-3 p-3 rounded-xl border-2 border-slate-100 hover:border-indigo-200 hover:bg-slate-50 text-slate-700 cursor-pointer transition-all">
-                            <div className="w-6 h-6 rounded-full border-2 border-slate-300 flex items-center justify-center text-xs font-bold text-slate-400">{String.fromCharCode(65 + idx)}</div>
-                            <span className="font-medium flex-1">{opt}</span>
+                <div className="p-2 space-y-1">
+                    {['Present Simple', 'Present Perfect', 'Past Continuous', 'Conditionals', 'Future Perfect'].map(topic => (
+                        <div
+                            key={topic}
+                            className={`px-3 py-2 rounded-lg text-sm font-medium cursor-pointer transition-colors ${activeTopic === topic
+                                ? 'bg-white text-indigo-600 shadow-sm border border-slate-100'
+                                : 'text-slate-500 hover:bg-slate-100'
+                                }`}
+                        >
+                            {topic}
                         </div>
                     ))}
                 </div>
             </div>
-        </div>
-    );
-};
 
-const DesktopGrammar = () => {
-    // ... (Existing Desktop Grammar Code)
-    return (
-        <div className="w-full h-full bg-white rounded-xl overflow-hidden border border-slate-200 shadow-xl flex flex-col relative">
-            <div className="h-12 border-b border-slate-100 flex items-center px-4 gap-3 bg-white z-10">
-                <div className="flex gap-1.5">
-                    <div className="w-3 h-3 rounded-full bg-red-400/80"></div>
-                    <div className="w-3 h-3 rounded-full bg-yellow-400/80"></div>
-                    <div className="w-3 h-3 rounded-full bg-green-400/80"></div>
-                </div>
-                <div className="h-4 w-px bg-slate-200 mx-2"></div>
-                <div className="text-xs font-medium text-slate-500 flex items-center gap-2">
-                    <span className="opacity-50">Grammar</span><span>/</span><span className="text-slate-800">Tenses</span>
-                </div>
-            </div>
-            <div className="flex-1 p-8 overflow-y-auto">
-                <h1 className="text-3xl font-bold text-slate-900 mb-2">Present Perfect</h1>
-                <p className="text-slate-500 mb-6">Connection to the present.</p>
-                <div className="p-6 bg-slate-50 rounded-xl border border-slate-100 mb-6">
-                    <div className="flex items-center gap-4">
-                        <div className="w-4 h-4 bg-red-500 rounded-full"></div>
-                        <div className="h-1 flex-1 bg-slate-200 rounded-full"></div>
-                        <div className="w-4 h-4 bg-slate-900 rounded-full"></div>
+            {/* Main Content */}
+            <div className="flex-1 flex flex-col relative bg-white">
+                {/* Header */}
+                <div className="h-14 border-b border-slate-100 flex items-center justify-between px-6">
+                    <div className="flex items-center gap-2 text-sm text-slate-500">
+                        <span>B2</span>
+                        <ChevronLeftIcon className="w-3 h-3 text-slate-300" />
+                        <span className="text-slate-800 font-medium">{activeTopic}</span>
                     </div>
-                    <div className="flex justify-between text-xs font-bold text-slate-400 mt-2">
-                        <span>Past</span>
-                        <span>Now</span>
-                    </div>
+                    <button className="text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition-colors flex items-center gap-1">
+                        <SparklesIcon className="w-3 h-3" />
+                        Explain with AI
+                    </button>
+                </div>
+
+                {/* Content Area */}
+                <div className="flex-1 p-8 overflow-hidden relative">
+                    <AnimatePresence mode="wait">
+                        {isLoading ? (
+                            <motion.div
+                                key="loading"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="absolute inset-0 flex flex-col items-center justify-center bg-white z-10"
+                            >
+                                <div className="w-8 h-8 border-2 border-indigo-100 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
+                                <p className="text-sm text-slate-400 font-medium animate-pulse">Generating lesson...</p>
+                            </motion.div>
+                        ) : (
+                            <motion.div
+                                key="content"
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="space-y-6"
+                            >
+                                <div>
+                                    <h1 className="text-3xl font-bold text-slate-900 mb-2">{activeTopic}</h1>
+                                    <p className="text-slate-600 leading-relaxed">
+                                        {activeTopic === 'Present Perfect'
+                                            ? "Connects the past with the present. Use it for actions that happened at an unspecified time or have consequences now."
+                                            : "Describes the result of something that might happen (in the present or future) or might have happened but didn't (in the past)."
+                                        }
+                                    </p>
+                                </div>
+
+                                {/* Timeline / Diagram Simulation */}
+                                <div className="p-6 bg-slate-50 rounded-xl border border-slate-100">
+                                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Timeline</h4>
+                                    <div className="flex items-center gap-4 relative h-8">
+                                        {/* Line */}
+                                        <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-slate-200 -translate-y-1/2"></div>
+
+                                        {activeTopic === 'Present Perfect' ? (
+                                            <>
+                                                <div className="relative z-10 flex flex-col items-center gap-2">
+                                                    <div className="w-3 h-3 bg-slate-300 rounded-full"></div>
+                                                    <span className="text-[10px] font-bold text-slate-400">Past</span>
+                                                </div>
+                                                <div className="flex-1"></div>
+                                                <div className="relative z-10 flex flex-col items-center gap-2">
+                                                    <div className="w-4 h-4 bg-indigo-500 rounded-full ring-4 ring-indigo-100"></div>
+                                                    <span className="text-[10px] font-bold text-indigo-600">Action</span>
+                                                </div>
+                                                <div className="flex-1"></div>
+                                                <div className="relative z-10 flex flex-col items-center gap-2">
+                                                    <div className="w-3 h-3 bg-slate-800 rounded-full"></div>
+                                                    <span className="text-[10px] font-bold text-slate-800">Now</span>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <div className="relative z-10 flex flex-col items-center gap-2">
+                                                    <div className="w-3 h-3 bg-slate-800 rounded-full"></div>
+                                                    <span className="text-[10px] font-bold text-slate-800">If...</span>
+                                                </div>
+                                                <div className="flex-1 border-t-2 border-dashed border-indigo-300 relative">
+                                                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] text-indigo-400 font-medium">Condition</span>
+                                                </div>
+                                                <div className="relative z-10 flex flex-col items-center gap-2">
+                                                    <div className="w-4 h-4 bg-indigo-500 rounded-full ring-4 ring-indigo-100"></div>
+                                                    <span className="text-[10px] font-bold text-indigo-600">Result</span>
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Examples */}
+                                <div className="space-y-3">
+                                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Examples</h4>
+                                    <div className="p-4 bg-green-50 border border-green-100 rounded-lg flex gap-3 text-green-800 text-sm">
+                                        <CheckCircleIconSolid className="w-5 h-5 text-green-600 flex-shrink-0" />
+                                        <p>
+                                            {activeTopic === 'Present Perfect'
+                                                ? <span>I <span className="font-bold border-b border-green-300">have visited</span> Paris three times.</span>
+                                                : <span>If it <span className="font-bold border-b border-green-300">rains</span>, I will stay home.</span>
+                                            }
+                                        </p>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
             </div>
         </div>
     );
-};
+}
 
 const MobileStoryViewer = () => {
     const [phase, setPhase] = useState('create');
@@ -1158,32 +1666,198 @@ const MobileDialogueViewer = () => {
     );
 };
 
-const MobileExam = () => (
-    <div className="w-full h-full bg-white flex flex-col p-6">
-        {/* Progress Bar */}
-        <div className="w-full h-1.5 bg-slate-100 rounded-full mb-8">
-            <div className="w-1/2 h-full bg-indigo-500 rounded-full"></div>
+const MobileExam = () => {
+    const [phase, setPhase] = useState('form'); // form, agent, exam
+    const [formState, setFormState] = useState({ topic: '' });
+    const [agentLogs, setAgentLogs] = useState([]);
+    const [selectedOption, setSelectedOption] = useState(null);
+    const [showResult, setShowResult] = useState(false);
+
+    useEffect(() => {
+        let isMounted = true;
+        const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        const runSimulation = async () => {
+            if (!isMounted) return;
+
+            // --- Phase 1: Form Filling ---
+            setPhase('form');
+            setFormState({ topic: '' });
+            setAgentLogs([]);
+            setSelectedOption(null);
+            setShowResult(false);
+
+            await wait(1000);
+
+            // Type Topic
+            const topic = "Space B2";
+            for (let i = 0; i <= topic.length; i++) {
+                if (!isMounted) return;
+                setFormState(prev => ({ ...prev, topic: topic.slice(0, i) }));
+                await wait(80);
+            }
+            await wait(500);
+
+            // Click Generate
+            if (!isMounted) return;
+            setPhase('agent');
+
+            // --- Phase 2: Agent Generation ---
+            const logs = [
+                "Analyzing...",
+                "Building Exam...",
+                "Ready!"
+            ];
+
+            for (const log of logs) {
+                if (!isMounted) return;
+                setAgentLogs(prev => [...prev, log]);
+                await wait(800);
+            }
+
+            // --- Phase 3: Taking Exam ---
+            if (!isMounted) return;
+            setPhase('exam');
+            await wait(1000);
+
+            // Select Option
+            if (!isMounted) return;
+            setSelectedOption(1); // Option B
+            await wait(500);
+            setShowResult(true);
+
+            // --- Reset ---
+            await wait(4000);
+            if (isMounted) runSimulation();
+        };
+
+        runSimulation();
+        return () => { isMounted = false; };
+    }, []);
+
+    return (
+        <div className="w-full h-full bg-slate-50 relative overflow-hidden flex flex-col">
+            <AnimatePresence mode="wait">
+                {phase === 'form' && (
+                    <motion.div
+                        key="form"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="w-full h-full flex flex-col justify-center p-6 space-y-6"
+                    >
+                        <div className="text-center space-y-2">
+                            <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <PencilSquareIcon className="w-6 h-6" />
+                            </div>
+                            <h3 className="text-xl font-bold text-slate-900">Create Exam</h3>
+                            <p className="text-sm text-slate-500">What do you want to test?</p>
+                        </div>
+
+                        <div>
+                            <div className="p-4 bg-white rounded-2xl border border-slate-200 text-slate-800 font-medium text-lg shadow-sm flex items-center justify-center min-h-[3.5rem]">
+                                {formState.topic || <span className="text-slate-300">e.g. History C1</span>}
+                                {phase === 'form' && formState.topic.length < "Space B2".length && <span className="animate-pulse ml-0.5">|</span>}
+                            </div>
+                        </div>
+
+                        <button className="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 flex items-center justify-center gap-2">
+                            <SparklesIcon className="w-5 h-5" />
+                            Generate
+                        </button>
+                    </motion.div>
+                )}
+
+                {phase === 'agent' && (
+                    <motion.div
+                        key="agent"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="w-full h-full bg-slate-900 flex flex-col items-center justify-center p-6 text-slate-300 font-mono text-sm relative"
+                    >
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-indigo-900/20 to-slate-900"></div>
+
+                        <div className="relative z-10 w-full max-w-xs space-y-6">
+                            <div className="flex justify-center">
+                                <CpuChipIcon className="w-12 h-12 text-indigo-400 animate-pulse" />
+                            </div>
+
+                            <div className="space-y-3 bg-black/20 p-4 rounded-xl border border-white/5 backdrop-blur-sm">
+                                {agentLogs.map((log, i) => (
+                                    <motion.div
+                                        key={i}
+                                        initial={{ opacity: 0, x: -10 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        className="flex gap-2 items-center"
+                                    >
+                                        <span className="text-indigo-500 text-xs">➜</span>
+                                        <span>{log}</span>
+                                    </motion.div>
+                                ))}
+                                <motion.div
+                                    animate={{ opacity: [0, 1, 0] }}
+                                    transition={{ repeat: Infinity, duration: 0.8 }}
+                                    className="w-2 h-4 bg-indigo-500"
+                                />
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+
+                {phase === 'exam' && (
+                    <motion.div
+                        key="exam"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="w-full h-full bg-white flex flex-col p-6"
+                    >
+                        <div className="flex justify-between items-center mb-6">
+                            <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded">Q1 / 5</span>
+                            <div className="flex gap-1">
+                                <div className="w-1.5 h-1.5 rounded-full bg-slate-200"></div>
+                                <div className="w-1.5 h-1.5 rounded-full bg-slate-200"></div>
+                                <div className="w-1.5 h-1.5 rounded-full bg-slate-200"></div>
+                            </div>
+                        </div>
+
+                        <div className="flex-1 flex flex-col justify-center mb-8">
+                            <h3 className="text-xl font-bold text-slate-900 leading-relaxed text-center">
+                                The astronaut <br />
+                                <span className="border-b-2 border-indigo-200 px-2 text-indigo-600 font-mono bg-indigo-50 mx-1 inline-block my-2">_____</span> <br />
+                                the hatch.
+                            </h3>
+                        </div>
+
+                        <div className="space-y-3">
+                            {["opened", "opening", "opens", "open"].map((opt, idx) => {
+                                const isSelected = selectedOption === idx;
+                                const isCorrect = idx === 1; // Visual fix: make 2nd option correct for demo flow if needed, but logic says 0. Let's stick to 0 as correct.
+                                // Actually, let's make 0 correct.
+                                const isCorrectAnswer = idx === 0;
+
+                                let stateClass = "border-slate-100 bg-white text-slate-600";
+                                if (showResult && isCorrectAnswer) stateClass = "border-green-500 bg-green-50 text-green-700";
+                                if (showResult && isSelected && !isCorrectAnswer) stateClass = "border-red-500 bg-red-50 text-red-700";
+                                if (isSelected && !showResult) stateClass = "border-indigo-500 bg-indigo-50 text-indigo-700";
+
+                                return (
+                                    <div
+                                        key={idx}
+                                        className={`w-full p-4 rounded-xl border-2 font-bold text-lg flex items-center justify-between transition-all ${stateClass}`}
+                                    >
+                                        {opt}
+                                        {showResult && isCorrectAnswer && <CheckCircleIconSolid className="w-6 h-6 text-green-500" />}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
-
-        <div className="flex-1 flex flex-col justify-center">
-            <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider mb-2">Question 5</span>
-            <h2 className="text-2xl font-bold text-slate-900 mb-8 leading-tight">{MOCK_EXAM.question}</h2>
-
-            <div className="space-y-3">
-                {MOCK_EXAM.options.map((opt, i) => (
-                    <div key={i} className={`w-full p-4 rounded-xl border-2 font-bold text-lg flex items-center justify-between ${opt === 'Transient' ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-slate-100 text-slate-600'}`}>
-                        {opt}
-                        {opt === 'Transient' && <CheckCircleIconSolid className="w-6 h-6 text-indigo-600" />}
-                    </div>
-                ))}
-            </div>
-        </div>
-
-        <button className="w-full py-4 bg-slate-900 text-white rounded-xl font-bold text-lg shadow-xl">
-            Check Answer
-        </button>
-    </div>
-);
+    );
+};
 
 const MobileGrammar = () => (
     <div className="w-full h-full bg-slate-50 flex flex-col">

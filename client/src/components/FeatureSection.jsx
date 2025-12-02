@@ -72,7 +72,7 @@ const FeatureSection = ({ title, subtitle, description, component: Component, al
                         <div className={`absolute -inset-4 bg-gradient-to-r from-${color}-500/10 to-${color}-600/10 rounded-3xl blur-2xl opacity-50`}></div>
 
                         <SpotlightCard className={`relative shadow-2xl shadow-${color}-500/10 rounded-2xl overflow-hidden hover:shadow-${color}-500/20 transition-all duration-500`}>
-                            <div className="w-full aspect-[4/3] sm:aspect-[16/10] md:aspect-[16/9]">
+                            <div className="w-full aspect-[9/16] sm:aspect-[3/4] lg:aspect-[16/9]">
                                 <Component />
                             </div>
                         </SpotlightCard>

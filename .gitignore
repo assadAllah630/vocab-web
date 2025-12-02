@@ -46,6 +46,7 @@ db.sqlite3-journal
 client_secret*.json
 *credentials*.json
 vocabmaster-*.json
+.vercel-token
 
 # Node
 node_modules/
@@ -129,3 +130,4 @@ pnpm-lock.yaml
 *.sql.gz
 
 
+.env*.local
