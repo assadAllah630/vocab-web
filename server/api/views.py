@@ -17,9 +17,7 @@ import csv
 import io
 import google.generativeai as genai
 import json
-from .prompts import ContextEngineer
 
-from django_ratelimit.decorators import ratelimit
 
 @api_view(['POST'])
 @authentication_classes([])  # Disable authentication for signup
@@ -31,27 +29,35 @@ def signup(request):
     native_language = request.data.get('native_language', 'en')
     target_language = request.data.get('target_language', 'de')
 
+    print(f"[SIGNUP] Received signup request for email: {email}, username: {username}")
+
     if User.objects.filter(username=username).exists():
+        print(f"[SIGNUP] Username {username} already exists")
         return Response({'error': 'Username already exists'}, status=status.HTTP_400_BAD_REQUEST)
     
     if User.objects.filter(email=email).exists():
+        print(f"[SIGNUP] Email {email} already exists")
         return Response({'error': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
+        print(f"[SIGNUP] Starting user creation for {email}")
         with transaction.atomic():
             # Create user but keep inactive until verified (optional, or just use is_email_verified)
             user = User.objects.create_user(username=username, password=password, email=email)
             user.is_active = True # We'll use is_email_verified flag instead of deactivating
             user.save()
+            print(f"[SIGNUP] User {username} created successfully")
 
             # Profile setup
             if hasattr(user, 'profile'):
+                print(f"[SIGNUP] User already has profile, updating it")
                 profile = user.profile
                 profile.native_language = native_language
                 profile.target_language = target_language
                 profile.is_email_verified = False
                 profile.save()
             else:
+                print(f"[SIGNUP] Creating new profile for user")
                 UserProfile.objects.create(
                     user=user, 
                     native_language=native_language, 
@@ -65,25 +71,32 @@ def signup(request):
             user.profile.otp_code = otp
             user.profile.otp_created_at = timezone.now()
             user.profile.save()
+            print(f"[SIGNUP] OTP generated and saved: {otp}")
             
             # Send Email via SendGrid
             from .email_utils import send_otp_email
             try:
+                print(f"[SIGNUP] Attempting to send OTP email to {email}")
                 email_sent = send_otp_email(email, otp)
                 if not email_sent:
-                    print(f"Failed to send email to {email}")
-                    # In dev, we can just print it
-                    print(f"DEBUG OTP: {otp}")
+                    print(f"[SIGNUP] ⚠️ Failed to send email to {email}")
+                    print(f"[SIGNUP] DEBUG OTP: {otp}")
+                else:
+                    print(f"[SIGNUP] ✅ Email sent successfully to {email}")
             except Exception as e:
-                print(f"Error sending email: {e}")
-                print(f"DEBUG OTP: {otp}")
+                print(f"[SIGNUP] ❌ Error sending email: {e}")
+                print(f"[SIGNUP] DEBUG OTP: {otp}")
 
+            print(f"[SIGNUP] Signup completed successfully for {email}")
             return Response({
                 'message': 'Account created. Please verify your email.',
                 'email': email
             }, status=status.HTTP_201_CREATED)
             
     except Exception as e:
+        print(f"[SIGNUP] ❌ CRITICAL ERROR during signup: {type(e).__name__}: {str(e)}")
+        import traceback
+        print(f"[SIGNUP] Traceback: {traceback.format_exc()}")
         return Response({'error': f'Registration failed: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
