@@ -95,13 +95,27 @@ def send_via_gmail(to_email, otp_code):
         msg.attach(part2)
         
         # Send email via Gmail SMTP
-        # Add 5 second timeout to prevent worker hanging
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=5) as server:
-            server.login(gmail_user, gmail_password)
-            server.send_message(msg)
-        
-        logger.info(f"✅ OTP email sent via Gmail to {to_email}")
-        return True
+        # Try SSL (465) first
+        try:
+            with smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=5) as server:
+                server.login(gmail_user, gmail_password)
+                server.send_message(msg)
+            logger.info(f"✅ OTP email sent via Gmail (SSL) to {to_email}")
+            return True
+        except Exception as e:
+            logger.warning(f"⚠️ Gmail SSL failed: {str(e)}. Trying TLS...")
+
+        # Try TLS (587) as fallback
+        try:
+            with smtplib.SMTP('smtp.gmail.com', 587, timeout=5) as server:
+                server.starttls()
+                server.login(gmail_user, gmail_password)
+                server.send_message(msg)
+            logger.info(f"✅ OTP email sent via Gmail (TLS) to {to_email}")
+            return True
+        except Exception as e:
+            logger.error(f"❌ Gmail TLS also failed: {str(e)}")
+            raise e
         
     except Exception as e:
         logger.error(f"❌ Gmail SMTP failed: {str(e)}")
