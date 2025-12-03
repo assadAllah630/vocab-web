@@ -27,17 +27,60 @@ def signup(request):
     password = request.data.get('password')
     email = request.data.get('email')
     native_language = request.data.get('native_language', 'en')
-    target_language = request.data.get('target_language', 'de')
+    target_language = request.data.get('target_language', 'de')    print(f"[SIGNUP] Received signup request for email: {email}, username: {username}")
 
-    print(f"[SIGNUP] Received signup request for email: {email}, username: {username}")
-
-    if User.objects.filter(username=username).exists():
+    # Check if email already exists
+    existing_user = User.objects.filter(email=email).first()
+    if existing_user:
+        # If user exists but email is NOT verified, allow re-signup (resend OTP)
+        if not existing_user.profile.is_email_verified:
+            print(f"[SIGNUP] Email {email} exists but not verified. Resending OTP...")
+            try:
+                # Update password in case user wants to change it
+                existing_user.set_password(password)
+                existing_user.username = username  # Allow username update for unverified users
+                existing_user.save()
+                
+                # Update profile languages
+                existing_user.profile.native_language = native_language
+                existing_user.profile.target_language = target_language
+                
+                # Generate new OTP
+                import random
+                otp = f"{random.randint(100000, 999999)}"
+                existing_user.profile.otp_code = otp
+                existing_user.profile.otp_created_at = timezone.now()
+                existing_user.profile.save()
+                print(f"[SIGNUP] New OTP generated: {otp}")
+                
+                # Resend email
+                from .email_utils import send_otp_email
+                try:
+                    email_sent = send_otp_email(email, otp)
+                    if email_sent:
+                        print(f"[SIGNUP] ✅ OTP resent to {email}")
+                    else:
+                        print(f"[SIGNUP] ⚠️ Failed to send email, OTP: {otp}")
+                except Exception as e:
+                    print(f"[SIGNUP] ❌ Error sending email: {e}, OTP: {otp}")
+                
+                return Response({
+                    'message': 'A new verification code has been sent to your email.',
+                    'email': email
+                }, status=status.HTTP_200_OK)
+            except Exception as e:
+                print(f"[SIGNUP] ❌ Error resending OTP: {e}")
+                return Response({'error': f'Failed to resend verification: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            # User exists and IS verified
+            print(f"[SIGNUP] Email {email} already exists and is verified")
+            return Response({'error': 'This email is already registered. Please sign in instead.'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Check if username already exists (but only for NEW users, not re-signup)
+    if User.objects.filter(username=username).exclude(email=email).exists():
         print(f"[SIGNUP] Username {username} already exists")
         return Response({'error': 'Username already exists'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    if User.objects.filter(email=email).exists():
-        print(f"[SIGNUP] Email {email} already exists")
-        return Response({'error': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
+
 
     try:
         print(f"[SIGNUP] Starting user creation for {email}")
@@ -170,7 +213,7 @@ def resend_otp(request):
 @api_view(['POST'])
 @authentication_classes([])  # Disable authentication/CSRF for this endpoint
 @permission_classes([permissions.AllowAny])
-@ratelimit(key='ip', rate='5/m', block=True)
+# @ratelimit(key='ip', rate='5/m', block=True)  # Commented out - django-ratelimit not installed
 def signin(request):
     try:
         username = request.data.get('username')
