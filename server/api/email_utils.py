@@ -122,6 +122,64 @@ def send_via_gmail(to_email, otp_code):
         return False
 
 
+def send_via_brevo(to_email, otp_code):
+    """
+    Send OTP email using Brevo (Sendinblue) API
+    
+    Args:
+        to_email (str): Recipient email address
+        otp_code (str): 6-digit OTP code
+    
+    Returns:
+        bool: True if email sent successfully, False otherwise
+    """
+    try:
+        import requests
+        
+        brevo_api_key = os.getenv('BREVO_API_KEY')
+        from_email = os.getenv('FROM_EMAIL', 'noreply@vocabmaster.com')
+        from_name = "VocabMaster"
+        
+        if not brevo_api_key:
+            logger.warning("BREVO_API_KEY not found in environment variables")
+            return False
+        
+        url = "https://api.brevo.com/v3/smtp/email"
+        
+        payload = {
+            "sender": {
+                "name": from_name,
+                "email": from_email
+            },
+            "to": [
+                {
+                    "email": to_email
+                }
+            ],
+            "subject": "Your VocabMaster Verification Code",
+            "htmlContent": get_email_html_template(otp_code)
+        }
+        
+        headers = {
+            "accept": "application/json",
+            "api-key": brevo_api_key,
+            "content-type": "application/json"
+        }
+        
+        response = requests.post(url, json=payload, headers=headers)
+        
+        if response.status_code in [200, 201, 202]:
+            logger.info(f"✅ OTP email sent via Brevo to {to_email}")
+            return True
+        else:
+            logger.error(f"Brevo returned status code: {response.status_code}, body: {response.text}")
+            return False
+            
+    except Exception as e:
+        logger.error(f"❌ Brevo failed: {str(e)}")
+        return False
+
+
 def send_via_sendgrid(to_email, otp_code):
     """
     Send OTP email using SendGrid API
@@ -171,7 +229,7 @@ def send_via_sendgrid(to_email, otp_code):
 def send_otp_email(to_email, otp_code):
     """
     Send OTP verification email with automatic fallback
-    Tries Gmail SMTP first, then SendGrid if Gmail fails
+    Tries Gmail SMTP first, then Brevo, then SendGrid
     
     Args:
         to_email (str): Recipient email address
@@ -187,12 +245,18 @@ def send_otp_email(to_email, otp_code):
         logger.info("✅ Email sent successfully via Gmail")
         return True
     
+    # Fall back to Brevo (Sendinblue)
+    logger.info("⚠️ Gmail failed, trying Brevo...")
+    if send_via_brevo(to_email, otp_code):
+        logger.info("✅ Email sent successfully via Brevo")
+        return True
+
     # Fall back to SendGrid
-    logger.info("⚠️ Gmail failed, trying SendGrid...")
+    logger.info("⚠️ Brevo failed, trying SendGrid...")
     if send_via_sendgrid(to_email, otp_code):
         logger.info("✅ Email sent successfully via SendGrid")
         return True
     
-    # Both methods failed
+    # All methods failed
     logger.error("❌ All email sending methods failed")
     return False
