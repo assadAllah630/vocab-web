@@ -63,8 +63,16 @@ def signup(request):
                         print(f"[SIGNUP] ✅ OTP resent to {email}")
                     else:
                         print(f"[SIGNUP] ⚠️ Failed to send email, OTP: {otp}")
+                        return Response(
+                            {'error': 'Failed to send verification email. Please try again or contact support.'},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                        )
                 except Exception as e:
                     print(f"[SIGNUP] ❌ Error sending email: {e}, OTP: {otp}")
+                    return Response(
+                        {'error': f'Error sending email: {str(e)}'},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                    )
                 
                 return Response({
                     'message': 'A new verification code has been sent to your email.',

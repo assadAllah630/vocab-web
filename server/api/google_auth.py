@@ -27,34 +27,7 @@ def generate_otp():
     return ''.join(random.choices(string.digits, k=6))
 
 
-def send_otp_email(email, otp):
-    """Send OTP email to user"""
-    subject = 'Your Vocab App Verification Code'
-    message = f"""
-    Hello!
-    
-    Your verification code is: {otp}
-    
-    This code will expire in {settings.OTP_EXPIRY_MINUTES} minutes.
-    
-    If you didn't request this code, please ignore this email.
-    
-    Best regards,
-    Vocab Learning Team
-    """
-    
-    try:
-        send_mail(
-            subject,
-            message,
-            settings.DEFAULT_FROM_EMAIL,
-            [email],
-            fail_silently=False,
-        )
-        return True
-    except Exception as e:
-        print(f"Failed to send email: {e}")
-        return False
+
 
 
 def send_notification_email(to_email, subject, message):
@@ -199,42 +172,23 @@ def send_otp(request):
         email = request.data.get('email')
         
         if not email:
-            return Response(
-                {'error': 'Email is required'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        # Check if user already exists
-        if User.objects.filter(email=email).exists():
-            return Response(
-                {'error': 'User with this email already exists'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        # Generate OTP
+            return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
+            
         otp = generate_otp()
         
-        # Store OTP in session or cache (for now, we'll use session)
-        request.session[f'otp_{email}'] = {
-            'code': otp,
-            'expires_at': (timezone.now() + timedelta(minutes=settings.OTP_EXPIRY_MINUTES)).isoformat()
-        }
-        
-        # Send email
+        # Use the robust email sender from email_utils
+        from .email_utils import send_otp_email
         if send_otp_email(email, otp):
-            return Response({
-                'message': 'OTP sent successfully',
-                'email': email
-            })
+            return Response({'message': 'OTP sent successfully', 'otp': otp})
         else:
             return Response(
-                {'error': 'Failed to send OTP email'},
+                {'error': 'Failed to send OTP email'}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-    
+            
     except Exception as e:
         return Response(
-            {'error': str(e)},
+            {'error': str(e)}, 
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
