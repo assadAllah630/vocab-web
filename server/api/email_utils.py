@@ -122,6 +122,75 @@ def send_via_gmail(to_email, otp_code):
         return False
 
 
+def send_via_mailjet(to_email, otp_code):
+    """
+    Send OTP email using Mailjet API
+    
+    Args:
+        to_email (str): Recipient email address
+        otp_code (str): 6-digit OTP code
+    
+    Returns:
+        bool: True if email sent successfully, False otherwise
+    """
+    try:
+        import requests
+        import base64
+        
+        mailjet_api_key = os.getenv('MAILJET_API_KEY')
+        mailjet_secret_key = os.getenv('MAILJET_SECRET_KEY')
+        from_email = os.getenv('FROM_EMAIL', 'noreply@vocabmaster.com')
+        from_name = "VocabMaster"
+        
+        if not mailjet_api_key or not mailjet_secret_key:
+            logger.warning("MAILJET_API_KEY or MAILJET_SECRET_KEY not found in environment variables")
+            return False
+        
+        url = "https://api.mailjet.com/v3.1/send"
+        
+        # Mailjet uses Basic Auth with API key and secret
+        auth_string = f"{mailjet_api_key}:{mailjet_secret_key}"
+        auth_bytes = auth_string.encode('ascii')
+        base64_bytes = base64.b64encode(auth_bytes)
+        base64_string = base64_bytes.decode('ascii')
+        
+        payload = {
+            "Messages": [
+                {
+                    "From": {
+                        "Email": from_email,
+                        "Name": from_name
+                    },
+                    "To": [
+                        {
+                            "Email": to_email
+                        }
+                    ],
+                    "Subject": "Your VocabMaster Verification Code",
+                    "HTMLPart": get_email_html_template(otp_code)
+                }
+            ]
+        }
+        
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Basic {base64_string}"
+        }
+        
+        response = requests.post(url, json=payload, headers=headers)
+        
+        if response.status_code in [200, 201]:
+            logger.info(f"✅ OTP email sent via Mailjet to {to_email}")
+            return True
+        else:
+            logger.error(f"Mailjet returned status code: {response.status_code}, body: {response.text}")
+            return False
+            
+    except Exception as e:
+        logger.error(f"❌ Mailjet failed: {str(e)}")
+        return False
+
+
 def send_via_brevo(to_email, otp_code):
     """
     Send OTP email using Brevo (Sendinblue) API
@@ -229,7 +298,7 @@ def send_via_sendgrid(to_email, otp_code):
 def send_otp_email(to_email, otp_code):
     """
     Send OTP verification email with automatic fallback
-    Tries Gmail SMTP first, then Brevo, then SendGrid
+    Tries Gmail SMTP first, then Mailjet, then Brevo, then SendGrid
     
     Args:
         to_email (str): Recipient email address
@@ -245,8 +314,14 @@ def send_otp_email(to_email, otp_code):
         logger.info("✅ Email sent successfully via Gmail")
         return True
     
+    # Fall back to Mailjet
+    logger.info("⚠️ Gmail failed, trying Mailjet...")
+    if send_via_mailjet(to_email, otp_code):
+        logger.info("✅ Email sent successfully via Mailjet")
+        return True
+    
     # Fall back to Brevo (Sendinblue)
-    logger.info("⚠️ Gmail failed, trying Brevo...")
+    logger.info("⚠️ Mailjet failed, trying Brevo...")
     if send_via_brevo(to_email, otp_code):
         logger.info("✅ Email sent successfully via Brevo")
         return True
