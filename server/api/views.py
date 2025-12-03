@@ -214,9 +214,17 @@ def resend_otp(request):
         if not email_sent:
             print(f"Failed to send email to {email}")
             print(f"DEBUG OTP: {otp}")
+            return Response(
+                {'error': 'Failed to send verification email. Please try again or contact support.'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
     except Exception as e:
         print(f"Error sending email: {e}")
         print(f"DEBUG OTP: {otp}")
+        return Response(
+            {'error': f'Error sending email: {str(e)}'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
         
     return Response({'message': 'OTP resent successfully'})
 
