@@ -348,14 +348,14 @@ function Login({ setUser }) {
                                                     <div className="flex-1 h-2 bg-surface-200 rounded-full overflow-hidden">
                                                         <div
                                                             className={`h-full transition-all duration-300 ${passwordStrength.color === 'red' ? 'bg-red-500 w-1/3' :
-                                                                    passwordStrength.color === 'yellow' ? 'bg-yellow-500 w-2/3' :
-                                                                        passwordStrength.color === 'green' ? 'bg-green-500 w-full' : 'w-0'
+                                                                passwordStrength.color === 'yellow' ? 'bg-yellow-500 w-2/3' :
+                                                                    passwordStrength.color === 'green' ? 'bg-green-500 w-full' : 'w-0'
                                                                 }`}
                                                         ></div>
                                                     </div>
                                                     <span className={`text-xs font-bold uppercase ${passwordStrength.color === 'red' ? 'text-red-500' :
-                                                            passwordStrength.color === 'yellow' ? 'text-yellow-500' :
-                                                                passwordStrength.color === 'green' ? 'text-green-500' : ''
+                                                        passwordStrength.color === 'yellow' ? 'text-yellow-500' :
+                                                            passwordStrength.color === 'green' ? 'text-green-500' : ''
                                                         }`}>
                                                         {passwordStrength.strength}
                                                     </span>
@@ -460,16 +460,22 @@ function Login({ setUser }) {
                             <p>speak confidently.</p>
                         </div>
 
-                        <div className="space-y-4">
+                        <div className="space-y-6 w-full max-w-sm">
                             {[
-                                { icon: '🧠', text: 'Smart spaced repetition' },
-                                { icon: '🎯', text: 'Personalized learning paths' },
-                                { icon: '🌍', text: '20+ languages supported' },
-                                { icon: '⚡', text: 'AI-powered insights' }
+                                { icon: '/icon-brain.png', text: 'Smart spaced repetition' },
+                                { icon: '/icon-target.png', text: 'Personalized learning paths' },
+                                { icon: '/icon-globe.png', text: '20+ languages supported' },
+                                { icon: '/icon-lightning.png', text: 'AI-powered insights' }
                             ].map((feature, index) => (
                                 <div key={index} className="flex items-center gap-4 text-white/90">
-                                    <span className="text-2xl">{feature.icon}</span>
-                                    <span>{feature.text}</span>
+                                    <div className="h-12 w-12 flex items-center justify-center shrink-0 overflow-hidden">
+                                        <img
+                                            src={feature.icon}
+                                            alt=""
+                                            className="w-full h-full object-cover mix-blend-screen scale-125"
+                                        />
+                                    </div>
+                                    <span className="font-medium text-lg text-left">{feature.text}</span>
                                 </div>
                             ))}
                         </div>

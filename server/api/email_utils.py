@@ -95,7 +95,8 @@ def send_via_gmail(to_email, otp_code):
         msg.attach(part2)
         
         # Send email via Gmail SMTP
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+        # Add 5 second timeout to prevent worker hanging
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=5) as server:
             server.login(gmail_user, gmail_password)
             server.send_message(msg)
         
