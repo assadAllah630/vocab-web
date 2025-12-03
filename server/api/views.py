@@ -24,7 +24,6 @@ from django_ratelimit.decorators import ratelimit
 @api_view(['POST'])
 @authentication_classes([])  # Disable authentication for signup
 @permission_classes([permissions.AllowAny])
-@ratelimit(key='ip', rate='20/h', block=True)  # Increased for development
 def signup(request):
     username = request.data.get('username')
     password = request.data.get('password')
@@ -89,7 +88,6 @@ def signup(request):
 
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
-@ratelimit(key='ip', rate='10/h', block=True)
 def verify_email(request):
     email = request.data.get('email')
     otp = request.data.get('otp')
@@ -125,7 +123,6 @@ def verify_email(request):
 
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
-@ratelimit(key='ip', rate='5/h', block=True)
 def resend_otp(request):
     email = request.data.get('email')
     try:
