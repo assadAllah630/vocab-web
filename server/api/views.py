@@ -67,19 +67,16 @@ def signup(request):
             user.profile.otp_created_at = timezone.now()
             user.profile.save()
             
-            # Send Email (Console Backend)
-            from django.core.mail import send_mail
+            # Send Email via SendGrid
+            from .email_utils import send_otp_email
             try:
-                send_mail(
-                    'Verify your Vocabulary App Account',
-                    f'Your verification code is: {otp}',
-                    'noreply@vocabapp.com',
-                    [email],
-                    fail_silently=False,
-                )
+                email_sent = send_otp_email(email, otp)
+                if not email_sent:
+                    print(f"Failed to send email to {email}")
+                    # In dev, we can just print it
+                    print(f"DEBUG OTP: {otp}")
             except Exception as e:
-                print(f"Failed to send email: {e}")
-                # In dev, we can just print it
+                print(f"Error sending email: {e}")
                 print(f"DEBUG OTP: {otp}")
 
             return Response({
@@ -146,18 +143,16 @@ def resend_otp(request):
     user.profile.otp_created_at = timezone.now()
     user.profile.save()
     
-    # Send Email
-    from django.core.mail import send_mail
+    
+    # Send Email via SendGrid/Gmail
+    from .email_utils import send_otp_email
     try:
-        send_mail(
-            'Verify your Vocabulary App Account',
-            f'Your new verification code is: {otp}',
-            'noreply@vocabapp.com',
-            [email],
-            fail_silently=False,
-        )
+        email_sent = send_otp_email(email, otp)
+        if not email_sent:
+            print(f"Failed to send email to {email}")
+            print(f"DEBUG OTP: {otp}")
     except Exception as e:
-        print(f"Failed to send email: {e}")
+        print(f"Error sending email: {e}")
         print(f"DEBUG OTP: {otp}")
         
     return Response({'message': 'OTP resent successfully'})
@@ -203,6 +198,17 @@ def signin(request):
             'details': str(e),
             'traceback': error_details
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def check_username(request):
+    username = request.query_params.get('username')
+    if not username:
+        return Response({'error': 'Username required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Case insensitive check
+    exists = User.objects.filter(username__iexact=username).exists()
+    return Response({'exists': exists, 'available': not exists})
 
 def enrich_vocabulary_with_ai(vocab, api_key):
     if not api_key:

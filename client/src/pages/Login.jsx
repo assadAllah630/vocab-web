@@ -11,6 +11,7 @@ import {
     ArrowRightIcon
 } from '@heroicons/react/24/outline';
 import GoogleAuthButton from '../components/GoogleAuthButton';
+import MagneticWords from '../components/MagneticWords';
 
 function Login({ setUser }) {
     const [isLogin, setIsLogin] = useState(true);
@@ -32,14 +33,12 @@ function Login({ setUser }) {
         setLoading(true);
         try {
             if (verificationMode) {
-                // Verify OTP
                 const response = await api.post('auth/verify-email/', { email, otp });
                 const user = response.data;
                 localStorage.setItem('user', JSON.stringify(user));
                 setUser(user);
                 navigate('/dashboard');
             } else {
-                // Login or Signup
                 const endpoint = isLogin ? 'auth/signin/' : 'auth/signup/';
                 const data = isLogin
                     ? { username, password }
@@ -53,14 +52,12 @@ function Login({ setUser }) {
                     setUser(user);
                     navigate('/dashboard');
                 } else {
-                    // Signup successful, switch to verification
                     setVerificationMode(true);
-                    setError(''); // Clear any previous errors
+                    setError('');
                 }
             }
         } catch (err) {
             if (err.response?.status === 403 && err.response?.data?.requires_verification) {
-                // Login blocked because email not verified
                 setEmail(err.response.data.email);
                 setVerificationMode(true);
                 setError('Please verify your email to continue.');
@@ -93,52 +90,23 @@ function Login({ setUser }) {
     const labelClasses = "block text-xs font-bold text-surface-500 uppercase tracking-wider mb-1.5";
 
     return (
-        <div className="min-h-screen flex bg-surface-50">
-            {/* Left Side - Brand Showcase */}
-            <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-primary-900">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary-600 to-primary-900 opacity-90" />
-                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1546410531-bb4caa6b424d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center mix-blend-overlay" />
-
-                <div className="relative z-10 flex flex-col justify-between h-full p-16 text-white">
-                    <Logo className="h-10 w-10 text-white" textClassName="text-white text-2xl" />
-
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2, duration: 0.8 }}
-                    >
-                        <h1 className="text-5xl font-extrabold leading-tight mb-6">
-                            Master any language <br />
-                            <span className="text-primary-200">with AI precision.</span>
-                        </h1>
-                        <p className="text-lg text-primary-100 max-w-md leading-relaxed">
-                            Join thousands of learners using our advanced agentic AI to create personalized exams, track vocabulary, and achieve fluency faster.
-                        </p>
-                    </motion.div>
-
-                    <div className="flex gap-4 text-sm font-medium text-primary-200">
-                        <span>© 2024 VocabMaster</span>
-                        <span>•</span>
-                        <span>Privacy Policy</span>
-                    </div>
-                </div>
+        <div className="relative min-h-screen w-full">
+            {/* FULL SCREEN MAGNETIC WORDS BACKGROUND */}
+            <div className="absolute inset-0">
+                <MagneticWords />
             </div>
 
-            {/* Right Side - Auth Form */}
-            <div className="w-full lg:w-1/2 flex items-center justify-center p-8 lg:p-16 relative">
-                <div className="max-w-md w-full">
-                    <motion.div
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.5 }}
-                    >
-                        <div className="text-center lg:text-left mb-10">
-                            <h2 className="text-3xl font-bold text-surface-900 mb-2">
-                                {verificationMode
-                                    ? 'Verify Email'
-                                    : isLogin ? 'Welcome back' : 'Create an account'}
+            {/* CONTENT LAYER WITH TWO EQUAL CARDS */}
+            <div className="relative z-10 min-h-screen flex items-center justify-center px-8">
+                <div className="flex flex-col lg:flex-row w-full max-w-5xl gap-10 lg:gap-16 items-stretch">
+                    {/* LEFT CARD - WHITE LOGIN */}
+                    <div className="w-full lg:flex-1 bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-10 flex flex-col justify-center">
+                        <div className="mb-8">
+                            <Logo className="h-10 w-10 text-indigo-600 mb-6" />
+                            <h2 className="text-3xl font-bold text-slate-900 mb-2">
+                                {verificationMode ? 'Verify Email' : isLogin ? 'Welcome back' : 'Create an account'}
                             </h2>
-                            <p className="text-surface-500">
+                            <p className="text-slate-500 text-sm">
                                 {verificationMode
                                     ? `We sent a code to ${email}`
                                     : isLogin ? 'Please enter your details to sign in.' : 'Start your language journey today.'}
@@ -152,20 +120,15 @@ function Login({ setUser }) {
                                         initial={{ opacity: 0, height: 0 }}
                                         animate={{ opacity: 1, height: 'auto' }}
                                         exit={{ opacity: 0, height: 0 }}
-                                        className="bg-red-50 text-red-600 p-4 rounded-xl text-sm font-medium border border-red-100 flex items-center gap-2"
+                                        className="bg-red-50 text-red-600 p-4 rounded-xl text-sm font-medium border border-red-100"
                                     >
-                                        <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                         {error}
                                     </motion.div>
                                 )}
                             </AnimatePresence>
 
                             {verificationMode ? (
-                                // OTP Input
-                                <motion.div
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                >
+                                <div>
                                     <label htmlFor="otp" className={labelClasses}>Verification Code</label>
                                     <div className="relative">
                                         <LockClosedIcon className="w-5 h-5 text-surface-400 absolute left-3 top-3.5" />
@@ -176,25 +139,20 @@ function Login({ setUser }) {
                                             maxLength="6"
                                             value={otp}
                                             onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                                            className={`${inputClasses} tracking-[0.5em] text-center font-mono text-lg`}
+                                            className={inputClasses}
                                             placeholder="000000"
                                         />
                                     </div>
-                                    <div className="mt-4 text-center">
-                                        <button
-                                            type="button"
-                                            onClick={handleResendOtp}
-                                            disabled={resendCooldown > 0}
-                                            className="text-sm text-primary-600 font-medium hover:text-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
-                                            {resendCooldown > 0
-                                                ? `Resend code in ${resendCooldown}s`
-                                                : "Didn't receive code? Resend"}
-                                        </button>
-                                    </div>
-                                </motion.div>
+                                    <button
+                                        type="button"
+                                        onClick={handleResendOtp}
+                                        disabled={resendCooldown > 0}
+                                        className="mt-4 text-sm text-primary-600 font-medium hover:text-primary-700"
+                                    >
+                                        {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend code"}
+                                    </button>
+                                </div>
                             ) : (
-                                // Login/Signup Inputs
                                 <>
                                     <div>
                                         <label htmlFor="username" className={labelClasses}>Username</label>
@@ -218,10 +176,10 @@ function Login({ setUser }) {
                                                 initial={{ opacity: 0, height: 0 }}
                                                 animate={{ opacity: 1, height: 'auto' }}
                                                 exit={{ opacity: 0, height: 0 }}
-                                                className="space-y-5 overflow-hidden"
+                                                className="space-y-5"
                                             >
                                                 <div>
-                                                    <label htmlFor="email" className={labelClasses}>Email Address</label>
+                                                    <label htmlFor="email" className={labelClasses}>Email</label>
                                                     <div className="relative">
                                                         <EnvelopeIcon className="w-5 h-5 text-surface-400 absolute left-3 top-3.5" />
                                                         <input
@@ -238,38 +196,30 @@ function Login({ setUser }) {
 
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div>
-                                                        <label htmlFor="nativeLang" className={labelClasses}>I Speak</label>
-                                                        <div className="relative">
-                                                            <LanguageIcon className="w-5 h-5 text-surface-400 absolute left-3 top-3.5" />
-                                                            <select
-                                                                id="nativeLang"
-                                                                value={nativeLang}
-                                                                onChange={(e) => setNativeLang(e.target.value)}
-                                                                className={inputClasses}
-                                                            >
-                                                                <option value="en">English</option>
-                                                                <option value="de">German</option>
-                                                                <option value="ar">Arabic</option>
-                                                                <option value="ru">Russian</option>
-                                                            </select>
-                                                        </div>
+                                                        <label className={labelClasses}>I Speak</label>
+                                                        <select
+                                                            value={nativeLang}
+                                                            onChange={(e) => setNativeLang(e.target.value)}
+                                                            className={inputClasses}
+                                                        >
+                                                            <option value="en">English</option>
+                                                            <option value="de">German</option>
+                                                            <option value="ar">Arabic</option>
+                                                            <option value="ru">Russian</option>
+                                                        </select>
                                                     </div>
                                                     <div>
-                                                        <label htmlFor="targetLang" className={labelClasses}>I Want to Learn</label>
-                                                        <div className="relative">
-                                                            <LanguageIcon className="w-5 h-5 text-surface-400 absolute left-3 top-3.5" />
-                                                            <select
-                                                                id="targetLang"
-                                                                value={targetLang}
-                                                                onChange={(e) => setTargetLang(e.target.value)}
-                                                                className={inputClasses}
-                                                            >
-                                                                <option value="en">English</option>
-                                                                <option value="de">German</option>
-                                                                <option value="ar">Arabic</option>
-                                                                <option value="ru">Russian</option>
-                                                            </select>
-                                                        </div>
+                                                        <label className={labelClasses}>I Learn</label>
+                                                        <select
+                                                            value={targetLang}
+                                                            onChange={(e) => setTargetLang(e.target.value)}
+                                                            className={inputClasses}
+                                                        >
+                                                            <option value="en">English</option>
+                                                            <option value="de">German</option>
+                                                            <option value="ar">Arabic</option>
+                                                            <option value="ru">Russian</option>
+                                                        </select>
                                                     </div>
                                                 </div>
                                             </motion.div>
@@ -297,18 +247,16 @@ function Login({ setUser }) {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full flex justify-center items-center py-3.5 px-4 border border-transparent rounded-xl shadow-lg shadow-primary-500/30 text-sm font-bold text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-70 disabled:cursor-not-allowed transition-all transform hover:-translate-y-0.5 active:scale-95"
+                                className="w-full flex justify-center items-center py-3.5 px-4 rounded-xl text-sm font-bold text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-70 transition-all"
                             >
                                 {loading ? (
-                                    <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
                                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                     </svg>
                                 ) : (
                                     <>
-                                        {verificationMode
-                                            ? 'Verify Email'
-                                            : isLogin ? 'Sign in' : 'Create account'}
+                                        {verificationMode ? 'Verify Email' : isLogin ? 'Sign in' : 'Create account'}
                                         <ArrowRightIcon className="w-4 h-4 ml-2" />
                                     </>
                                 )}
@@ -326,36 +274,67 @@ function Login({ setUser }) {
                                     </div>
                                 </div>
 
-                                <div className="mt-6 flex justify-center">
+                                <div className="mt-6">
                                     <GoogleAuthButton
                                         onSuccess={(data) => {
                                             setUser(data.user);
                                             navigate('/dashboard');
                                         }}
-                                        onError={(error) => {
-                                            setError('Google login failed. Please try again.');
-                                        }}
+                                        onError={() => setError('Google login failed.')}
+                                        className="w-full flex justify-center items-center py-3.5 px-4 border-2 border-surface-300 rounded-xl text-sm font-semibold text-surface-700 bg-white hover:bg-surface-50 transition-all"
                                     />
                                 </div>
-                            </div>
-                        )}
 
-                        {!verificationMode && (
-                            <div className="mt-8 text-center">
-                                <p className="text-sm text-surface-500">
-                                    {isLogin ? "Don't have an account? " : "Already have an account? "}
+                                <p className="mt-6 text-center text-sm text-surface-500">
+                                    {isLogin ? "Don't have an account?" : "Already have an account?"}{' '}
                                     <button
                                         onClick={() => {
                                             setIsLogin(!isLogin);
                                             setError('');
                                         }}
-                                        className="font-bold text-primary-600 hover:text-primary-700 transition-colors"
+                                        className="font-semibold text-primary-600 hover:text-primary-700"
                                     >
-                                        {isLogin ? 'Sign up for free' : 'Sign in'}
+                                        {isLogin ? 'Sign up' : 'Log in'}
                                     </button>
                                 </p>
                             </div>
                         )}
+                    </div>
+
+                    {/* RIGHT CARD - HERO CONTENT (GRAY/WHITE) */}
+                    <motion.div
+                        initial={{ opacity: 0, x: 40 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 1.4, delay: 0.3, ease: "easeOut" }}
+                        className="hidden lg:flex lg:flex-1 bg-slate-900/40 backdrop-blur-xl rounded-3xl shadow-2xl p-10 border border-white/10 flex-col justify-center"
+                    >
+                        <h1 className="text-5xl font-black mb-6 leading-tight text-white">
+                            Master Any Language,{' '}
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-100 to-white">
+                                Naturally
+                            </span>
+                        </h1>
+
+                        <div className="text-lg text-white/80 mb-10 space-y-1">
+                            <p>Your personal AI-powered vocabulary companion.</p>
+                            <p>Learn faster,</p>
+                            <p>remember longer,</p>
+                            <p>speak confidently.</p>
+                        </div>
+
+                        <div className="space-y-4">
+                            {[
+                                { icon: '🧠', text: 'Smart spaced repetition' },
+                                { icon: '🎯', text: 'Personalized learning paths' },
+                                { icon: '🌍', text: '20+ languages supported' },
+                                { icon: '⚡', text: 'AI-powered insights' }
+                            ].map((feature, index) => (
+                                <div key={index} className="flex items-center gap-4 text-white/90">
+                                    <span className="text-2xl">{feature.icon}</span>
+                                    <span>{feature.text}</span>
+                                </div>
+                            ))}
+                        </div>
                     </motion.div>
                 </div>
             </div>

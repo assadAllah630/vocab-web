@@ -86,6 +86,7 @@ urlpatterns = [
     path('auth/signin/', signin),
     path('auth/verify-email/', views.verify_email),
     path('auth/resend-otp/', views.resend_otp),
+    path('auth/check-username/', views.check_username),
     
     # Google OAuth
     path('auth/google/', google_oauth_login, name='google_oauth_login'),
