@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../api';
@@ -8,7 +8,11 @@ import {
     LockClosedIcon,
     EnvelopeIcon,
     LanguageIcon,
-    ArrowRightIcon
+    ArrowRightIcon,
+    EyeIcon,
+    EyeSlashIcon,
+    CheckCircleIcon,
+    XCircleIcon
 } from '@heroicons/react/24/outline';
 import GoogleAuthButton from '../components/GoogleAuthButton';
 import MagneticWords from '../components/MagneticWords';
@@ -25,7 +29,70 @@ function Login({ setUser }) {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [resendCooldown, setResendCooldown] = useState(0);
+
+    // New UX states
+    const [showPassword, setShowPassword] = useState(false);
+    const [usernameStatus, setUsernameStatus] = useState('idle'); // idle | checking | available | taken
+    const [passwordStrength, setPasswordStrength] = useState({ strength: '', color: '', score: 0, checks: {} });
+
+
     const navigate = useNavigate();
+
+    // Password strength checker
+    const checkPasswordStrength = (pwd) => {
+        const checks = {
+            length: pwd.length >= 8,
+            uppercase: /[A-Z]/.test(pwd),
+            lowercase: /[a-z]/.test(pwd),
+            number: /[0-9]/.test(pwd),
+            special: /[!@#$%^&*(),.?\":{}|<>]/.test(pwd)
+        };
+
+        const score = Object.values(checks).filter(Boolean).length;
+
+        let strength, color;
+        if (score <= 2) {
+            strength = 'weak';
+            color = 'red';
+        } else if (score <= 4) {
+            strength = 'medium';
+            color = 'yellow';
+        } else {
+            strength = 'strong';
+            color = 'green';
+        }
+
+        return { strength, color, score, checks };
+    };
+
+    // Check username availability (debounced)
+    useEffect(() => {
+        if (!username || username.length < 3 || isLogin) {
+            setUsernameStatus('idle');
+            return;
+        }
+
+        setUsernameStatus('checking');
+        const timer = setTimeout(async () => {
+            try {
+                const response = await api.post('auth/check-username/', { username });
+                setUsernameStatus(response.data.available ? 'available' : 'taken');
+            } catch (error) {
+                setUsernameStatus('idle');
+            }
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [username, isLogin]);
+
+    // Update password strength
+    useEffect(() => {
+        if (password && !isLogin) {
+            setPasswordStrength(checkPasswordStrength(password));
+        } else {
+            setPasswordStrength({ strength: '', color: '', score: 0, checks: {} });
+        }
+    }, [password, isLogin]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -164,10 +231,31 @@ function Login({ setUser }) {
                                                 required
                                                 value={username}
                                                 onChange={(e) => setUsername(e.target.value)}
-                                                className={inputClasses}
+                                                className={`${inputClasses} ${!isLogin && usernameStatus === 'taken' ? 'border-red-500 focus:ring-red-500' :
+                                                    !isLogin && usernameStatus === 'available' ? 'border-green-500 focus:ring-green-500' : ''
+                                                    }`}
                                                 placeholder="Enter your username"
                                             />
+                                            {!isLogin && username.length >= 3 && (
+                                                <div className="absolute right-3 top-3.5">
+                                                    {usernameStatus === 'checking' && (
+                                                        <div className="animate-spin h-5 w-5 border-2 border-primary-500 border-t-transparent rounded-full"></div>
+                                                    )}
+                                                    {usernameStatus === 'available' && (
+                                                        <CheckCircleIcon className="w-5 h-5 text-green-500" />
+                                                    )}
+                                                    {usernameStatus === 'taken' && (
+                                                        <XCircleIcon className="w-5 h-5 text-red-500" />
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
+                                        {!isLogin && usernameStatus === 'taken' && (
+                                            <p className="mt-1 text-xs text-red-500">This username is already taken</p>
+                                        )}
+                                        {!isLogin && usernameStatus === 'available' && (
+                                            <p className="mt-1 text-xs text-green-500">Username is available</p>
+                                        )}
                                     </div>
 
                                     <AnimatePresence>
@@ -232,14 +320,64 @@ function Login({ setUser }) {
                                             <LockClosedIcon className="w-5 h-5 text-surface-400 absolute left-3 top-3.5" />
                                             <input
                                                 id="password"
-                                                type="password"
+                                                type={showPassword ? "text" : "password"}
                                                 required
                                                 value={password}
                                                 onChange={(e) => setPassword(e.target.value)}
-                                                className={inputClasses}
+                                                className={`${inputClasses} pr-12`}
                                                 placeholder="••••••••"
                                             />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                className="absolute right-3 top-3.5 text-surface-400 hover:text-surface-600 transition-colors"
+                                            >
+                                                {showPassword ? (
+                                                    <EyeSlashIcon className="w-5 h-5" />
+                                                ) : (
+                                                    <EyeIcon className="w-5 h-5" />
+                                                )}
+                                            </button>
                                         </div>
+
+                                        {/* Password Strength Meter - Only show during signup */}
+                                        {!isLogin && password && (
+                                            <div className="mt-2 space-y-2">
+                                                {/* Strength Bar */}
+                                                <div className="flex items-center gap-2">
+                                                    <div className="flex-1 h-2 bg-surface-200 rounded-full overflow-hidden">
+                                                        <div
+                                                            className={`h-full transition-all duration-300 ${passwordStrength.color === 'red' ? 'bg-red-500 w-1/3' :
+                                                                    passwordStrength.color === 'yellow' ? 'bg-yellow-500 w-2/3' :
+                                                                        passwordStrength.color === 'green' ? 'bg-green-500 w-full' : 'w-0'
+                                                                }`}
+                                                        ></div>
+                                                    </div>
+                                                    <span className={`text-xs font-bold uppercase ${passwordStrength.color === 'red' ? 'text-red-500' :
+                                                            passwordStrength.color === 'yellow' ? 'text-yellow-500' :
+                                                                passwordStrength.color === 'green' ? 'text-green-500' : ''
+                                                        }`}>
+                                                        {passwordStrength.strength}
+                                                    </span>
+                                                </div>
+
+                                                {/* Requirements Checklist */}
+                                                <div className="grid grid-cols-2 gap-1 text-xs">
+                                                    {Object.entries(passwordStrength.checks).map(([key, value]) => (
+                                                        <div key={key} className={`flex items-center gap-1 ${value ? 'text-green-600' : 'text-surface-400'}`}>
+                                                            {value ? '✓' : '○'}
+                                                            <span className="capitalize">
+                                                                {key === 'length' ? '8+ characters' :
+                                                                    key === 'uppercase' ? 'Uppercase' :
+                                                                        key === 'lowercase' ? 'Lowercase' :
+                                                                            key === 'number' ? 'Number' :
+                                                                                'Special char'}
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </>
                             )}

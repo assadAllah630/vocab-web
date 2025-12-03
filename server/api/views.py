@@ -27,7 +27,9 @@ def signup(request):
     password = request.data.get('password')
     email = request.data.get('email')
     native_language = request.data.get('native_language', 'en')
-    target_language = request.data.get('target_language', 'de')    print(f"[SIGNUP] Received signup request for email: {email}, username: {username}")
+    target_language = request.data.get('target_language', 'de')
+    
+    print(f"[SIGNUP] Received signup request for email: {email}, username: {username}")
 
     # Check if email already exists
     existing_user = User.objects.filter(email=email).first()
