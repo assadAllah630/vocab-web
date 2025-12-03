@@ -16,6 +16,7 @@ import string
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from .models import UserProfile
+import requests
 import logging
 
 logger = logging.getLogger(__name__)
@@ -78,89 +79,107 @@ def send_notification_email(to_email, subject, message):
 def google_oauth_login(request):
     """
     Handle Google OAuth login
-    Expects: { "credential": "google_id_token" }
+    Supports both ID Token ('credential') and Access Token ('access_token')
     """
     try:
-        token = request.data.get('credential')
+        credential = request.data.get('credential')
+        access_token = request.data.get('access_token')
         
-        if not token:
-            return Response(
-                {'error': 'No credential provided'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        email = None
+        given_name = ''
+        family_name = ''
+        picture = ''
         
-        # Verify the Google token
-        try:
-            idinfo = id_token.verify_oauth2_token(
-                token,
-                google_requests.Request(),
-                settings.GOOGLE_OAUTH_CLIENT_ID
-            )
-            
-            # Get user info from Google
-            email = idinfo.get('email')
-            given_name = idinfo.get('given_name', '')
-            family_name = idinfo.get('family_name', '')
-            picture = idinfo.get('picture', '')
-            
-            if not email:
-                return Response(
-                    {'error': 'Email not provided by Google'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            
-            # Check if user exists
+        if credential:
+            # Verify ID Token
             try:
-                user = User.objects.get(email=email)
-                created = False
-            except User.DoesNotExist:
-                # Create new user
-                base_username = email.split('@')[0]
-                username = base_username
-                counter = 1
-                
-                # Ensure username is unique
-                while User.objects.filter(username=username).exists():
-                    username = f"{base_username}{counter}"
-                    counter += 1
-                
-                user = User.objects.create_user(
-                    username=username,
-                    email=email,
-                    first_name=given_name,
-                    last_name=family_name
+                idinfo = id_token.verify_oauth2_token(
+                    credential,
+                    google_requests.Request(),
+                    settings.GOOGLE_OAUTH_CLIENT_ID
                 )
-                created = True
-            
-            # Update user profile
-            profile, _ = UserProfile.objects.get_or_create(user=user)
-            profile.is_email_verified = True  # Google emails are verified
-            profile.save()
-            
-            # Update last_login timestamp
-            user.last_login = timezone.now()
-            user.save(update_fields=['last_login'])
-            
-            # Generate or get auth token
-            token, _ = Token.objects.get_or_create(user=user)
-            
-            return Response({
-                'token': token.key,
-                'user': {
-                    'id': user.id,
-                    'username': user.username,
-                    'email': user.email,
-                    'first_name': user.first_name,
-                    'last_name': user.last_name,
-                },
-                'is_new_user': created
-            })
-            
-        except ValueError as e:
+                email = idinfo.get('email')
+                given_name = idinfo.get('given_name', '')
+                family_name = idinfo.get('family_name', '')
+                picture = idinfo.get('picture', '')
+            except ValueError as e:
+                return Response({'error': f'Invalid ID token: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+                
+        elif access_token:
+            # Verify Access Token via UserInfo endpoint
+            try:
+                user_info_response = requests.get(
+                    'https://www.googleapis.com/oauth2/v3/userinfo',
+                    headers={'Authorization': f'Bearer {access_token}'}
+                )
+                
+                if user_info_response.status_code != 200:
+                    return Response({'error': 'Invalid access token'}, status=status.HTTP_400_BAD_REQUEST)
+                
+                user_info = user_info_response.json()
+                email = user_info.get('email')
+                given_name = user_info.get('given_name', '')
+                family_name = user_info.get('family_name', '')
+                picture = user_info.get('picture', '')
+                
+            except Exception as e:
+                return Response({'error': f'Failed to validate access token: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        else:
             return Response(
-                {'error': f'Invalid token: {str(e)}'},
+                {'error': 'No credential or access_token provided'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+        if not email:
+            return Response({'error': 'Email not provided by Google'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        # Check if user exists
+        try:
+            user = User.objects.get(email=email)
+            created = False
+        except User.DoesNotExist:
+            # Create new user
+            base_username = email.split('@')[0]
+            username = base_username
+            counter = 1
+            
+            # Ensure username is unique
+            while User.objects.filter(username=username).exists():
+                username = f"{base_username}{counter}"
+                counter += 1
+            
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                first_name=given_name,
+                last_name=family_name
+            )
+            created = True
+        
+        # Update user profile
+        profile, _ = UserProfile.objects.get_or_create(user=user)
+        profile.is_email_verified = True  # Google emails are verified
+        profile.save()
+        
+        # Update last_login timestamp
+        user.last_login = timezone.now()
+        user.save(update_fields=['last_login'])
+        
+        # Generate or get auth token
+        token, _ = Token.objects.get_or_create(user=user)
+        
+        return Response({
+            'token': token.key,
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+            },
+            'is_new_user': created
+        })
     
     except Exception as e:
         return Response(
