@@ -191,6 +191,67 @@ def send_via_mailjet(to_email, otp_code):
         return False
 
 
+def send_via_gmail_api(to_email, otp_code):
+    """
+    Send OTP email using Gmail API (HTTPS, bypasses SMTP blocking)
+    
+    Args:
+        to_email (str): Recipient email address
+        otp_code (str): 6-digit OTP code
+    
+    Returns:
+        bool: True if email sent successfully, False otherwise
+    """
+    try:
+        from google.oauth2.credentials import Credentials
+        from googleapiclient.discovery import build
+        from google.auth.transport.requests import Request
+        import base64
+        from email.mime.multipart import MIMEMultipart
+        from email.mime.text import MIMEText
+        
+        client_id = os.getenv('GOOGLE_OAUTH_CLIENT_ID')
+        client_secret = os.getenv('GOOGLE_OAUTH_CLIENT_SECRET')
+        refresh_token = os.getenv('GOOGLE_REFRESH_TOKEN')
+        
+        if not client_id or not client_secret or not refresh_token:
+            return False
+            
+        creds = Credentials(
+            None,
+            refresh_token=refresh_token,
+            token_uri="https://oauth2.googleapis.com/token",
+            client_id=client_id,
+            client_secret=client_secret
+        )
+        
+        creds.refresh(Request())
+        
+        service = build('gmail', 'v1', credentials=creds)
+        
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = 'Your VocabMaster Verification Code'
+        msg['From'] = 'VocabMaster'
+        msg['To'] = to_email
+        
+        text_content = f"Your verification code is: {otp_code}"
+        html_content = get_email_html_template(otp_code)
+        
+        msg.attach(MIMEText(text_content, 'plain'))
+        msg.attach(MIMEText(html_content, 'html'))
+        
+        raw_message = base64.urlsafe_b64encode(msg.as_bytes()).decode('utf-8')
+        
+        service.users().messages().send(userId='me', body={'raw': raw_message}).execute()
+        
+        logger.info(f"✅ OTP email sent via Gmail API to {to_email}")
+        return True
+        
+    except Exception as e:
+        logger.error(f"❌ Gmail API failed: {str(e)}")
+        return False
+
+
 def send_via_brevo(to_email, otp_code):
     """
     Send OTP email using Brevo (Sendinblue) API
@@ -298,7 +359,7 @@ def send_via_sendgrid(to_email, otp_code):
 def send_otp_email(to_email, otp_code):
     """
     Send OTP verification email with automatic fallback
-    Tries Gmail SMTP first, then Mailjet, then Brevo, then SendGrid
+    Tries Gmail API first (works on Render), then SMTP, then third-party services
     
     Args:
         to_email (str): Recipient email address
@@ -307,15 +368,21 @@ def send_otp_email(to_email, otp_code):
     Returns:
         bool: True if email sent successfully via any method, False otherwise
     """
-    # Try Gmail first
     logger.info(f"📧 Attempting to send OTP email to {to_email}")
     
+    # Try Gmail API first (works on Render/cloud platforms)
+    if send_via_gmail_api(to_email, otp_code):
+        logger.info("✅ Email sent successfully via Gmail API")
+        return True
+    
+    # Try Gmail SMTP (works locally)
+    logger.info("⚠️ Gmail API not configured, trying SMTP...")
     if send_via_gmail(to_email, otp_code):
-        logger.info("✅ Email sent successfully via Gmail")
+        logger.info("✅ Email sent successfully via Gmail SMTP")
         return True
     
     # Fall back to Mailjet
-    logger.info("⚠️ Gmail failed, trying Mailjet...")
+    logger.info("⚠️ Gmail SMTP failed, trying Mailjet...")
     if send_via_mailjet(to_email, otp_code):
         logger.info("✅ Email sent successfully via Mailjet")
         return True
