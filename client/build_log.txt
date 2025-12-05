@@ -1,31 +1,177 @@
-
+﻿
 > client@0.0.0 build
 > vite build
 
 [36mvite v7.2.4 [32mbuilding client environment for production...[36m[39m
 transforming...
-[32m✓[39m 804 modules transformed.
-[31m✗[39m Build failed in 3.37s
-[31merror during build:
-[31m[vite:esbuild] Transform failed with 1 error:
-E:/vocab_web/client/src/components/HeroSection.jsx:137:0: ERROR: Unexpected "}"[31m
-file: [36mE:/vocab_web/client/src/components/HeroSection.jsx:137:0[31m
-[33m
-[33mUnexpected "}"[33m
-135 |      </section>
-136 |  );
-137 |  };
-    |  ^
-138 |  
-139 |  export default HeroSection;
-[31m
-    at failureErrorWithLog (E:\vocab_web\client\node_modules\esbuild\lib\main.js:1467:15)
-    at E:\vocab_web\client\node_modules\esbuild\lib\main.js:736:50
-    at responseCallbacks.<computed> (E:\vocab_web\client\node_modules\esbuild\lib\main.js:603:9)
-    at handleIncomingPacket (E:\vocab_web\client\node_modules\esbuild\lib\main.js:658:12)
-    at Socket.readFromStdout (E:\vocab_web\client\node_modules\esbuild\lib\main.js:581:7)
-    at Socket.emit (node:events:508:28)
-    at addChunk (node:internal/streams/readable:559:12)
-    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
-    at Readable.push (node:internal/streams/readable:390:5)
-    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)[39m
+[32mΓ£ô[39m 5750 modules transformed.
+rendering chunks...
+computing gzip size...
+[2mdist/[22m[32mindex.html                                         [39m[1m[2m  0.61 kB[22m[1m[22m[2m Γöé gzip:   0.36 kB[22m
+[2mdist/[22m[32massets/streak-flame-Vi8-3UN_.png                   [39m[1m[2m 38.40 kB[22m[1m[22m
+[2mdist/[22m[35massets/GrammarGenerator-2cK78j4F.css               [39m[1m[2m  2.02 kB[22m[1m[22m[2m Γöé gzip:   0.71 kB[22m
+[2mdist/[22m[35massets/index-O0zanOWT.css                          [39m[1m[2m161.98 kB[22m[1m[22m[2m Γöé gzip:  22.21 kB[22m
+[2mdist/[22m[36massets/clone-DjP1YNUu.js                           [39m[1m[2m  0.10 kB[22m[1m[22m[2m Γöé gzip:   0.11 kB[22m
+[2mdist/[22m[36massets/channel-8whwmLsj.js                         [39m[1m[2m  0.11 kB[22m[1m[22m[2m Γöé gzip:   0.13 kB[22m
+[2mdist/[22m[36massets/check-EBxF-Wt-.js                           [39m[1m[2m  0.13 kB[22m[1m[22m[2m Γöé gzip:   0.14 kB[22m
+[2mdist/[22m[36massets/chevron-down-B8GbAsju.js                    [39m[1m[2m  0.13 kB[22m[1m[22m[2m Γöé gzip:   0.14 kB[22m
+[2mdist/[22m[36massets/chevron-right-BNoErMNX.js                   [39m[1m[2m  0.13 kB[22m[1m[22m[2m Γöé gzip:   0.14 kB[22m
+[2mdist/[22m[36massets/chevron-left-DFf2QDmS.js                    [39m[1m[2m  0.13 kB[22m[1m[22m[2m Γöé gzip:   0.14 kB[22m
+[2mdist/[22m[36massets/loader-circle-BZX7_aas.js                   [39m[1m[2m  0.15 kB[22m[1m[22m[2m Γöé gzip:   0.16 kB[22m
+[2mdist/[22m[36massets/init-Gi6I4Gst.js                            [39m[1m[2m  0.15 kB[22m[1m[22m[2m Γöé gzip:   0.13 kB[22m
+[2mdist/[22m[36massets/plus-a3a4dKsa.js                            [39m[1m[2m  0.15 kB[22m[1m[22m[2m Γöé gzip:   0.15 kB[22m
+[2mdist/[22m[36massets/search-Cw7DjGsw.js                          [39m[1m[2m  0.18 kB[22m[1m[22m[2m Γöé gzip:   0.17 kB[22m
+[2mdist/[22m[36massets/chunk-QZHKN3VN-D3NQLabB.js                  [39m[1m[2m  0.19 kB[22m[1m[22m[2m Γöé gzip:   0.16 kB[22m
+[2mdist/[22m[36massets/rotate-ccw-DufAUwPX.js                      [39m[1m[2m  0.20 kB[22m[1m[22m[2m Γöé gzip:   0.18 kB[22m
+[2mdist/[22m[36massets/lock-CEUNSF35.js                            [39m[1m[2m  0.21 kB[22m[1m[22m[2m Γöé gzip:   0.19 kB[22m
+[2mdist/[22m[36massets/chunk-4BX2VUAB-Dq0ag8r0.js                  [39m[1m[2m  0.23 kB[22m[1m[22m[2m Γöé gzip:   0.17 kB[22m
+[2mdist/[22m[36massets/chunk-55IACEB6-xfc0wfxf.js                  [39m[1m[2m  0.24 kB[22m[1m[22m[2m Γöé gzip:   0.21 kB[22m
+[2mdist/[22m[36massets/zap-z3a1-nER.js                             [39m[1m[2m  0.26 kB[22m[1m[22m[2m Γöé gzip:   0.21 kB[22m
+[2mdist/[22m[36massets/trash-2-Dgb7TwN0.js                         [39m[1m[2m  0.33 kB[22m[1m[22m[2m Γöé gzip:   0.22 kB[22m
+[2mdist/[22m[36massets/chunk-FMBD7UC4-DC1wm-cW.js                  [39m[1m[2m  0.37 kB[22m[1m[22m[2m Γöé gzip:   0.27 kB[22m
+[2mdist/[22m[36massets/stateDiagram-v2-4FDKWEC3-6RPh2M51.js        [39m[1m[2m  0.39 kB[22m[1m[22m[2m Γöé gzip:   0.29 kB[22m
+[2mdist/[22m[36massets/classDiagram-2ON5EDUG-BFObGe02.js           [39m[1m[2m  0.43 kB[22m[1m[22m[2m Γöé gzip:   0.30 kB[22m
+[2mdist/[22m[36massets/classDiagram-v2-WZHVMYZB-BFObGe02.js        [39m[1m[2m  0.43 kB[22m[1m[22m[2m Γöé gzip:   0.30 kB[22m
+[2mdist/[22m[36massets/trophy-EJ-UdDa_.js                          [39m[1m[2m  0.48 kB[22m[1m[22m[2m Γöé gzip:   0.28 kB[22m
+[2mdist/[22m[36massets/CheckIcon-DhaIpVjg.js                       [39m[1m[2m  0.48 kB[22m[1m[22m[2m Γöé gzip:   0.35 kB[22m
+[2mdist/[22m[36massets/ChevronUpIcon-ObxE5izf.js                   [39m[1m[2m  0.48 kB[22m[1m[22m[2m Γöé gzip:   0.35 kB[22m
+[2mdist/[22m[36massets/ChevronDownIcon-KZs_VLil.js                 [39m[1m[2m  0.48 kB[22m[1m[22m[2m Γöé gzip:   0.35 kB[22m
+[2mdist/[22m[36massets/ArrowLeftIcon-BsgtLKNN.js                   [39m[1m[2m  0.49 kB[22m[1m[22m[2m Γöé gzip:   0.36 kB[22m
+[2mdist/[22m[36massets/chunk-QN33PNHL-D1OSg0iH.js                  [39m[1m[2m  0.51 kB[22m[1m[22m[2m Γöé gzip:   0.36 kB[22m
+[2mdist/[22m[36massets/HashtagIcon-DlhRg6S3.js                     [39m[1m[2m  0.52 kB[22m[1m[22m[2m Γöé gzip:   0.37 kB[22m
+[2mdist/[22m[36massets/MobileExamPlay-bksCL1BC.js                  [39m[1m[2m  0.53 kB[22m[1m[22m[2m Γöé gzip:   0.36 kB[22m
+[2mdist/[22m[36massets/MobileExamCreate-C5HuhjIF.js                [39m[1m[2m  0.53 kB[22m[1m[22m[2m Γöé gzip:   0.35 kB[22m
+[2mdist/[22m[36massets/ArrowTrendingUpIcon-BSIlu3tU.js             [39m[1m[2m  0.56 kB[22m[1m[22m[2m Γöé gzip:   0.40 kB[22m
+[2mdist/[22m[36massets/brain-DK5J5jN6.js                           [39m[1m[2m  0.58 kB[22m[1m[22m[2m Γöé gzip:   0.31 kB[22m
+[2mdist/[22m[36massets/StopIcon-DmFa6abW.js                        [39m[1m[2m  0.58 kB[22m[1m[22m[2m Γöé gzip:   0.37 kB[22m
+[2mdist/[22m[36massets/PlayIcon-BzomNFz5.js                        [39m[1m[2m  0.58 kB[22m[1m[22m[2m Γöé gzip:   0.40 kB[22m
+[2mdist/[22m[36massets/BookmarkIcon-ChWJQNaZ.js                    [39m[1m[2m  0.59 kB[22m[1m[22m[2m Γöé gzip:   0.42 kB[22m
+[2mdist/[22m[36massets/BookmarkIcon-BubTJBQ9.js                    [39m[1m[2m  0.59 kB[22m[1m[22m[2m Γöé gzip:   0.42 kB[22m
+[2mdist/[22m[36massets/ArrowPathIcon-PO-ANiow.js                   [39m[1m[2m  0.62 kB[22m[1m[22m[2m Γöé gzip:   0.43 kB[22m
+[2mdist/[22m[36massets/MapPinIcon-D8KmXXco.js                      [39m[1m[2m  0.65 kB[22m[1m[22m[2m Γöé gzip:   0.40 kB[22m
+[2mdist/[22m[36massets/UserPlusIcon-BrsZ-QkW.js                    [39m[1m[2m  0.66 kB[22m[1m[22m[2m Γöé gzip:   0.45 kB[22m
+[2mdist/[22m[36massets/AdjustmentsHorizontalIcon-8qnHRCQ_.js       [39m[1m[2m  0.67 kB[22m[1m[22m[2m Γöé gzip:   0.41 kB[22m
+[2mdist/[22m[36massets/infoDiagram-ER5ION4S-DJF7ng9Y.js            [39m[1m[2m  0.69 kB[22m[1m[22m[2m Γöé gzip:   0.46 kB[22m
+[2mdist/[22m[36massets/NewspaperIcon-CDK6wSyn.js                   [39m[1m[2m  0.73 kB[22m[1m[22m[2m Γöé gzip:   0.46 kB[22m
+[2mdist/[22m[36massets/TagIcon-CXhv_WrG.js                         [39m[1m[2m  0.76 kB[22m[1m[22m[2m Γöé gzip:   0.48 kB[22m
+[2mdist/[22m[36massets/PhotoIcon-DAspqWT6.js                       [39m[1m[2m  0.77 kB[22m[1m[22m[2m Γöé gzip:   0.47 kB[22m
+[2mdist/[22m[36massets/FireIcon-DgOBXghb.js                        [39m[1m[2m  0.79 kB[22m[1m[22m[2m Γöé gzip:   0.47 kB[22m
+[2mdist/[22m[36massets/ChatBubbleBottomCenterTextIcon-ECuFtpi2.js  [39m[1m[2m  0.81 kB[22m[1m[22m[2m Γöé gzip:   0.54 kB[22m
+[2mdist/[22m[36massets/TrashIcon-NYH1CGMC.js                       [39m[1m[2m  0.87 kB[22m[1m[22m[2m Γöé gzip:   0.55 kB[22m
+[2mdist/[22m[36massets/CheckBadgeIcon-BtEOefPk.js                  [39m[1m[2m  0.94 kB[22m[1m[22m[2m Γöé gzip:   0.50 kB[22m
+[2mdist/[22m[36massets/UserGroupIcon-z2Tg9aSH.js                   [39m[1m[2m  0.97 kB[22m[1m[22m[2m Γöé gzip:   0.57 kB[22m
+[2mdist/[22m[36massets/ChatBubbleLeftRightIcon-RsTUE5D4.js         [39m[1m[2m  0.97 kB[22m[1m[22m[2m Γöé gzip:   0.62 kB[22m
+[2mdist/[22m[36massets/star-0RJzzVm4.js                            [39m[1m[2m  1.00 kB[22m[1m[22m[2m Γöé gzip:   0.45 kB[22m
+[2mdist/[22m[36massets/MagnifyingGlassIcon-hs7cNjUy.js             [39m[1m[2m  1.05 kB[22m[1m[22m[2m Γöé gzip:   0.45 kB[22m
+[2mdist/[22m[36massets/TrophyIcon-Bngjdwbw.js                      [39m[1m[2m  1.10 kB[22m[1m[22m[2m Γöé gzip:   0.64 kB[22m
+[2mdist/[22m[36massets/ordinal-Cboi1Yqb.js                         [39m[1m[2m  1.19 kB[22m[1m[22m[2m Γöé gzip:   0.57 kB[22m
+[2mdist/[22m[36massets/AnimatedIcons-B7Dnigex.js                   [39m[1m[2m  1.37 kB[22m[1m[22m[2m Γöé gzip:   0.66 kB[22m
+[2mdist/[22m[36massets/chunk-TZMSLE5B-D-dms69F.js                  [39m[1m[2m  1.44 kB[22m[1m[22m[2m Γöé gzip:   0.63 kB[22m
+[2mdist/[22m[36massets/MobileDialogueViewer-CIQnSD5W.js            [39m[1m[2m  1.75 kB[22m[1m[22m[2m Γöé gzip:   0.81 kB[22m
+[2mdist/[22m[36massets/MobileStoryViewer-5ddddPQK.js               [39m[1m[2m  1.89 kB[22m[1m[22m[2m Γöé gzip:   0.88 kB[22m
+[2mdist/[22m[36massets/MobileArticleViewer-BlNrROwm.js             [39m[1m[2m  1.90 kB[22m[1m[22m[2m Γöé gzip:   0.88 kB[22m
+[2mdist/[22m[36massets/MobileAIWizardLayout-C5cKq4mT.js            [39m[1m[2m  1.97 kB[22m[1m[22m[2m Γöé gzip:   0.93 kB[22m
+[2mdist/[22m[36massets/_basePickBy-4gR485qJ.js                     [39m[1m[2m  2.59 kB[22m[1m[22m[2m Γöé gzip:   1.29 kB[22m
+[2mdist/[22m[36massets/MobileTimeChallenge-Bgt3wUlQ.js             [39m[1m[2m  2.60 kB[22m[1m[22m[2m Γöé gzip:   1.07 kB[22m
+[2mdist/[22m[36massets/StatsDashboard-DactDKtP.js                  [39m[1m[2m  2.84 kB[22m[1m[22m[2m Γöé gzip:   1.18 kB[22m
+[2mdist/[22m[36massets/QuizSelector-Dq1N0v5R.js                    [39m[1m[2m  2.88 kB[22m[1m[22m[2m Γöé gzip:   1.23 kB[22m
+[2mdist/[22m[36massets/MobileAIGenerator-BxX6i_JO.js               [39m[1m[2m  3.39 kB[22m[1m[22m[2m Γöé gzip:   1.45 kB[22m
+[2mdist/[22m[36massets/arc-Bzlnonlr.js                             [39m[1m[2m  3.42 kB[22m[1m[22m[2m Γöé gzip:   1.47 kB[22m
+[2mdist/[22m[36massets/SharedBank-Cg4Kw1F0.js                      [39m[1m[2m  3.45 kB[22m[1m[22m[2m Γöé gzip:   1.37 kB[22m
+[2mdist/[22m[36massets/MyPodcasts-C3I-GScT.js                      [39m[1m[2m  3.54 kB[22m[1m[22m[2m Γöé gzip:   1.34 kB[22m
+[2mdist/[22m[36massets/MobileWords-ButeXhXM.js                     [39m[1m[2m  3.91 kB[22m[1m[22m[2m Γöé gzip:   1.52 kB[22m
+[2mdist/[22m[36massets/MobilePractice-CdnYDypa.js                  [39m[1m[2m  3.95 kB[22m[1m[22m[2m Γöé gzip:   1.53 kB[22m
+[2mdist/[22m[36massets/diagram-S2PKOQOG-BoKufsrQ.js                [39m[1m[2m  4.31 kB[22m[1m[22m[2m Γöé gzip:   1.88 kB[22m
+[2mdist/[22m[36massets/ArticleViewer-Diu9gB2Y.js                   [39m[1m[2m  4.44 kB[22m[1m[22m[2m Γöé gzip:   1.78 kB[22m
+[2mdist/[22m[36massets/MobileProfile-BFt7Apd6.js                   [39m[1m[2m  4.48 kB[22m[1m[22m[2m Γöé gzip:   1.79 kB[22m
+[2mdist/[22m[36massets/defaultLocale-C4B-KCzX.js                   [39m[1m[2m  4.55 kB[22m[1m[22m[2m Γöé gzip:   2.13 kB[22m
+[2mdist/[22m[36massets/MobileMarkdownRenderer-BIVBObGR.js          [39m[1m[2m  5.11 kB[22m[1m[22m[2m Γöé gzip:   2.07 kB[22m
+[2mdist/[22m[36massets/pieDiagram-ADFJNKIX-JFm54p_a.js             [39m[1m[2m  5.24 kB[22m[1m[22m[2m Γöé gzip:   2.32 kB[22m
+[2mdist/[22m[36massets/MemoryMatch-B6AkbRLv.js                     [39m[1m[2m  5.59 kB[22m[1m[22m[2m Γöé gzip:   2.04 kB[22m
+[2mdist/[22m[36massets/linear-GWdhAr2P.js                          [39m[1m[2m  5.66 kB[22m[1m[22m[2m Γöé gzip:   2.31 kB[22m
+[2mdist/[22m[36massets/DialogueViewer-xHfK7ZKL.js                  [39m[1m[2m  5.68 kB[22m[1m[22m[2m Γöé gzip:   2.00 kB[22m
+[2mdist/[22m[36massets/MiniGames-eKG0MJFT.js                       [39m[1m[2m  5.78 kB[22m[1m[22m[2m Γöé gzip:   2.15 kB[22m
+[2mdist/[22m[36massets/diagram-QEK2KX5R-IGToB8RQ.js                [39m[1m[2m  5.91 kB[22m[1m[22m[2m Γöé gzip:   2.50 kB[22m
+[2mdist/[22m[36massets/graph-CetuhITC.js                           [39m[1m[2m  5.92 kB[22m[1m[22m[2m Γöé gzip:   1.87 kB[22m
+[2mdist/[22m[36massets/PublicProfile-CpQQzQto.js                   [39m[1m[2m  5.97 kB[22m[1m[22m[2m Γöé gzip:   2.25 kB[22m
+[2mdist/[22m[36massets/MobileGrammar--tnpauk6.js                   [39m[1m[2m  5.98 kB[22m[1m[22m[2m Γöé gzip:   2.26 kB[22m
+[2mdist/[22m[36massets/MobileDialogueDisplay-JVYcCveU.js           [39m[1m[2m  6.01 kB[22m[1m[22m[2m Γöé gzip:   2.14 kB[22m
+[2mdist/[22m[36massets/MobileStoryDisplay-sXVVlvIp.js              [39m[1m[2m  6.04 kB[22m[1m[22m[2m Γöé gzip:   1.99 kB[22m
+[2mdist/[22m[36massets/MobileArticleDisplay-COLy1-kF.js            [39m[1m[2m  6.04 kB[22m[1m[22m[2m Γöé gzip:   2.00 kB[22m
+[2mdist/[22m[36massets/GeneratedContentLibrary-Co4MDrsC.js         [39m[1m[2m  6.41 kB[22m[1m[22m[2m Γöé gzip:   2.42 kB[22m
+[2mdist/[22m[36massets/MobileMemoryMatch-DJ_AWTWZ.js               [39m[1m[2m  6.46 kB[22m[1m[22m[2m Γöé gzip:   2.15 kB[22m
+[2mdist/[22m[36massets/MobileGames-Dz2TW1Xe.js                     [39m[1m[2m  6.76 kB[22m[1m[22m[2m Γöé gzip:   2.15 kB[22m
+[2mdist/[22m[36massets/MobileContentLibrary-CiO-QInM.js            [39m[1m[2m  6.86 kB[22m[1m[22m[2m Γöé gzip:   2.56 kB[22m
+[2mdist/[22m[36massets/MobileGrammarReader-DyaCOyN4.js             [39m[1m[2m  7.09 kB[22m[1m[22m[2m Γöé gzip:   2.44 kB[22m
+[2mdist/[22m[36massets/MobileAddWord-BDjkCCEV.js                   [39m[1m[2m  7.12 kB[22m[1m[22m[2m Γöé gzip:   2.03 kB[22m
+[2mdist/[22m[36massets/MobileHome-BSjTVT3N.js                      [39m[1m[2m  9.22 kB[22m[1m[22m[2m Γöé gzip:   2.96 kB[22m
+[2mdist/[22m[36massets/StoryViewer-DF2hiXSe.js                     [39m[1m[2m  9.30 kB[22m[1m[22m[2m Γöé gzip:   3.22 kB[22m
+[2mdist/[22m[36massets/MobileFlashcard-C46ul-oU.js                 [39m[1m[2m  9.48 kB[22m[1m[22m[2m Γöé gzip:   2.86 kB[22m
+[2mdist/[22m[36massets/MobileWordBuilder-CnhHe5bo.js               [39m[1m[2m  9.60 kB[22m[1m[22m[2m Γöé gzip:   3.04 kB[22m
+[2mdist/[22m[36massets/MobileGrammarGenerate-BqyB0pMc.js           [39m[1m[2m 10.02 kB[22m[1m[22m[2m Γöé gzip:   2.96 kB[22m
+[2mdist/[22m[36massets/MobileExam-BhAvoLKS.js                      [39m[1m[2m 10.35 kB[22m[1m[22m[2m Γöé gzip:   2.94 kB[22m
+[2mdist/[22m[36massets/MobileGenArticle-DqSi6rZt.js                [39m[1m[2m 10.38 kB[22m[1m[22m[2m Γöé gzip:   3.72 kB[22m
+[2mdist/[22m[36massets/stateDiagram-FKZM4ZOC-Dc9Ovlmn.js           [39m[1m[2m 10.39 kB[22m[1m[22m[2m Γöé gzip:   3.64 kB[22m
+[2mdist/[22m[36massets/MobileGenStory-Cw91RL1N.js                  [39m[1m[2m 10.57 kB[22m[1m[22m[2m Γöé gzip:   3.52 kB[22m
+[2mdist/[22m[36massets/dagre-6UL2VRFP-9BFxqMFM.js                  [39m[1m[2m 11.01 kB[22m[1m[22m[2m Γöé gzip:   4.10 kB[22m
+[2mdist/[22m[36massets/GrammarLibrary-mRlr26lO.js                  [39m[1m[2m 11.24 kB[22m[1m[22m[2m Γöé gzip:   3.79 kB[22m
+[2mdist/[22m[36massets/AdvancedTextGenerator-Dp98Xt4W.js           [39m[1m[2m 11.37 kB[22m[1m[22m[2m Γöé gzip:   3.25 kB[22m
+[2mdist/[22m[36massets/PodcastCreator-G-wX0wQm.js                  [39m[1m[2m 11.40 kB[22m[1m[22m[2m Γöé gzip:   3.61 kB[22m
+[2mdist/[22m[36massets/MobileGenDialogue-DZcjhYd0.js               [39m[1m[2m 11.53 kB[22m[1m[22m[2m Γöé gzip:   3.56 kB[22m
+[2mdist/[22m[36massets/_baseUniq-SZNw-2Kg.js                       [39m[1m[2m 11.89 kB[22m[1m[22m[2m Γöé gzip:   4.65 kB[22m
+[2mdist/[22m[36massets/Profile-pqeRfnT3.js                         [39m[1m[2m 12.48 kB[22m[1m[22m[2m Γöé gzip:   3.43 kB[22m
+[2mdist/[22m[36massets/TextGenerator-Sz-aQNB2.js                   [39m[1m[2m 12.77 kB[22m[1m[22m[2m Γöé gzip:   3.38 kB[22m
+[2mdist/[22m[36massets/AddWord-DfSMYEbO.js                         [39m[1m[2m 15.02 kB[22m[1m[22m[2m Γöé gzip:   4.29 kB[22m
+[2mdist/[22m[36massets/QuizPlay-BjE0kjMs.js                        [39m[1m[2m 15.70 kB[22m[1m[22m[2m Γöé gzip:   4.52 kB[22m
+[2mdist/[22m[36massets/diagram-PSM6KHXK-4-VJJi21.js                [39m[1m[2m 15.87 kB[22m[1m[22m[2m Γöé gzip:   5.67 kB[22m
+[2mdist/[22m[36massets/VocabList-cCd0oEnw.js                       [39m[1m[2m 16.63 kB[22m[1m[22m[2m Γöé gzip:   5.13 kB[22m
+[2mdist/[22m[36massets/TextReader-bjl0UvBQ.js                      [39m[1m[2m 16.84 kB[22m[1m[22m[2m Γöé gzip:   4.96 kB[22m
+[2mdist/[22m[36massets/Settings-BWXrgu5O.js                        [39m[1m[2m 19.15 kB[22m[1m[22m[2m Γöé gzip:   3.88 kB[22m
+[2mdist/[22m[36massets/GrammarPage-DE71SqvI.js                     [39m[1m[2m 19.33 kB[22m[1m[22m[2m Γöé gzip:   5.57 kB[22m
+[2mdist/[22m[36massets/Dashboard-DyJU6rEu.js                       [39m[1m[2m 19.95 kB[22m[1m[22m[2m Γöé gzip:   6.05 kB[22m
+[2mdist/[22m[36massets/kanban-definition-3W4ZIXB7-DrliTmEV.js      [39m[1m[2m 20.20 kB[22m[1m[22m[2m Γöé gzip:   7.17 kB[22m
+[2mdist/[22m[36massets/mindmap-definition-VGOIOE7T-C6SlyKs6.js     [39m[1m[2m 20.92 kB[22m[1m[22m[2m Γöé gzip:   7.29 kB[22m
+[2mdist/[22m[36massets/sankeyDiagram-TZEHDZUN--Rv8d98U.js          [39m[1m[2m 22.11 kB[22m[1m[22m[2m Γöé gzip:   8.14 kB[22m
+[2mdist/[22m[36massets/journeyDiagram-XKPGCS4Q-BogHyIdI.js         [39m[1m[2m 23.54 kB[22m[1m[22m[2m Γöé gzip:   8.32 kB[22m
+[2mdist/[22m[36massets/timeline-definition-IT6M3QCI-Cv7M1CR7.js    [39m[1m[2m 23.59 kB[22m[1m[22m[2m Γöé gzip:   8.23 kB[22m
+[2mdist/[22m[36massets/gitGraphDiagram-NY62KEGX-BQWQky3P.js        [39m[1m[2m 24.14 kB[22m[1m[22m[2m Γöé gzip:   7.44 kB[22m
+[2mdist/[22m[36massets/erDiagram-Q2GNP2WA-CAPLbrPw.js              [39m[1m[2m 25.24 kB[22m[1m[22m[2m Γöé gzip:   8.84 kB[22m
+[2mdist/[22m[36massets/layout-Dsikl_bg.js                          [39m[1m[2m 27.39 kB[22m[1m[22m[2m Γöé gzip:   9.73 kB[22m
+[2mdist/[22m[36massets/requirementDiagram-UZGBJVZJ-NwQdJPZX.js     [39m[1m[2m 30.09 kB[22m[1m[22m[2m Γöé gzip:   9.43 kB[22m
+[2mdist/[22m[36massets/ExamPage-szkjLEMY.js                        [39m[1m[2m 32.51 kB[22m[1m[22m[2m Γöé gzip:   8.49 kB[22m
+[2mdist/[22m[36massets/quadrantDiagram-AYHSOK5B-CmPHkM5r.js        [39m[1m[2m 33.84 kB[22m[1m[22m[2m Γöé gzip:   9.95 kB[22m
+[2mdist/[22m[36massets/chunk-DI55MBZ5-B9raqJK1.js                  [39m[1m[2m 36.34 kB[22m[1m[22m[2m Γöé gzip:  11.85 kB[22m
+[2mdist/[22m[36massets/index-Gylcts71.js                           [39m[1m[2m 39.23 kB[22m[1m[22m[2m Γöé gzip:  11.85 kB[22m
+[2mdist/[22m[36massets/xychartDiagram-PRI3JC2R-DY1Bdd31.js         [39m[1m[2m 40.21 kB[22m[1m[22m[2m Γöé gzip:  11.45 kB[22m
+[2mdist/[22m[36massets/chunk-B4BG7PRW-BvynnoNO.js                  [39m[1m[2m 45.32 kB[22m[1m[22m[2m Γöé gzip:  14.70 kB[22m
+[2mdist/[22m[36massets/flowDiagram-NV44I4VS-BFBhhL2H.js            [39m[1m[2m 60.45 kB[22m[1m[22m[2m Γöé gzip:  19.44 kB[22m
+[2mdist/[22m[36massets/ganttDiagram-LVOFAZNH-XbC1j__W.js           [39m[1m[2m 62.77 kB[22m[1m[22m[2m Γöé gzip:  21.32 kB[22m
+[2mdist/[22m[36massets/c4Diagram-YG6GDRKO-CSa0LpJy.js              [39m[1m[2m 70.14 kB[22m[1m[22m[2m Γöé gzip:  19.68 kB[22m
+[2mdist/[22m[36massets/blockDiagram-VD42YOAC-BZ9gXSnB.js           [39m[1m[2m 71.81 kB[22m[1m[22m[2m Γöé gzip:  20.49 kB[22m
+[2mdist/[22m[36massets/cose-bilkent-S5V4N54A-CbSMm5fK.js           [39m[1m[2m 81.70 kB[22m[1m[22m[2m Γöé gzip:  22.47 kB[22m
+[2mdist/[22m[36massets/sequenceDiagram-WL72ISMW-D25rLi1P.js        [39m[1m[2m 97.81 kB[22m[1m[22m[2m Γöé gzip:  26.85 kB[22m
+[2mdist/[22m[36massets/index-DsR2dV50.js                           [39m[1m[2m118.09 kB[22m[1m[22m[2m Γöé gzip:  36.41 kB[22m
+[2mdist/[22m[36massets/architectureDiagram-VXUJARFQ-DYBEWDzI.js    [39m[1m[2m148.64 kB[22m[1m[22m[2m Γöé gzip:  42.07 kB[22m
+[2mdist/[22m[36massets/GrammarGenerator-RFrQiyFo.js                [39m[1m[2m196.33 kB[22m[1m[22m[2m Γöé gzip:  61.23 kB[22m
+[2mdist/[22m[36massets/katex-qrhCpa0F.js                           [39m[1m[2m265.37 kB[22m[1m[22m[2m Γöé gzip:  77.48 kB[22m
+[2mdist/[22m[36massets/treemap-KMMF4GRG-W_lw1TfC.js                [39m[1m[2m330.00 kB[22m[1m[22m[2m Γöé gzip:  80.44 kB[22m
+[2mdist/[22m[36massets/cytoscape.esm-BnkdMOzK.js                   [39m[1m[2m441.74 kB[22m[1m[22m[2m Γöé gzip: 141.49 kB[22m
+[2mdist/[22m[36massets/mermaid.core-BSBWrqmo.js                    [39m[1m[2m491.01 kB[22m[1m[22m[2m Γöé gzip: 137.99 kB[22m
+[2mdist/[22m[36massets/index-DjexL8aP.js                           [39m[1m[33m558.34 kB[39m[22m[2m Γöé gzip:  59.54 kB[22m
+[2mdist/[22m[36massets/index-BsGZdt0_.js                           [39m[1m[33m601.39 kB[39m[22m[2m Γöé gzip: 182.60 kB[22m
+[2mdist/[22m[36massets/vsc-dark-plus-Cy2a4YUJ.js                   [39m[1m[33m625.32 kB[39m[22m[2m Γöé gzip: 223.40 kB[22m
+node.exe : [33m
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([33m:String) [], RemoteExcept 
+   ion
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: 
+https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via 
+build.chunkSizeWarningLimit.[39m
+[32mΓ£ô built in 29.71s[39m

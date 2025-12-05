@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
-import MobileDialogueDisplay from '../../components/mobile/MobileDialogueDisplay';
+import MobileArticleDisplay from '../../components/mobile/MobileArticleDisplay';
 import api from '../../api';
 
-const MobileDialogueViewer = () => {
+const MobileArticleViewer = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [content, setContent] = useState(null);
@@ -17,8 +17,8 @@ const MobileDialogueViewer = () => {
                 const response = await api.get(`ai/generated-content/${id}/`);
                 setContent(response.data);
             } catch (err) {
-                console.error('Error fetching dialogue:', err);
-                setError('Failed to load dialogue');
+                console.error('Error fetching article:', err);
+                setError('Failed to load article');
             } finally {
                 setLoading(false);
             }
@@ -30,8 +30,8 @@ const MobileDialogueViewer = () => {
         return (
             <div className="min-h-screen bg-[#09090B] flex items-center justify-center">
                 <div className="flex flex-col items-center gap-3">
-                    <div className="w-8 h-8 border-2 border-[#6366F1] border-t-transparent rounded-full animate-spin" />
-                    <p className="text-[#71717A] text-sm">Loading dialogue...</p>
+                    <div className="w-8 h-8 border-2 border-[#10B981] border-t-transparent rounded-full animate-spin" />
+                    <p className="text-[#71717A] text-sm">Loading article...</p>
                 </div>
             </div>
         );
@@ -65,7 +65,7 @@ const MobileDialogueViewer = () => {
                 </button>
             </div>
 
-            <MobileDialogueDisplay
+            <MobileArticleDisplay
                 content={content?.content_data}
                 title={content?.content_data?.title}
                 level={content?.parameters?.level}
@@ -74,4 +74,4 @@ const MobileDialogueViewer = () => {
     );
 };
 
-export default MobileDialogueViewer;
+export default MobileArticleViewer;
