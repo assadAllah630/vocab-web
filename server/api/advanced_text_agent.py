@@ -207,6 +207,7 @@ CRITICAL: Output ONLY valid JSON in this exact format:
       "event_number": 1,
       "title": "Event title with emoji 🎒",
       "content": "Event text here. Use **vocabulary** for important words.",
+      "translation": "English translation of this event",
       "vocabulary_in_event": ["word1", "word2"],
       "grammar_in_event": ["grammar_point1"]{', "image_prompt": {"positive_prompt": "...", "negative_prompt": "...", "style": "...", "aspect_ratio": "16:9"}' if generate_images else ''}
     }}
@@ -287,6 +288,7 @@ CRITICAL: Output ONLY valid JSON in this exact format:
       "paragraph_number": 1,
       "heading": "Introduction",
       "content": "Paragraph text with **vocabulary** highlighted. Use markdown formatting.",
+      "translation": "English translation of this paragraph",
       "vocabulary_in_paragraph": ["word1", "word2"],
       "grammar_in_paragraph": ["grammar1"]
     }}

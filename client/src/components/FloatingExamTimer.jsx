@@ -9,8 +9,9 @@ const FloatingExamTimer = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // Don't show if no exam is active or if we are already on the exam page
-    if (!activeExam || location.pathname === '/exams') return null;
+    // Don't show if no exam is active, if on exam page, or if on mobile routes (mobile has its own timer)
+    const isMobilePath = location.pathname.startsWith('/m');
+    if (!activeExam || location.pathname === '/exams' || isMobilePath) return null;
 
     const handleReturn = () => {
         navigate('/exams');

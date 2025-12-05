@@ -43,7 +43,7 @@ class GrammarResearchAgent:
 
     def _generate_content(self, topic, language, level, context_note):
         """
-        Generates the content using Gemini.
+        Generates the content using Gemini with retry logic and robust JSON parsing.
         """
         
         system_prompt = """
@@ -102,11 +102,24 @@ Create a comprehensive grammar explanation with the following parameters:
 - Related Topics
 - Sources
 
-**Output Format**:
-Return ONLY a raw JSON object (no markdown code blocks) with the following structure:
+**CRITICAL - Output Format**:
+You MUST return ONLY a valid JSON object. NO markdown code blocks, NO explanations, JUST the raw JSON.
+
+IMPORTANT JSON RULES:
+1. All strings must use double quotes ("), NOT single quotes (')
+2. Escape all special characters in strings: backslash (\\), quotes (\"), newlines (\\n)
+3. No trailing commas after the last item in arrays or objects
+4. All property names must be in double quotes
+5. No comments allowed in JSON
+
+The JSON structure:
 {{
   "title": "The Grammar Topic Title",
-  "content": "The full explanation in Markdown format (ensure all quotes are escaped)",
+  "content": "The full explanation in Markdown format (escape all special characters)",
+  "category": "verbs",
+  "examples": [
+    {{"german": "Example sentence", "english": "Translation"}}
+  ],
   "word_count": 450,
   "mermaid_diagrams_count": 1,
   "estimated_read_time": "3 min",
@@ -116,32 +129,103 @@ Return ONLY a raw JSON object (no markdown code blocks) with the following struc
   "related_topics": ["Topic 1", "Topic 2"],
   "tags": ["tag1", "tag2"]
 }}
+
+Valid category values: articles, plurals, verbs, separable_verbs, modal_verbs, cases, prepositions, sentence_structure, word_order, time_expressions, adjective_endings, comparatives
 """
 
-        # Use JSON mode for reliable output
-        generation_config = {"response_mime_type": "application/json"}
-        response = self.model.generate_content(
-            f"{system_prompt}\n\n{user_prompt}",
-            generation_config=generation_config
-        )
-        
-        # Parse JSON from response
-        text = response.text.strip()
-        logger.info(f"DEBUG: Raw Grammar Agent Response:\n{text}")
-        
-        # Robust JSON extraction
+        # Retry logic: Try up to 3 times
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                # Use JSON mode for reliable output
+                generation_config = {
+                    "response_mime_type": "application/json",
+                    "temperature": 0.7 if attempt == 0 else 0.5  # Lower temperature on retry
+                }
+                
+                response = self.model.generate_content(
+                    f"{system_prompt}\n\n{user_prompt}",
+                    generation_config=generation_config
+                )
+                
+                # Parse JSON from response
+                text = response.text.strip()
+                logger.info(f"Attempt {attempt + 1}: Raw response length: {len(text)}")
+                
+                # Multi-strategy JSON extraction
+                parsed_json = self._extract_json(text)
+                
+                # Validate required fields
+                required_fields = ['title', 'content', 'category']
+                missing = [f for f in required_fields if f not in parsed_json]
+                if missing:
+                    raise ValueError(f"Missing required fields: {missing}")
+                
+                logger.info(f"Successfully parsed JSON on attempt {attempt + 1}")
+                return parsed_json
+                
+            except Exception as e:
+                logger.warning(f"Attempt {attempt + 1} failed: {str(e)}")
+                if attempt == max_retries - 1:
+                    # Last attempt failed
+                    raise Exception(f"Failed to generate valid content after {max_retries} attempts. Last error: {str(e)}")
+                # Wait a bit before retry
+                import time
+                time.sleep(0.5)
+
+    def _extract_json(self, text):
+        """
+        Multi-strategy JSON extraction with automatic cleaning.
+        """
+        # Strategy 1: Direct parse
         try:
-            # Try direct parse first
             return json.loads(text)
         except json.JSONDecodeError:
-            # Try to find JSON object bounds
-            try:
-                start = text.find('{')
-                end = text.rfind('}') + 1
-                if start != -1 and end != -1:
-                    json_str = text[start:end]
-                    return json.loads(json_str)
-            except:
-                pass
-            # Re-raise original error if fallback fails
-            raise
+            pass
+        
+        # Strategy 2: Remove markdown code blocks
+        cleaned = re.sub(r'```json\s*|\s*```', '', text, flags=re.IGNORECASE)
+        try:
+            return json.loads(cleaned)
+        except json.JSONDecodeError:
+            pass
+        
+        # Strategy 3: Find JSON object bounds
+        try:
+            start = text.find('{')
+            end = text.rfind('}') + 1
+            if start != -1 and end > start:
+                json_str = text[start:end]
+                
+                # Clean common issues
+                json_str = self._clean_json_string(json_str)
+                
+                return json.loads(json_str)
+        except json.JSONDecodeError:
+            pass
+        
+        # Strategy 4: Try to fix common JSON errors
+        try:
+            # Remove trailing commas
+            fixed = re.sub(r',(\s*[}\]])', r'\1', cleaned)
+            # Fix single quotes to double quotes (risky but last resort)
+            # Only if not already inside a string
+            fixed = re.sub(r"'([^']*)':", r'"\1":', fixed)
+            return json.loads(fixed)
+        except:
+            pass
+        
+        # All strategies failed
+        raise json.JSONDecodeError("Could not extract valid JSON from response", text, 0)
+    
+    def _clean_json_string(self, json_str):
+        """
+        Clean common JSON formatting issues.
+        """
+        # Remove trailing commas before closing braces/brackets
+        json_str = re.sub(r',(\s*[}\]])', r'\1', json_str)
+        
+        # Remove any BOM or invisible characters
+        json_str = json_str.replace('\ufeff', '')
+        
+        return json_str.strip()

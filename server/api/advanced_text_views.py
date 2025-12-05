@@ -119,6 +119,7 @@ def generate_advanced_text(request):
         # Prepare parameters for agent
         generate_images = request.data.get('generate_images', False)
         
+        # Common parameters
         params = {
             'content_type': content_type,
             'topic': topic,
@@ -133,6 +134,30 @@ def generate_advanced_text(request):
             'word_count': request.data.get('word_count', 300),
             'generate_images': generate_images,
         }
+
+        # Story specific parameters
+        if content_type == 'story':
+            params.update({
+                'genre': request.data.get('genre', 'General'),
+                'plot_type': request.data.get('plot_type', 'Standard'),
+                'setting': request.data.get('setting', ''),
+                'characters': request.data.get('characters', []), # List of {name, role, traits}
+            })
+
+        # Dialogue specific parameters
+        elif content_type == 'dialogue':
+            params.update({
+                'scenario': request.data.get('scenario', ''),
+                'tone': request.data.get('tone', 'Neutral'),
+                'speakers': request.data.get('speakers', []), # List of {name, personality}
+            })
+
+        # Article specific parameters
+        elif content_type == 'article':
+            params.update({
+                'article_style': request.data.get('article_style', 'Informative'), # News, Blog, etc.
+                'structure_type': request.data.get('structure_type', 'Standard'),
+            })
         
         # Initialize agent
         agent = AdvancedTextAgent(api_key)
