@@ -231,6 +231,9 @@ function App() {
                         <Route path="exam" element={<MobileExam />} />
                         <Route path="exam/create" element={<MobileExamCreate />} />
                         <Route path="exam/play" element={<MobileExamPlay />} />
+                        <Route path="exam/take/:id" element={<MobileExamPlay />} />
+                        <Route path="exam/retake/:id" element={<MobileExamPlay />} />
+                        <Route path="exam/review/:id" element={<MobileExamPlay />} />
                         <Route path="games" element={<MobileGames />} />
                         <Route path="games/memory" element={<MobileMemoryMatch />} />
                         <Route path="games/speed" element={<MobileTimeChallenge />} />

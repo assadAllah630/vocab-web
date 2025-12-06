@@ -63,10 +63,17 @@ class TextExtractionView(APIView):
             file_content = uploaded_file.read()
             filename = uploaded_file.name
             
-            logger.info(f"Extracting text from {filename} ({len(file_content)} bytes)")
+            # Get user's OCR.space API key for AI-powered OCR
+            ocrspace_api_key = None
+            if hasattr(request.user, 'profile'):
+                ocrspace_api_key = getattr(request.user.profile, 'ocrspace_api_key', None)
             
-            # Extract text
-            result = extract_text_from_file(file_content, filename)
+            logger.info(f"Extracting text from {filename} ({len(file_content)} bytes)")
+            if ocrspace_api_key:
+                logger.info("OCR.space API key found, will use AI OCR for images")
+            
+            # Extract text (pass OCR.space key for AI-powered image OCR)
+            result = extract_text_from_file(file_content, filename, ocrspace_api_key=ocrspace_api_key)
             
             logger.info(
                 f"Extracted {result['word_count']} words from {filename} "
@@ -95,6 +102,7 @@ class TextExtractionView(APIView):
                 {'success': False, 'error': 'An unexpected error occurred'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
 
 
 class SupportedFormatsView(APIView):

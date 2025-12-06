@@ -24,6 +24,15 @@ const API_KEYS = [
         free: true
     },
     {
+        id: 'ocrspace_api_key',
+        name: 'OCR.space API Key',
+        icon: '📷',
+        description: 'AI-powered image text extraction',
+        placeholder: 'K89654...',
+        helpUrl: 'https://ocr.space/ocrapi',
+        free: true
+    },
+    {
         id: 'google_tts_api_key',
         name: 'Google TTS API Key',
         icon: '🔊',
@@ -51,6 +60,7 @@ const API_KEYS = [
         free: true
     }
 ];
+
 
 const MobileAPISettings = ({ user, setUser }) => {
     const navigate = useNavigate();

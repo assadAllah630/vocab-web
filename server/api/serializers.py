@@ -115,16 +115,18 @@ class UserProfileSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = UserProfile
-        fields = ['id', 'username', 'native_language', 'target_language', 'google_tts_api_key', 'deepgram_api_key', 'speechify_api_key', 'gemini_api_key', 'openrouter_api_key', 'stable_horde_api_key', 'huggingface_api_token', 'bio', 'avatar', 'location']
+        fields = ['id', 'username', 'native_language', 'target_language', 'google_tts_api_key', 'deepgram_api_key', 'speechify_api_key', 'gemini_api_key', 'openrouter_api_key', 'ocrspace_api_key', 'stable_horde_api_key', 'huggingface_api_token', 'bio', 'avatar', 'location']
         extra_kwargs = {
             'google_tts_api_key': {'write_only': True},
             'deepgram_api_key': {'write_only': True},
             'speechify_api_key': {'write_only': True},
             'gemini_api_key': {'write_only': True},
             'openrouter_api_key': {'write_only': True},
+            'ocrspace_api_key': {'write_only': True},
             'stable_horde_api_key': {'write_only': True},
             'huggingface_api_token': {'write_only': True}
         }
+
 
 class UserRelationshipSerializer(serializers.ModelSerializer):
     follower_username = serializers.CharField(source='follower.username', read_only=True)

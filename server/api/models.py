@@ -32,8 +32,10 @@ class UserProfile(models.Model):
     # AI Provider Keys
     gemini_api_key = models.CharField(max_length=500, blank=True, default='', help_text='Gemini API Key')
     openrouter_api_key = models.CharField(max_length=500, blank=True, default='', help_text='OpenRouter API Key')
+    ocrspace_api_key = models.CharField(max_length=500, blank=True, default='', help_text='OCR.space API Key for image text extraction')
     stable_horde_api_key = models.CharField(max_length=500, blank=True, default='', help_text='Stable Horde API Key')
     huggingface_api_token = models.CharField(max_length=500, blank=True, default='', help_text='Hugging Face API Token')
+
 
     # OTP & Verification
     is_email_verified = models.BooleanField(default=False)

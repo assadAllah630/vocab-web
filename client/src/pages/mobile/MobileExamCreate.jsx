@@ -1,23 +1,446 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeftIcon } from '@heroicons/react/24/outline';
+import { motion, AnimatePresence } from 'framer-motion';
+import api from '../../api';
+import { useExam } from '../../context/ExamContext';
+import {
+    ChevronLeft,
+    Sparkles,
+    Brain,
+    BookOpen,
+    CheckCircle,
+    Loader2,
+    FileText,
+    ListChecks,
+    GraduationCap,
+    PenTool,
+    Search,
+    ClipboardList,
+    Star,
+    Zap
+} from 'lucide-react';
 
-const MobileExamCreate = () => {
+const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+
+const QUESTION_TYPES = [
+    { id: 'cloze', label: 'Fill in Blanks', icon: PenTool },
+    { id: 'multiple_choice', label: 'Multiple Choice', icon: ListChecks },
+    { id: 'matching', label: 'Matching', icon: GraduationCap },
+    { id: 'reading', label: 'Reading', icon: BookOpen },
+];
+
+const STEPS = [
+    { id: 'analyzer', label: 'Analyzing Topic', icon: Search },
+    { id: 'planner', label: 'Planning Blueprint', icon: ClipboardList },
+    { id: 'generator', label: 'Drafting Questions', icon: PenTool },
+    { id: 'critic', label: 'Quality Review', icon: Star },
+    { id: 'refiner', label: 'Refining Exam', icon: Zap },
+];
+
+function MobileExamCreate() {
     const navigate = useNavigate();
+    const { startExam } = useExam();
+
+    // Form state
+    const [topic, setTopic] = useState('');
+    const [level, setLevel] = useState('B1');
+    const [selectedTypes, setSelectedTypes] = useState(['cloze', 'multiple_choice']);
+    const [vocabFocus, setVocabFocus] = useState('');
+    const [grammarFocus, setGrammarFocus] = useState('');
+    const [notes, setNotes] = useState('');
+    const [showAdvanced, setShowAdvanced] = useState(false);
+
+    // Generation state
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [activeStep, setActiveStep] = useState(0);
+
+    const handleTypeToggle = (typeId) => {
+        setSelectedTypes(prev =>
+            prev.includes(typeId)
+                ? prev.filter(t => t !== typeId)
+                : [...prev, typeId]
+        );
+    };
+
+    const calculateTotalQuestions = (examData) => {
+        let total = 0;
+        const sections = examData.sections || examData.questions || [];
+        sections.forEach(section => {
+            if (section.questions) total += section.questions.length;
+            else if (section.blanks) total += section.blanks.length;
+            else if (section.pairs) total += section.pairs.length;
+        });
+        return total;
+    };
+
+    const handleGenerate = async () => {
+        if (!topic.trim()) {
+            setError('Please enter a topic');
+            return;
+        }
+        if (selectedTypes.length === 0) {
+            setError('Please select at least one question type');
+            return;
+        }
+
+        setLoading(true);
+        setError('');
+        setActiveStep(0);
+
+        // Simulate steps for UI effect
+        const stepInterval = setInterval(() => {
+            setActiveStep(prev => {
+                if (prev < STEPS.length - 1) return prev + 1;
+                return prev;
+            });
+        }, 1500);
+
+        try {
+            const res = await api.post('ai/generate-exam/', {
+                topic,
+                level,
+                question_types: selectedTypes,
+                vocab_focus: vocabFocus,
+                grammar_focus: grammarFocus,
+                additional_notes: notes
+            });
+
+            clearInterval(stepInterval);
+            setActiveStep(STEPS.length);
+
+            // Start the exam with timer
+            const totalQuestions = calculateTotalQuestions(res.data);
+            startExam(res.data, totalQuestions * 20); // 20 seconds per question
+
+            // Navigate to play page
+            navigate('/m/exam/play');
+        } catch (err) {
+            clearInterval(stepInterval);
+            console.error("Generation failed:", err);
+            setError(err.response?.data?.error || "Failed to generate exam. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
-        <div className="min-h-screen bg-[#09090B] p-4">
-            <button
-                onClick={() => navigate('/m/exam')}
-                className="flex items-center gap-2 text-[#A1A1AA] mb-6"
-            >
-                <ArrowLeftIcon className="w-5 h-5" />
-                Back
-            </button>
-            <h1 className="text-2xl font-bold text-white mb-4">Create Exam</h1>
-            <p className="text-[#71717A]">Exam creation coming soon...</p>
+        <div className="min-h-screen pb-24" style={{ backgroundColor: '#09090B' }}>
+            {/* Header */}
+            <div className="sticky top-0 z-20 px-5 pt-4 pb-3" style={{ backgroundColor: '#09090B' }}>
+                <div className="flex items-center justify-between">
+                    <motion.button
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => navigate('/m/exam')}
+                        className="w-10 h-10 rounded-xl flex items-center justify-center"
+                        style={{ backgroundColor: '#1C1C1F' }}
+                    >
+                        <ChevronLeft size={22} color="#A1A1AA" />
+                    </motion.button>
+                    <h1 className="text-xl font-bold" style={{ color: '#FAFAFA' }}>Create Exam</h1>
+                    <div className="w-10" />
+                </div>
+            </div>
+
+            {/* Error Banner */}
+            <AnimatePresence>
+                {error && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="mx-5 mb-4 p-4 rounded-xl"
+                        style={{
+                            backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                            border: '1px solid rgba(239, 68, 68, 0.3)'
+                        }}
+                    >
+                        <p className="text-sm" style={{ color: '#EF4444' }}>{error}</p>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Main Content */}
+            <div className="px-5 space-y-6">
+                {/* Topic Input */}
+                <div className="space-y-2">
+                    <label className="text-sm font-bold flex items-center gap-2" style={{ color: '#A1A1AA' }}>
+                        <Brain size={16} style={{ color: '#6366F1' }} />
+                        TOPIC
+                    </label>
+                    <input
+                        type="text"
+                        value={topic}
+                        onChange={e => setTopic(e.target.value)}
+                        placeholder="e.g., German Travel, Business English"
+                        className="w-full px-4 py-4 rounded-xl text-base outline-none transition-all"
+                        style={{
+                            backgroundColor: '#141416',
+                            border: '1px solid #27272A',
+                            color: '#FAFAFA'
+                        }}
+                        disabled={loading}
+                    />
+                </div>
+
+                {/* Level Selector */}
+                <div className="space-y-2">
+                    <label className="text-sm font-bold flex items-center gap-2" style={{ color: '#A1A1AA' }}>
+                        <GraduationCap size={16} style={{ color: '#6366F1' }} />
+                        LEVEL
+                    </label>
+                    <div className="grid grid-cols-6 gap-2">
+                        {LEVELS.map(l => (
+                            <motion.button
+                                key={l}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => !loading && setLevel(l)}
+                                className="py-3 rounded-xl text-sm font-bold transition-all"
+                                style={{
+                                    backgroundColor: level === l ? '#6366F1' : '#1C1C1F',
+                                    color: level === l ? '#FFFFFF' : '#71717A',
+                                    border: `1px solid ${level === l ? '#6366F1' : '#27272A'}`
+                                }}
+                                disabled={loading}
+                            >
+                                {l}
+                            </motion.button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Question Types */}
+                <div className="space-y-2">
+                    <label className="text-sm font-bold flex items-center gap-2" style={{ color: '#A1A1AA' }}>
+                        <ListChecks size={16} style={{ color: '#6366F1' }} />
+                        QUESTION TYPES
+                    </label>
+                    <div className="grid grid-cols-2 gap-3">
+                        {QUESTION_TYPES.map(type => {
+                            const Icon = type.icon;
+                            const isSelected = selectedTypes.includes(type.id);
+                            return (
+                                <motion.button
+                                    key={type.id}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => !loading && handleTypeToggle(type.id)}
+                                    className="p-4 rounded-xl flex items-center gap-3 transition-all"
+                                    style={{
+                                        backgroundColor: isSelected ? 'rgba(99, 102, 241, 0.15)' : '#141416',
+                                        border: `1px solid ${isSelected ? '#6366F1' : '#27272A'}`
+                                    }}
+                                    disabled={loading}
+                                >
+                                    <div
+                                        className="w-10 h-10 rounded-lg flex items-center justify-center"
+                                        style={{
+                                            backgroundColor: isSelected ? '#6366F1' : '#27272A'
+                                        }}
+                                    >
+                                        <Icon size={18} color={isSelected ? '#FFFFFF' : '#71717A'} />
+                                    </div>
+                                    <span
+                                        className="text-sm font-medium"
+                                        style={{ color: isSelected ? '#FAFAFA' : '#71717A' }}
+                                    >
+                                        {type.label}
+                                    </span>
+                                </motion.button>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* Advanced Options Toggle */}
+                <motion.button
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setShowAdvanced(!showAdvanced)}
+                    className="w-full py-3 rounded-xl flex items-center justify-center gap-2"
+                    style={{
+                        backgroundColor: '#1C1C1F',
+                        border: '1px solid #27272A'
+                    }}
+                    disabled={loading}
+                >
+                    <Sparkles size={16} color="#6366F1" />
+                    <span className="text-sm font-medium" style={{ color: '#A1A1AA' }}>
+                        {showAdvanced ? 'Hide' : 'Show'} Advanced Options
+                    </span>
+                </motion.button>
+
+                {/* Advanced Options */}
+                <AnimatePresence>
+                    {showAdvanced && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="space-y-4"
+                        >
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold" style={{ color: '#71717A' }}>
+                                    VOCABULARY FOCUS
+                                </label>
+                                <textarea
+                                    value={vocabFocus}
+                                    onChange={e => setVocabFocus(e.target.value)}
+                                    placeholder="List specific words to include..."
+                                    className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none h-20"
+                                    style={{
+                                        backgroundColor: '#141416',
+                                        border: '1px solid #27272A',
+                                        color: '#FAFAFA'
+                                    }}
+                                    disabled={loading}
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold" style={{ color: '#71717A' }}>
+                                    GRAMMAR FOCUS
+                                </label>
+                                <textarea
+                                    value={grammarFocus}
+                                    onChange={e => setGrammarFocus(e.target.value)}
+                                    placeholder="List specific grammar rules to test..."
+                                    className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none h-20"
+                                    style={{
+                                        backgroundColor: '#141416',
+                                        border: '1px solid #27272A',
+                                        color: '#FAFAFA'
+                                    }}
+                                    disabled={loading}
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold" style={{ color: '#71717A' }}>
+                                    ADDITIONAL NOTES
+                                </label>
+                                <textarea
+                                    value={notes}
+                                    onChange={e => setNotes(e.target.value)}
+                                    placeholder="Any extra instructions for the AI..."
+                                    className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none h-20"
+                                    style={{
+                                        backgroundColor: '#141416',
+                                        border: '1px solid #27272A',
+                                        color: '#FAFAFA'
+                                    }}
+                                    disabled={loading}
+                                />
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* Generation Progress */}
+                <AnimatePresence>
+                    {loading && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 20 }}
+                            className="p-5 rounded-2xl space-y-4"
+                            style={{
+                                backgroundColor: '#141416',
+                                border: '1px solid #27272A'
+                            }}
+                        >
+                            <div className="flex items-center gap-3">
+                                <motion.div
+                                    animate={{ rotate: 360 }}
+                                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                                >
+                                    <Loader2 size={20} color="#6366F1" />
+                                </motion.div>
+                                <span className="text-sm font-bold" style={{ color: '#FAFAFA' }}>
+                                    AI Agent Working...
+                                </span>
+                            </div>
+
+                            <div className="space-y-3">
+                                {STEPS.map((step, index) => {
+                                    const Icon = step.icon;
+                                    const isActive = activeStep === index;
+                                    const isCompleted = activeStep > index;
+                                    const isPending = activeStep < index;
+
+                                    return (
+                                        <motion.div
+                                            key={step.id}
+                                            initial={{ opacity: 0, x: -10 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: index * 0.1 }}
+                                            className="flex items-center gap-3"
+                                            style={{ opacity: isPending ? 0.4 : 1 }}
+                                        >
+                                            <div
+                                                className="w-8 h-8 rounded-lg flex items-center justify-center"
+                                                style={{
+                                                    backgroundColor: isCompleted ? '#22C55E' : isActive ? '#6366F1' : '#27272A'
+                                                }}
+                                            >
+                                                {isCompleted ? (
+                                                    <CheckCircle size={16} color="#FFFFFF" />
+                                                ) : (
+                                                    <Icon size={14} color={isActive ? '#FFFFFF' : '#71717A'} />
+                                                )}
+                                            </div>
+                                            <span
+                                                className="text-sm font-medium"
+                                                style={{
+                                                    color: isCompleted ? '#22C55E' : isActive ? '#FAFAFA' : '#71717A'
+                                                }}
+                                            >
+                                                {step.label}
+                                            </span>
+                                            {isActive && (
+                                                <motion.span
+                                                    initial={{ opacity: 0 }}
+                                                    animate={{ opacity: [0.5, 1, 0.5] }}
+                                                    transition={{ duration: 1.5, repeat: Infinity }}
+                                                    className="text-xs"
+                                                    style={{ color: '#6366F1' }}
+                                                >
+                                                    Processing...
+                                                </motion.span>
+                                            )}
+                                        </motion.div>
+                                    );
+                                })}
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* Generate Button */}
+                <motion.button
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleGenerate}
+                    disabled={loading}
+                    className="w-full py-4 rounded-xl font-bold text-base flex items-center justify-center gap-3 transition-all"
+                    style={{
+                        background: loading ? '#27272A' : 'linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)',
+                        color: loading ? '#71717A' : '#FFFFFF',
+                        boxShadow: loading ? 'none' : '0 8px 24px rgba(99, 102, 241, 0.3)'
+                    }}
+                >
+                    {loading ? (
+                        <>
+                            <Loader2 size={20} className="animate-spin" />
+                            Generating...
+                        </>
+                    ) : (
+                        <>
+                            <Sparkles size={20} />
+                            Generate Exam
+                        </>
+                    )}
+                </motion.button>
+            </div>
         </div>
     );
-};
+}
 
 export default MobileExamCreate;

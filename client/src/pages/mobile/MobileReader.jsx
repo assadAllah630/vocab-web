@@ -715,8 +715,9 @@ function MobileReader() {
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="space-y-4"
+                            className="space-y-4 px-5"
                         >
+
                             <button
                                 onClick={() => setImportMode(null)}
                                 className="flex items-center gap-2 text-[#71717A] text-sm mb-4"
@@ -811,8 +812,9 @@ function MobileReader() {
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="space-y-4"
+                            className="space-y-4 px-5"
                         >
+
                             <button
                                 onClick={() => setImportMode(null)}
                                 className="flex items-center gap-2 text-[#71717A] text-sm mb-4"

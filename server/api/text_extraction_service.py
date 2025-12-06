@@ -2,7 +2,8 @@
 Text Extraction Service
 Extracts text from multiple file formats: PDF, DOCX, PPTX, XLSX, Images, TXT
 
-Supports 100+ languages via Tesseract OCR.
+Uses file_type_registry for centralized file type detection.
+Supports Surya OCR for images with Tesseract fallback.
 """
 import os
 import io
@@ -20,6 +21,17 @@ from PIL import Image
 from langdetect import detect, LangDetectException
 import chardet
 
+# Import file type registry
+from .file_type_registry import (
+    FILE_TYPE_REGISTRY,
+    FileCategory,
+    get_extension,
+    get_file_info,
+    is_supported,
+    requires_ocr,
+    validate_file,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -32,40 +44,18 @@ class TextExtractor:
     """
     Unified text extraction from multiple file formats.
     
+    Uses file_type_registry for file type detection and routing.
     Supported formats:
     - PDF (.pdf) - Native text extraction with OCR fallback
     - DOCX (.docx) - Microsoft Word documents
     - PPTX (.pptx) - Microsoft PowerPoint presentations
     - XLSX (.xlsx) - Microsoft Excel spreadsheets
-    - Images (.png, .jpg, .jpeg, .gif, .bmp, .tiff, .webp) - OCR
+    - Images (.png, .jpg, .jpeg, .gif, .bmp, .tiff, .webp) - OCR (Surya/Tesseract)
     - Text files (.txt, .md, .rtf, .csv, .json, .xml, .html)
     """
     
-    SUPPORTED_EXTENSIONS = {
-        'pdf': 'pdf',
-        'docx': 'docx',
-        'doc': 'doc',
-        'pptx': 'pptx',
-        'ppt': 'ppt',
-        'xlsx': 'xlsx',
-        'xls': 'xls',
-        'png': 'image',
-        'jpg': 'image',
-        'jpeg': 'image',
-        'gif': 'image',
-        'bmp': 'image',
-        'tiff': 'image',
-        'tif': 'image',
-        'webp': 'image',
-        'txt': 'text',
-        'md': 'text',
-        'rtf': 'text',
-        'csv': 'text',
-        'json': 'text',
-        'xml': 'text',
-        'html': 'text',
-        'htm': 'text',
-    }
+    # Use registry for extensions (backward compatibility)
+    SUPPORTED_EXTENSIONS = {ext: info.category.value for ext, info in FILE_TYPE_REGISTRY.items()}
     
     # OCR language mapping (common languages)
     OCR_LANGUAGES = {
@@ -95,13 +85,14 @@ class TextExtractor:
         """
         self.ocr_lang = ocr_lang
     
-    def extract(self, file_content: bytes, filename: str) -> dict:
+    def extract(self, file_content: bytes, filename: str, ocrspace_api_key: str = None) -> dict:
         """
         Extract text from a file.
         
         Args:
             file_content: Raw file bytes
             filename: Original filename with extension
+            ocrspace_api_key: Optional OCR.space API key for AI-powered image OCR
             
         Returns:
             dict with keys:
@@ -113,41 +104,45 @@ class TextExtractor:
                 - metadata: Additional file metadata
         """
         ext = self._get_extension(filename)
-        file_type = self.SUPPORTED_EXTENSIONS.get(ext)
+        file_category = self.SUPPORTED_EXTENSIONS.get(ext)
         
-        if not file_type:
+        if not file_category:
             raise TextExtractionError(
                 f"Unsupported file format: .{ext}. "
                 f"Supported: {', '.join(self.SUPPORTED_EXTENSIONS.keys())}"
             )
         
         try:
-            if file_type == 'pdf':
+            # Route based on extension for specific handlers
+            if ext == 'pdf':
                 text, pages, metadata = self._extract_pdf(file_content)
-            elif file_type == 'docx':
+            elif ext == 'docx':
                 text, pages, metadata = self._extract_docx(file_content)
             elif ext == 'doc':
                 raise TextExtractionError(
                     "Legacy .doc format not supported. Please convert to .docx"
                 )
-            elif file_type == 'pptx':
+            elif ext == 'pptx':
                 text, pages, metadata = self._extract_pptx(file_content)
             elif ext == 'ppt':
                 raise TextExtractionError(
                     "Legacy .ppt format not supported. Please convert to .pptx"
                 )
-            elif file_type == 'xlsx':
+            elif ext == 'xlsx':
                 text, pages, metadata = self._extract_xlsx(file_content)
             elif ext == 'xls':
                 raise TextExtractionError(
                     "Legacy .xls format not supported. Please convert to .xlsx"
                 )
-            elif file_type == 'image':
-                text, pages, metadata = self._extract_image(file_content)
-            elif file_type == 'text':
+            elif file_category == 'image':
+                # Pass OCR.space API key for AI-powered OCR
+                text, pages, metadata = self._extract_image(file_content, ocrspace_api_key=ocrspace_api_key)
+            elif file_category == 'text':
                 text, pages, metadata = self._extract_text(file_content, ext)
             else:
-                raise TextExtractionError(f"Unknown file type: {file_type}")
+                raise TextExtractionError(f"Unknown file type: {file_category}")
+
+
             
             # Detect language
             language = self._detect_language(text)
@@ -307,23 +302,63 @@ class TextExtractor:
         metadata = {'sheets': wb.sheetnames}
         return "\n\n".join(text_parts), sheets, metadata
     
-    def _extract_image(self, content: bytes) -> Tuple[str, int, dict]:
-        """Extract text from image using OCR."""
+    def _extract_image(self, content: bytes, use_ai_ocr: bool = True, ocrspace_api_key: str = None) -> Tuple[str, int, dict]:
+        """Extract text from image using OCR.
+        
+        Args:
+            content: Image bytes
+            use_ai_ocr: If True, try OCR.space API first (default: True)
+            ocrspace_api_key: OCR.space API key for AI OCR
+        """
+        # Try OCR.space API first if API key is provided
+        if use_ai_ocr and ocrspace_api_key:
+            try:
+                from .ocrspace_service import extract_text_with_ocrspace
+                
+                logger.info("Using OCR.space API for image extraction")
+                text, metadata = extract_text_with_ocrspace(content, ocrspace_api_key)
+                
+                # Get image dimensions for metadata
+                img = Image.open(io.BytesIO(content))
+                metadata['width'] = img.width
+                metadata['height'] = img.height
+                metadata['format'] = img.format
+                
+                return text, 1, metadata
+            except Exception as e:
+                logger.warning(f"OCR.space failed, falling back to Tesseract: {e}")
+        
+        # Fallback to Tesseract
+        logger.info("Using Tesseract OCR for image extraction")
         img = Image.open(io.BytesIO(content))
         
         # Convert to RGB if necessary
         if img.mode in ('RGBA', 'P'):
             img = img.convert('RGB')
         
-        text = pytesseract.image_to_string(img, lang=self.ocr_lang)
+        try:
+            text = pytesseract.image_to_string(img, lang=self.ocr_lang)
+        except Exception as e:
+            error_msg = str(e)
+            if 'tesseract is not installed' in error_msg.lower() or 'not in your path' in error_msg.lower():
+                # Provide helpful error message
+                if not ocrspace_api_key:
+                    raise TextExtractionError(
+                        "Image OCR requires either: (1) Add your OCR.space API key in Settings → API Keys, or "
+                        "(2) Install Tesseract OCR on your system. Get a free OCR.space key at: https://ocr.space/ocrapi"
+                    )
+            raise TextExtractionError(f"OCR failed: {error_msg}")
         
         metadata = {
+            'method': 'tesseract',
             'width': img.width,
             'height': img.height,
             'format': img.format,
         }
         
         return text, 1, metadata
+
+
     
     def _extract_text(self, content: bytes, ext: str) -> Tuple[str, int, dict]:
         """Extract text from plain text files."""
@@ -349,15 +384,17 @@ class TextExtractor:
 extractor = TextExtractor()
 
 
-def extract_text_from_file(file_content: bytes, filename: str) -> dict:
+def extract_text_from_file(file_content: bytes, filename: str, ocrspace_api_key: str = None) -> dict:
     """
     Convenience function to extract text from a file.
     
     Args:
         file_content: Raw file bytes
         filename: Original filename with extension
+        ocrspace_api_key: Optional OCR.space API key for AI-powered image OCR
         
     Returns:
         dict with text, language, file_type, pages, word_count, metadata
     """
-    return extractor.extract(file_content, filename)
+    return extractor.extract(file_content, filename, ocrspace_api_key=ocrspace_api_key)
+

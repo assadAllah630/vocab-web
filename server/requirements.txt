@@ -105,6 +105,7 @@ openpyxl>=3.1.0
 pytesseract>=0.3.10
 langdetect>=1.0.9
 chardet>=5.2.0
+# surya-ocr>=0.17.0  # Requires Python 3.11/3.12, not compatible with 3.14
 
 # Monitoring
 sentry-sdk>=2.0.0

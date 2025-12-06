@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../api';
-import { Search, Plus, Trash2, Pencil, WifiOff, RefreshCw } from 'lucide-react';
+import { Search, Plus, Trash2, Pencil, WifiOff, RefreshCw, Sparkles, Loader2 } from 'lucide-react';
 import { vocabStorage, useOnlineStatus, syncQueue } from '../../utils/offlineStorage';
 
 function MobileWords() {
@@ -12,6 +13,11 @@ function MobileWords() {
     const [activeFilter, setActiveFilter] = useState('all');
     const isOnline = useOnlineStatus();
     const [pendingCount, setPendingCount] = useState(0);
+
+    // Semantic search states
+    const [useSemanticSearch, setUseSemanticSearch] = useState(false);
+    const [semanticLoading, setSemanticLoading] = useState(false);
+    const [allWords, setAllWords] = useState([]); // Store all words for filtering
 
     useEffect(() => {
         fetchWords();
@@ -25,6 +31,7 @@ function MobileWords() {
             const cached = await vocabStorage.getAll();
             if (cached.length > 0) {
                 setWords(cached);
+                setAllWords(cached);
                 setLoading(false);
             }
 
@@ -32,6 +39,7 @@ function MobileWords() {
             if (navigator.onLine) {
                 const res = await api.get('vocab/');
                 setWords(res.data);
+                setAllWords(res.data);
                 await vocabStorage.saveAll(res.data);
             }
         } catch (err) {
@@ -40,17 +48,74 @@ function MobileWords() {
             const cached = await vocabStorage.getAll();
             if (cached.length > 0) {
                 setWords(cached);
+                setAllWords(cached);
             }
         } finally {
             setLoading(false);
         }
     };
 
+    // Semantic search handler
+    const handleSemanticSearch = async () => {
+        if (!searchQuery.trim()) {
+            setWords(allWords);
+            return;
+        }
+
+        const apiKey = localStorage.getItem('openrouter_api_key');
+        if (!apiKey) {
+            alert('Please add your OpenRouter API key in Settings to use semantic search');
+            return;
+        }
+
+        setSemanticLoading(true);
+        try {
+            const res = await api.post('vocab/semantic-search/', {
+                query: searchQuery,
+                api_key: apiKey,
+                limit: 10
+            });
+
+            if (Array.isArray(res.data)) {
+                setWords(res.data.map(r => ({ ...r.vocab, similarity: r.similarity })));
+            } else if (res.data.results) {
+                setWords(res.data.results.map(r => ({ ...r.vocab, similarity: r.similarity })));
+            } else if (res.data.message) {
+                alert(res.data.message);
+                setWords([]);
+            }
+        } catch (err) {
+            console.error('Semantic search failed:', err);
+            alert('Semantic search failed: ' + (err.response?.data?.error || err.message));
+        } finally {
+            setSemanticLoading(false);
+        }
+    };
+
+    // Handle search based on mode
+    useEffect(() => {
+        if (useSemanticSearch && searchQuery.trim()) {
+            // Don't auto-search, wait for enter key
+        } else if (!useSemanticSearch) {
+            // Text search - filter locally
+            if (searchQuery.trim()) {
+                const filtered = allWords.filter(word =>
+                    word.word.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    word.translation.toLowerCase().includes(searchQuery.toLowerCase())
+                );
+                setWords(filtered);
+            } else {
+                setWords(allWords);
+            }
+        }
+    }, [searchQuery, useSemanticSearch, allWords]);
+
     const handleDelete = async (id) => {
         if (!confirm('Delete this word?')) return;
 
         // Update local state immediately
         setWords(words.filter(w => w.id !== id));
+        setAllWords(allWords.filter(w => w.id !== id));
 
         // Update local cache
         await vocabStorage.delete(id);
@@ -66,10 +131,8 @@ function MobileWords() {
     };
 
     const filteredWords = words.filter(word => {
-        const matchesSearch = word.word.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            word.translation.toLowerCase().includes(searchQuery.toLowerCase());
-        if (activeFilter === 'all') return matchesSearch;
-        return matchesSearch && word.type === activeFilter;
+        if (activeFilter === 'all') return true;
+        return word.type === activeFilter;
     });
 
     const filters = ['all', 'noun', 'verb', 'adjective', 'phrase'];
@@ -114,12 +177,12 @@ function MobileWords() {
                             className="px-2.5 py-1 rounded-md text-sm font-medium"
                             style={{ backgroundColor: '#27272A', color: '#A1A1AA' }}
                         >
-                            {words.length}
+                            {allWords.length}
                         </span>
                     </div>
                 </div>
 
-                {/* Search */}
+                {/* Search with Semantic Toggle */}
                 <div className="relative mb-4">
                     <Search
                         size={18}
@@ -130,15 +193,60 @@ function MobileWords() {
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search words..."
-                        className="w-full pl-10 pr-4 py-3 rounded-xl text-sm outline-none"
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && useSemanticSearch) {
+                                handleSemanticSearch();
+                            }
+                        }}
+                        placeholder={useSemanticSearch ? "Search by meaning (Enter)..." : "Search words..."}
+                        className="w-full pl-10 pr-24 py-3 rounded-xl text-sm outline-none"
                         style={{
                             backgroundColor: '#141416',
-                            border: '1px solid #27272A',
+                            border: `1px solid ${useSemanticSearch ? '#8B5CF6' : '#27272A'}`,
                             color: '#FAFAFA'
                         }}
                     />
+                    {/* Semantic Toggle Button */}
+                    <motion.button
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => {
+                            setUseSemanticSearch(!useSemanticSearch);
+                            if (!useSemanticSearch) {
+                                // Switching to semantic - clear local filter
+                                setWords(allWords);
+                            }
+                        }}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-bold transition-all"
+                        style={{
+                            backgroundColor: useSemanticSearch ? '#8B5CF6' : '#27272A',
+                            color: useSemanticSearch ? '#FFFFFF' : '#A1A1AA'
+                        }}
+                    >
+                        <Sparkles size={12} />
+                        {useSemanticSearch ? 'AI' : 'Text'}
+                    </motion.button>
                 </div>
+
+                {/* Semantic Search Loading */}
+                <AnimatePresence>
+                    {semanticLoading && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="mb-4 p-3 rounded-xl flex items-center gap-3"
+                            style={{
+                                backgroundColor: 'rgba(139, 92, 246, 0.15)',
+                                border: '1px solid rgba(139, 92, 246, 0.3)'
+                            }}
+                        >
+                            <Loader2 size={16} color="#8B5CF6" className="animate-spin" />
+                            <span className="text-sm" style={{ color: '#A78BFA' }}>
+                                Searching by meaning...
+                            </span>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
                 {/* Filters */}
                 <div className="flex gap-2 overflow-x-auto pb-2 -mx-5 px-5">
@@ -162,27 +270,49 @@ function MobileWords() {
             <div className="px-5">
                 {filteredWords.length === 0 ? (
                     <div className="text-center py-16">
-                        <p style={{ color: '#71717A' }}>No words found</p>
-                        <button
-                            onClick={() => navigate('/m/words/add')}
-                            className="mt-4 px-6 py-2.5 rounded-lg text-sm font-medium"
-                            style={{ backgroundColor: '#6366F1', color: '#FFFFFF' }}
-                        >
-                            Add your first word
-                        </button>
+                        <p style={{ color: '#71717A' }}>
+                            {useSemanticSearch && searchQuery ? 'No matching words found' : 'No words found'}
+                        </p>
+                        {!useSemanticSearch && (
+                            <button
+                                onClick={() => navigate('/m/words/add')}
+                                className="mt-4 px-6 py-2.5 rounded-lg text-sm font-medium"
+                                style={{ backgroundColor: '#6366F1', color: '#FFFFFF' }}
+                            >
+                                Add your first word
+                            </button>
+                        )}
                     </div>
                 ) : (
                     <div className="space-y-1">
-                        {filteredWords.map((word) => (
-                            <div
+                        {filteredWords.map((word, index) => (
+                            <motion.div
                                 key={word.id}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: index * 0.02 }}
                                 className="flex items-center justify-between py-4"
                                 style={{ borderBottom: '1px solid #1C1C1F' }}
                             >
                                 <div className="flex-1 min-w-0">
-                                    <p className="font-medium truncate" style={{ color: '#FAFAFA' }}>
-                                        {word.word}
-                                    </p>
+                                    <div className="flex items-center gap-2">
+                                        <p className="font-medium truncate" style={{ color: '#FAFAFA' }}>
+                                            {word.word}
+                                        </p>
+                                        {/* Similarity Badge */}
+                                        {useSemanticSearch && word.similarity && (
+                                            <span
+                                                className="px-2 py-0.5 rounded-full text-xs font-bold flex items-center gap-1"
+                                                style={{
+                                                    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+                                                    color: '#A78BFA'
+                                                }}
+                                            >
+                                                <Sparkles size={10} />
+                                                {Math.round(word.similarity * 100)}%
+                                            </span>
+                                        )}
+                                    </div>
                                     <p className="text-sm truncate" style={{ color: '#71717A' }}>
                                         {word.translation}
                                     </p>
@@ -209,7 +339,7 @@ function MobileWords() {
                                         <Trash2 size={16} />
                                     </button>
                                 </div>
-                            </div>
+                            </motion.div>
                         ))}
                     </div>
                 )}
@@ -228,3 +358,4 @@ function MobileWords() {
 }
 
 export default MobileWords;
+
