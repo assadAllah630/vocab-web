@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api';
-import { Search, Plus, Trash2, Pencil } from 'lucide-react';
+import { Search, Plus, Trash2, Pencil, WifiOff, RefreshCw } from 'lucide-react';
+import { vocabStorage, useOnlineStatus, syncQueue } from '../../utils/offlineStorage';
 
 function MobileWords() {
     const navigate = useNavigate();
@@ -9,17 +10,37 @@ function MobileWords() {
     const [searchQuery, setSearchQuery] = useState('');
     const [loading, setLoading] = useState(true);
     const [activeFilter, setActiveFilter] = useState('all');
+    const isOnline = useOnlineStatus();
+    const [pendingCount, setPendingCount] = useState(0);
 
     useEffect(() => {
         fetchWords();
+        syncQueue.getPendingCount().then(setPendingCount);
     }, []);
 
     const fetchWords = async () => {
+        setLoading(true);
         try {
-            const res = await api.get('vocab/');
-            setWords(res.data);
+            // Try cache first
+            const cached = await vocabStorage.getAll();
+            if (cached.length > 0) {
+                setWords(cached);
+                setLoading(false);
+            }
+
+            // If online, fetch fresh data
+            if (navigator.onLine) {
+                const res = await api.get('vocab/');
+                setWords(res.data);
+                await vocabStorage.saveAll(res.data);
+            }
         } catch (err) {
-            console.error(err);
+            console.error('Failed to fetch words:', err);
+            // Fall back to cache
+            const cached = await vocabStorage.getAll();
+            if (cached.length > 0) {
+                setWords(cached);
+            }
         } finally {
             setLoading(false);
         }
@@ -27,11 +48,20 @@ function MobileWords() {
 
     const handleDelete = async (id) => {
         if (!confirm('Delete this word?')) return;
-        try {
-            await api.delete(`vocab/${id}/`);
-            setWords(words.filter(w => w.id !== id));
-        } catch (err) {
-            console.error(err);
+
+        // Update local state immediately
+        setWords(words.filter(w => w.id !== id));
+
+        // Update local cache
+        await vocabStorage.delete(id);
+
+        // If online, sync with server
+        if (isOnline) {
+            try {
+                await api.delete(`vocab/${id}/`);
+            } catch (err) {
+                console.error('Failed to delete from server:', err);
+            }
         }
     };
 
@@ -46,24 +76,47 @@ function MobileWords() {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#0A0A0B' }}>
+            <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'transparent' }}>
                 <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen" style={{ backgroundColor: '#0A0A0B' }}>
+        <div className="min-h-screen" style={{ backgroundColor: 'transparent' }}>
+            {/* Offline Indicator */}
+            {!isOnline && (
+                <div
+                    className="px-4 py-2 flex items-center justify-center gap-2"
+                    style={{ backgroundColor: '#F59E0B' }}
+                >
+                    <WifiOff size={14} style={{ color: '#FFFFFF' }} />
+                    <span className="text-xs font-medium" style={{ color: '#FFFFFF' }}>
+                        Offline - showing cached words
+                    </span>
+                </div>
+            )}
+
             {/* Header */}
             <div className="px-5 pt-14 pb-4">
                 <div className="flex items-center justify-between mb-4">
                     <h1 className="text-xl font-semibold" style={{ color: '#FAFAFA' }}>Words</h1>
-                    <span
-                        className="px-2.5 py-1 rounded-md text-sm font-medium"
-                        style={{ backgroundColor: '#27272A', color: '#A1A1AA' }}
-                    >
-                        {words.length}
-                    </span>
+                    <div className="flex items-center gap-2">
+                        {!isOnline && (
+                            <span
+                                className="px-2 py-1 rounded-md text-xs font-medium"
+                                style={{ backgroundColor: '#F59E0B20', color: '#F59E0B' }}
+                            >
+                                Offline
+                            </span>
+                        )}
+                        <span
+                            className="px-2.5 py-1 rounded-md text-sm font-medium"
+                            style={{ backgroundColor: '#27272A', color: '#A1A1AA' }}
+                        >
+                            {words.length}
+                        </span>
+                    </div>
                 </div>
 
                 {/* Search */}

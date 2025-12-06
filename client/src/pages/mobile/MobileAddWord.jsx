@@ -118,11 +118,11 @@ function MobileAddWord({ user }) {
     };
 
     return (
-        <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#0A0A0B' }}>
+        <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'transparent' }}>
             {/* Header */}
             <div
                 className="flex items-center justify-between px-4 py-4 border-b sticky top-0 z-10"
-                style={{ borderColor: '#27272A', backgroundColor: '#0A0A0B' }}
+                style={{ borderColor: '#27272A', backgroundColor: 'transparent' }}
             >
                 <button
                     onClick={() => navigate('/m/words')}

@@ -12,10 +12,12 @@ import {
     Zap,
     Trophy,
     Target,
-    Star
+    Star,
+    WifiOff
 } from 'lucide-react';
 import { AnimatedIcon, GlowingZap, BouncingFlame } from '../../components/AnimatedIcons';
 import streakFlame from '../../assets/streak-flame.png';
+import { statsStorage, vocabStorage, useOnlineStatus } from '../../utils/offlineStorage';
 
 // Motivational messages based on streak
 const getMotivation = (streak) => {
@@ -46,33 +48,57 @@ function MobileHome({ user }) {
     });
     const [loading, setLoading] = useState(true);
     const [showCelebration, setShowCelebration] = useState(false);
+    const isOnline = useOnlineStatus();
 
     useEffect(() => {
         fetchStats();
     }, []);
 
     const fetchStats = async () => {
+        setLoading(true);
         try {
-            const [vocabRes, statsRes] = await Promise.all([
-                api.get('vocab/'),
-                api.get('stats/')
-            ]);
-            const newStats = {
-                totalWords: statsRes.data.total_words || vocabRes.data.length || 0,
-                streak: statsRes.data.streak || 0,
-                needsReview: statsRes.data.needs_review || 0,
-                todayProgress: Math.min(statsRes.data.today_words || 0, 10),
-                dailyGoal: 10
-            };
-            setStats(newStats);
+            // Try cache first
+            const cachedStats = await statsStorage.get();
+            const cachedVocab = await vocabStorage.getAll();
 
-            // Show celebration if goal achieved
-            if (newStats.todayProgress >= newStats.dailyGoal) {
-                setShowCelebration(true);
-                setTimeout(() => setShowCelebration(false), 3000);
+            if (cachedStats) {
+                setStats({
+                    totalWords: cachedStats.totalWords || cachedVocab.length || 0,
+                    streak: cachedStats.streak || 0,
+                    needsReview: cachedStats.needsReview || 0,
+                    todayProgress: cachedStats.todayProgress || 0,
+                    dailyGoal: cachedStats.dailyGoal || 10
+                });
+                setLoading(false);
+            }
+
+            // If online, fetch fresh data
+            if (navigator.onLine) {
+                const [vocabRes, statsRes] = await Promise.all([
+                    api.get('vocab/'),
+                    api.get('stats/')
+                ]);
+                const newStats = {
+                    totalWords: statsRes.data.total_words || vocabRes.data.length || 0,
+                    streak: statsRes.data.streak || 0,
+                    needsReview: statsRes.data.needs_review || 0,
+                    todayProgress: Math.min(statsRes.data.today_words || 0, 10),
+                    dailyGoal: 10
+                };
+                setStats(newStats);
+
+                // Cache stats and vocab
+                await statsStorage.save(newStats);
+                await vocabStorage.saveAll(vocabRes.data);
+
+                // Show celebration if goal achieved
+                if (newStats.todayProgress >= newStats.dailyGoal) {
+                    setShowCelebration(true);
+                    setTimeout(() => setShowCelebration(false), 3000);
+                }
             }
         } catch (err) {
-            console.error(err);
+            console.error('Failed to fetch stats:', err);
         } finally {
             setLoading(false);
         }
@@ -83,7 +109,7 @@ function MobileHome({ user }) {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#0A0A0B' }}>
+            <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'transparent' }}>
                 <motion.div
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1, repeat: Infinity, ease: "linear" }}

@@ -46,13 +46,13 @@ function MobilePractice() {
     ];
 
     const moreTools = [
-        { id: 'reader', title: 'Smart Reader', icon: FileText, action: () => navigate('/reader') },
+        { id: 'reader', title: 'Smart Reader', icon: FileText, action: () => navigate('/m/reader') },
         { id: 'podcasts', title: 'Podcasts', icon: Headphones, action: () => navigate('/podcasts') },
         { id: 'generator', title: 'AI Generator', icon: Sparkles, action: () => navigate('/m/ai') }
     ];
 
     return (
-        <div className="min-h-screen" style={{ backgroundColor: '#0A0A0B' }}>
+        <div className="min-h-screen" style={{ backgroundColor: 'transparent' }}>
             {/* Header */}
             <div className="px-5 pt-14 pb-6">
                 <h1 className="text-xl font-semibold" style={{ color: '#FAFAFA' }}>Practice</h1>

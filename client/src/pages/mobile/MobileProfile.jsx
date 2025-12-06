@@ -1,18 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-    ArrowRightStartOnRectangleIcon,
-    CogIcon,
-    UserIcon,
-    LanguageIcon,
-    ChevronRightIcon
-} from '@heroicons/react/24/outline';
+    User,
+    Settings,
+    Globe,
+    LogOut,
+    ChevronRight,
+    BookOpen,
+    Flame,
+    Award,
+    Shield,
+    Bell,
+    HelpCircle,
+    ExternalLink,
+    Zap,
+    Key
+} from 'lucide-react';
 import api from '../../api';
 
 const MobileProfile = ({ user, setUser }) => {
     const navigate = useNavigate();
     const [loggingOut, setLoggingOut] = useState(false);
+    const [stats, setStats] = useState({ totalWords: 0, streak: 0, level: 'B1' });
+
+    useEffect(() => {
+        fetchStats();
+    }, []);
+
+    const fetchStats = async () => {
+        try {
+            const [vocabRes, statsRes] = await Promise.all([
+                api.get('vocab/'),
+                api.get('stats/')
+            ]);
+            setStats({
+                totalWords: statsRes.data.total_words || vocabRes.data.length || 0,
+                streak: statsRes.data.streak || 0,
+                level: user?.level || 'B1'
+            });
+        } catch (err) {
+            console.error('Failed to fetch stats:', err);
+        }
+    };
 
     const handleLogout = async () => {
         setLoggingOut(true);
@@ -28,96 +58,271 @@ const MobileProfile = ({ user, setUser }) => {
         }
     };
 
-    const menuItems = [
-        { icon: UserIcon, label: 'Edit Profile', path: '/m/me/edit', color: '#6366F1' },
-        { icon: LanguageIcon, label: 'Language Settings', path: '/m/me/language', color: '#14B8A6' },
-        { icon: CogIcon, label: 'App Settings', path: '/m/me/settings', color: '#8B5CF6' },
+    const mainMenuItems = [
+        { icon: User, label: 'Edit Profile', subtitle: 'Update your personal info', path: '/m/me/edit' },
+        { icon: Globe, label: 'Language', subtitle: 'Learning preferences', path: '/m/me/language' },
+        { icon: Key, label: 'API Keys', subtitle: 'AI & service integrations', path: '/m/me/api-keys' },
+        { icon: Shield, label: 'Security', subtitle: 'Password settings', path: '/m/me/security' },
+        { icon: Bell, label: 'Notifications', subtitle: 'Reminders & alerts', path: '/m/me/notifications' },
     ];
 
-    return (
-        <div className="min-h-screen bg-[#09090B] pb-24">
-            {/* Header Card */}
-            <div className="px-4 pt-6 pb-4">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] rounded-2xl p-6 relative overflow-hidden"
-                >
-                    <div className="absolute inset-0 bg-black/10" />
-                    <div className="relative z-10 flex items-center gap-4">
-                        <div className="w-16 h-16 bg-white/20 backdrop-blur rounded-full flex items-center justify-center">
-                            <span className="text-2xl font-bold text-white">
-                                {user?.username?.charAt(0).toUpperCase() || 'U'}
-                            </span>
-                        </div>
-                        <div>
-                            <h1 className="text-xl font-bold text-white">{user?.username || 'User'}</h1>
-                            <p className="text-white/70 text-sm">{user?.email || 'user@example.com'}</p>
-                        </div>
-                    </div>
-                </motion.div>
-            </div>
+    const secondaryMenuItems = [
+        { icon: HelpCircle, label: 'Help & Support', path: '/m/me/help' },
+        { icon: ExternalLink, label: 'About', path: '/m/me/about' },
+    ];
 
-            {/* Stats Row */}
-            <div className="px-4 mb-6">
-                <div className="grid grid-cols-3 gap-3">
+    const getMemberSince = () => {
+        if (user?.date_joined) {
+            const date = new Date(user.date_joined);
+            return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        }
+        return 'Member';
+    };
+
+    return (
+        <div className="min-h-screen pb-28" style={{ backgroundColor: 'transparent' }}>
+            {/* Profile Header */}
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="pt-14 pb-6 px-5"
+            >
+                {/* Avatar & Info */}
+                <div className="flex items-center gap-4 mb-6">
+                    <motion.div
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ delay: 0.1 }}
+                        className="relative"
+                    >
+                        <div
+                            className="w-20 h-20 rounded-2xl flex items-center justify-center text-3xl font-bold"
+                            style={{
+                                background: 'linear-gradient(135deg, #18181B 0%, #27272A 100%)',
+                                border: '1px solid #3F3F46',
+                                color: '#FAFAFA'
+                            }}
+                        >
+                            {user?.username?.charAt(0).toUpperCase() || 'U'}
+                        </div>
+                        {/* Online indicator */}
+                        <div
+                            className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center"
+                            style={{ backgroundColor: 'transparent' }}
+                        >
+                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#22C55E' }} />
+                        </div>
+                    </motion.div>
+
+                    <motion.div
+                        initial={{ x: -10, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ delay: 0.15 }}
+                        className="flex-1"
+                    >
+                        <h1 className="text-xl font-semibold" style={{ color: '#FAFAFA' }}>
+                            {user?.username || 'User'}
+                        </h1>
+                        <p className="text-sm mt-0.5" style={{ color: '#71717A' }}>
+                            {user?.email || 'user@example.com'}
+                        </p>
+                        <p className="text-xs mt-1" style={{ color: '#52525B' }}>
+                            {getMemberSince()}
+                        </p>
+                    </motion.div>
+
+                    <motion.button
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.2 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => navigate('/m/me/edit')}
+                        className="p-2.5 rounded-xl"
+                        style={{ backgroundColor: '#18181B', border: '1px solid #27272A' }}
+                    >
+                        <Settings size={18} style={{ color: '#71717A' }} />
+                    </motion.button>
+                </div>
+
+                {/* Stats Cards */}
+                <motion.div
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.2 }}
+                    className="grid grid-cols-3 gap-3"
+                >
                     {[
-                        { label: 'Words', value: user?.total_words || 0 },
-                        { label: 'Streak', value: user?.streak || 0 },
-                        { label: 'Level', value: user?.level || 'B1' }
-                    ].map((stat) => (
+                        { icon: BookOpen, value: stats.totalWords, label: 'Words', color: '#6366F1' },
+                        { icon: Flame, value: stats.streak, label: 'Day Streak', color: '#F59E0B' },
+                        { icon: Award, value: stats.level, label: 'Level', color: '#22C55E' }
+                    ].map((stat, i) => (
                         <motion.div
                             key={stat.label}
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            className="bg-[#18181B] rounded-xl p-4 text-center border border-[#27272A]"
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ delay: 0.25 + i * 0.05 }}
+                            className="rounded-2xl p-4 text-center"
+                            style={{ backgroundColor: '#141416', border: '1px solid #1F1F23' }}
                         >
-                            <p className="text-2xl font-bold text-white">{stat.value}</p>
-                            <p className="text-xs text-[#71717A] mt-1">{stat.label}</p>
+                            <div
+                                className="w-9 h-9 rounded-xl mx-auto mb-2 flex items-center justify-center"
+                                style={{ backgroundColor: `${stat.color}15` }}
+                            >
+                                <stat.icon size={18} style={{ color: stat.color }} />
+                            </div>
+                            <p className="text-lg font-bold" style={{ color: '#FAFAFA' }}>{stat.value}</p>
+                            <p className="text-[10px] uppercase tracking-wider mt-0.5" style={{ color: '#52525B' }}>
+                                {stat.label}
+                            </p>
                         </motion.div>
                     ))}
-                </div>
-            </div>
+                </motion.div>
+            </motion.div>
 
-            {/* Menu Items */}
-            <div className="px-4 space-y-2">
-                {menuItems.map((item, i) => (
-                    <motion.button
-                        key={item.label}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.1 }}
-                        onClick={() => navigate(item.path)}
-                        className="w-full flex items-center justify-between p-4 bg-[#18181B] rounded-xl border border-[#27272A] active:scale-[0.98] transition-transform"
-                    >
-                        <div className="flex items-center gap-3">
-                            <div
-                                className="w-10 h-10 rounded-lg flex items-center justify-center"
-                                style={{ backgroundColor: `${item.color}20` }}
-                            >
-                                <item.icon className="w-5 h-5" style={{ color: item.color }} />
-                            </div>
-                            <span className="font-medium text-white">{item.label}</span>
+            {/* Upgrade Banner - Optional premium feel */}
+            <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="px-5 mb-5"
+            >
+                <div
+                    className="rounded-2xl p-4 flex items-center justify-between"
+                    style={{
+                        background: 'linear-gradient(135deg, #1C1C1F 0%, #18181B 100%)',
+                        border: '1px solid #27272A'
+                    }}
+                >
+                    <div className="flex items-center gap-3">
+                        <div
+                            className="w-10 h-10 rounded-xl flex items-center justify-center"
+                            style={{ background: 'linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)' }}
+                        >
+                            <Zap size={20} style={{ color: '#FFFFFF' }} />
                         </div>
-                        <ChevronRightIcon className="w-5 h-5 text-[#52525B]" />
-                    </motion.button>
-                ))}
-            </div>
+                        <div>
+                            <p className="text-sm font-medium" style={{ color: '#FAFAFA' }}>Keep Learning!</p>
+                            <p className="text-xs" style={{ color: '#71717A' }}>Track your progress daily</p>
+                        </div>
+                    </div>
+                    <ChevronRight size={18} style={{ color: '#52525B' }} />
+                </div>
+            </motion.div>
+
+            {/* Main Menu Section */}
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.35 }}
+                className="px-5 mb-4"
+            >
+                <p className="text-[11px] uppercase tracking-wider font-medium mb-3 px-1" style={{ color: '#52525B' }}>
+                    Account
+                </p>
+                <div
+                    className="rounded-2xl overflow-hidden"
+                    style={{ backgroundColor: '#141416', border: '1px solid #1F1F23' }}
+                >
+                    {mainMenuItems.map((item, index) => (
+                        <motion.button
+                            key={item.label}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.4 + index * 0.05 }}
+                            onClick={() => navigate(item.path)}
+                            className="w-full flex items-center justify-between p-4 active:bg-white/5 transition-colors"
+                            style={{
+                                borderBottom: index < mainMenuItems.length - 1 ? '1px solid #1F1F23' : 'none'
+                            }}
+                        >
+                            <div className="flex items-center gap-3">
+                                <div
+                                    className="w-9 h-9 rounded-xl flex items-center justify-center"
+                                    style={{ backgroundColor: '#1F1F23' }}
+                                >
+                                    <item.icon size={18} style={{ color: '#A1A1AA' }} />
+                                </div>
+                                <div className="text-left">
+                                    <p className="text-sm font-medium" style={{ color: '#FAFAFA' }}>{item.label}</p>
+                                    <p className="text-xs" style={{ color: '#52525B' }}>{item.subtitle}</p>
+                                </div>
+                            </div>
+                            <ChevronRight size={16} style={{ color: '#3F3F46' }} />
+                        </motion.button>
+                    ))}
+                </div>
+            </motion.div>
+
+            {/* Secondary Menu Section */}
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="px-5 mb-6"
+            >
+                <p className="text-[11px] uppercase tracking-wider font-medium mb-3 px-1" style={{ color: '#52525B' }}>
+                    More
+                </p>
+                <div
+                    className="rounded-2xl overflow-hidden"
+                    style={{ backgroundColor: '#141416', border: '1px solid #1F1F23' }}
+                >
+                    {secondaryMenuItems.map((item, index) => (
+                        <motion.button
+                            key={item.label}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.55 + index * 0.05 }}
+                            onClick={() => navigate(item.path)}
+                            className="w-full flex items-center justify-between p-4 active:bg-white/5 transition-colors"
+                            style={{
+                                borderBottom: index < secondaryMenuItems.length - 1 ? '1px solid #1F1F23' : 'none'
+                            }}
+                        >
+                            <div className="flex items-center gap-3">
+                                <item.icon size={18} style={{ color: '#71717A' }} />
+                                <p className="text-sm" style={{ color: '#A1A1AA' }}>{item.label}</p>
+                            </div>
+                            <ChevronRight size={16} style={{ color: '#3F3F46' }} />
+                        </motion.button>
+                    ))}
+                </div>
+            </motion.div>
 
             {/* Logout Button */}
-            <div className="px-4 mt-8">
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6 }}
+                className="px-5"
+            >
                 <motion.button
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.4 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={handleLogout}
                     disabled={loggingOut}
-                    className="w-full flex items-center justify-center gap-2 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 font-medium active:scale-[0.98] transition-transform disabled:opacity-50"
+                    className="w-full flex items-center justify-center gap-2 p-4 rounded-2xl transition-colors disabled:opacity-50"
+                    style={{
+                        backgroundColor: 'rgba(239, 68, 68, 0.08)',
+                        border: '1px solid rgba(239, 68, 68, 0.15)'
+                    }}
                 >
-                    <ArrowRightStartOnRectangleIcon className="w-5 h-5" />
-                    {loggingOut ? 'Logging out...' : 'Log Out'}
+                    <LogOut size={18} style={{ color: '#EF4444' }} />
+                    <span className="font-medium" style={{ color: '#EF4444' }}>
+                        {loggingOut ? 'Signing out...' : 'Sign Out'}
+                    </span>
                 </motion.button>
-            </div>
+            </motion.div>
+
+            {/* Version Footer */}
+            <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.7 }}
+                className="text-center text-[10px] mt-6 pb-4"
+                style={{ color: '#3F3F46' }}
+            >
+                VocabMaster v1.0.0
+            </motion.p>
         </div>
     );
 };

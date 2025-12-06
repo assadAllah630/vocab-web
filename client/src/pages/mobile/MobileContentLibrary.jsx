@@ -8,11 +8,13 @@ import {
     TrashIcon,
     PlusIcon,
     SparklesIcon,
-    ChevronRightIcon
+    ChevronRightIcon,
+    WifiIcon
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid, HeartIcon } from '@heroicons/react/24/solid';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import api from '../../api';
+import { generatedContentStorage, useOnlineStatus, cacheImages } from '../../utils/offlineStorage';
 
 const FILTER_TABS = [
     { id: 'all', label: 'All', emoji: '✨' },
@@ -106,17 +108,43 @@ const MobileContentLibrary = () => {
     const [content, setContent] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('all');
+    const isOnline = useOnlineStatus();
 
     useEffect(() => {
         fetchContent();
     }, []);
 
     const fetchContent = async () => {
+        setLoading(true);
         try {
-            const res = await api.get('ai/generated-content/');
-            setContent(res.data);
+            // Try cache first
+            const cached = await generatedContentStorage.getAll();
+            if (cached.length > 0) {
+                setContent(cached);
+                setLoading(false);
+            }
+
+            // If online, fetch fresh data
+            if (navigator.onLine) {
+                const res = await api.get('ai/generated-content/');
+                setContent(res.data);
+                await generatedContentStorage.saveAll(res.data);
+
+                // Cache images for offline
+                const imageUrls = res.data
+                    .filter(item => item.image_url)
+                    .map(item => item.image_url);
+                if (imageUrls.length > 0) {
+                    cacheImages(imageUrls);
+                }
+            }
         } catch (err) {
             console.error('Failed to fetch content', err);
+            // Fall back to cache
+            const cached = await generatedContentStorage.getAll();
+            if (cached.length > 0) {
+                setContent(cached);
+            }
         } finally {
             setLoading(false);
         }
@@ -201,8 +229,8 @@ const MobileContentLibrary = () => {
                             key={tab.id}
                             onClick={() => setFilter(tab.id)}
                             className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex items-center gap-2 transition-all ${filter === tab.id
-                                    ? 'bg-[#6366F1] text-white'
-                                    : 'bg-[#18181B] text-[#A1A1AA] border border-[#27272A]'
+                                ? 'bg-[#6366F1] text-white'
+                                : 'bg-[#18181B] text-[#A1A1AA] border border-[#27272A]'
                                 }`}
                         >
                             <span>{tab.emoji}</span>

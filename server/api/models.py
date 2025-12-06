@@ -104,6 +104,16 @@ class Vocabulary(models.Model):
     total_practice_count = models.IntegerField(default=0)
     last_practiced_at = models.DateTimeField(null=True, blank=True)
     
+    class Meta:
+        verbose_name_plural = "Vocabulary"
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['created_by', 'language']),
+            models.Index(fields=['created_by', '-created_at']),
+            models.Index(fields=['created_by', 'type']),
+            models.Index(fields=['created_by', 'last_practiced_at']),
+        ]
+    
     def __str__(self):
         return f"{self.word} ({self.language})"
 
@@ -135,6 +145,10 @@ class UserProgress(models.Model):
 
     class Meta:
         unique_together = ('user', 'vocab')
+        indexes = [
+            models.Index(fields=['user', 'next_review_date']),
+            models.Index(fields=['user', '-last_seen']),
+        ]
 
 class Quiz(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

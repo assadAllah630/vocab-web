@@ -2,6 +2,7 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import MobileNav from './MobileNav';
 import MobileFloatingExamTimer from './MobileFloatingExamTimer';
+import InstallPrompt from '../InstallPrompt';
 
 function MobileLayout() {
     return (
@@ -36,6 +37,9 @@ function MobileLayout() {
 
             {/* Floating Exam Timer - shows when exam is active but user is on another page */}
             <MobileFloatingExamTimer />
+
+            {/* PWA Install Prompt */}
+            <InstallPrompt />
 
             <MobileNav />
         </div>

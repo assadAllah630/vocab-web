@@ -56,6 +56,16 @@ from .advanced_text_views import (
     retry_image_generation
 )
 from .image_generation_sse import stream_image_generation_progress
+from .text_extraction_views import TextExtractionView, SupportedFormatsView
+from .content_extraction_views import ContentExtractionView, YouTubeTranscriptView
+from .text_converter_views import TextConverterAgentView, QuickFormatView
+from .notification_views import (
+    subscribe_push,
+    unsubscribe_push,
+    notification_preferences,
+    notification_status,
+    send_test_notification
+)
 
 router = DefaultRouter()
 router.register(r'vocab', VocabularyViewSet, basename='vocabulary')
@@ -124,6 +134,18 @@ urlpatterns = [
     path('generate-text/', generate_text),
     path('generate-podcast/', generate_podcast),
     path('analyze-text/', analyze_text),
+    
+    # Text Extraction (multi-format file upload)
+    path('extract-text/', TextExtractionView.as_view(), name='extract_text'),
+    path('extract-text/formats/', SupportedFormatsView.as_view(), name='supported_formats'),
+    
+    # Web Content Extraction (articles, YouTube, web pages)
+    path('extract-content/', ContentExtractionView.as_view(), name='extract_content'),
+    path('extract-youtube/', YouTubeTranscriptView.as_view(), name='extract_youtube'),
+    
+    # AI Text Converter (multi-agent pipeline)
+    path('convert-text/', TextConverterAgentView.as_view(), name='convert_text'),
+    path('quick-format/', QuickFormatView.as_view(), name='quick_format'),
 
     # Google TTS endpoints
     path('tts/voices/', list_tts_voices),
@@ -145,6 +167,13 @@ urlpatterns = [
     path('practice/result/', views.record_practice_result, name='record_practice_result'),
     path('practice/stats/', views.get_review_stats, name='get_review_stats'),
     path('games/matching/', views.get_matching_game_words, name='get_matching_game_words'),
+    
+    # Push Notifications
+    path('notifications/subscribe/', subscribe_push, name='subscribe_push'),
+    path('notifications/unsubscribe/', unsubscribe_push, name='unsubscribe_push'),
+    path('notifications/preferences/', notification_preferences, name='notification_preferences'),
+    path('notifications/status/', notification_status, name='notification_status'),
+    path('notifications/test/', send_test_notification, name='send_test_notification'),
     
     # Monitoring
     path('health/', health_check, name='health_check'),

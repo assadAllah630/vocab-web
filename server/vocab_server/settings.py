@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
+    'drf_spectacular',  # API Documentation
     'api',
 ]
 
@@ -85,13 +86,18 @@ import dj_database_url
 
 DATABASE_URL = os.environ.get('DATABASE_URL')
 if DATABASE_URL:
-    # Production: Use Render's DATABASE_URL
+    # Production: Use Render's DATABASE_URL with connection pooling
     DATABASES = {
         'default': dj_database_url.config(
             default=DATABASE_URL,
-            conn_max_age=600,
+            conn_max_age=60,  # Connections live 60 seconds (better for serverless)
             conn_health_checks=True,
+            ssl_require=not DEBUG,  # SSL in production
         )
+    }
+    # Add connection pool settings for PostgreSQL
+    DATABASES['default']['OPTIONS'] = {
+        'connect_timeout': 10,  # Timeout after 10 seconds
     }
 else:
     # Local development: Use individual env vars
@@ -103,6 +109,8 @@ else:
             'PASSWORD': os.environ.get('DB_PASSWORD', '123'),
             'HOST': os.environ.get('DB_HOST', 'localhost'),
             'PORT': os.environ.get('DB_PORT', '5432'),
+            'CONN_MAX_AGE': 60,
+            'CONN_HEALTH_CHECKS': True,
         }
     }
 
@@ -188,6 +196,43 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
+    ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+# API Documentation Settings (drf-spectacular)
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'VocabMaster API',
+    'DESCRIPTION': '''
+VocabMaster API - Language Learning Platform
+
+## Features
+- **Authentication**: User signup, signin, email verification
+- **Vocabulary**: CRUD operations for vocabulary words
+- **Practice**: Spaced repetition (HLR) practice system
+- **AI Generation**: Story, article, dialogue generation
+- **Exams**: Create and take language exams
+- **Grammar**: Grammar topics and lessons
+- **TTS**: Text-to-speech with multiple providers
+
+## Authentication
+Most endpoints require authentication via Token header:
+```
+Authorization: Token your-auth-token
+```
+    ''',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
+    'TAGS': [
+        {'name': 'Auth', 'description': 'Authentication endpoints'},
+        {'name': 'Vocabulary', 'description': 'Vocabulary CRUD'},
+        {'name': 'Practice', 'description': 'Practice and progress'},
+        {'name': 'AI', 'description': 'AI generation features'},
+        {'name': 'Exams', 'description': 'Exam management'},
+        {'name': 'Grammar', 'description': 'Grammar topics'},
+        {'name': 'TTS', 'description': 'Text-to-speech'},
+        {'name': 'Profile', 'description': 'User profile'},
     ],
 }
 
@@ -301,3 +346,49 @@ LOGGING = {
     },
 }
 
+# ==========================================
+# SENTRY ERROR MONITORING (Optional)
+# ==========================================
+# Set SENTRY_DSN environment variable to enable error tracking
+# Get your DSN from: https://sentry.io/
+
+SENTRY_DSN = os.environ.get('SENTRY_DSN', '')
+
+if SENTRY_DSN and not DEBUG:
+    try:
+        import sentry_sdk
+        from sentry_sdk.integrations.django import DjangoIntegration
+        from sentry_sdk.integrations.logging import LoggingIntegration
+
+        sentry_sdk.init(
+            dsn=SENTRY_DSN,
+            integrations=[
+                DjangoIntegration(
+                    transaction_style='url',
+                    middleware_spans=True,
+                ),
+                LoggingIntegration(
+                    level=None,  # Capture all levels
+                    event_level='ERROR',  # Send errors+ as events
+                ),
+            ],
+            # Performance monitoring
+            traces_sample_rate=float(os.environ.get('SENTRY_TRACES_SAMPLE_RATE', '0.1')),
+            
+            # Release tracking
+            release=os.environ.get('APP_VERSION', 'vocabmaster@1.0.0'),
+            
+            # Environment
+            environment=os.environ.get('ENVIRONMENT', 'production'),
+            
+            # Don't send PII
+            send_default_pii=False,
+            
+            # Ignore common framework errors
+            ignore_errors=[
+                'django.security.DisallowedHost',
+            ],
+        )
+        print("✅ Sentry monitoring enabled")
+    except ImportError:
+        print("⚠️ sentry-sdk not installed. Run: pip install sentry-sdk")

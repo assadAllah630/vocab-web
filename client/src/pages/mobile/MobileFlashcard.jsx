@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import api from '../../api';
-import { X, ChevronLeft, Check } from 'lucide-react';
+import { X, ChevronLeft, Check, WifiOff } from 'lucide-react';
 import { AnimatedVolume, AnimatedTrophy, AnimatedSparkles, RatingFaces } from '../../components/AnimatedIcons';
 import confetti from 'canvas-confetti';
+import { vocabStorage, useOnlineStatus, syncQueue } from '../../utils/offlineStorage';
 
 function MobileFlashcard({ user }) {
     const navigate = useNavigate();
@@ -15,6 +16,7 @@ function MobileFlashcard({ user }) {
     const [flipped, setFlipped] = useState(false);
     const [finished, setFinished] = useState(false);
     const [score, setScore] = useState({ correct: 0, total: 0 });
+    const isOnline = useOnlineStatus();
 
     const searchParams = new URLSearchParams(location.search);
     const useHLR = searchParams.get('hlr') === 'true';
@@ -29,12 +31,42 @@ function MobileFlashcard({ user }) {
     }, []);
 
     const fetchWords = async () => {
+        setLoading(true);
         try {
-            const endpoint = useHLR ? 'practice/words/' : 'practice/random/';
-            const res = await api.get(endpoint, { params: { limit: 20 } });
-            setWords(res.data);
+            // Try cache first
+            const cached = await vocabStorage.getAll();
+
+            if (isOnline) {
+                // If online, fetch fresh data
+                const endpoint = useHLR ? 'practice/words/' : 'practice/random/';
+                const res = await api.get(endpoint, { params: { limit: 20 } });
+                setWords(res.data);
+                // Also update cache with full vocab
+                const vocabRes = await api.get('vocab/');
+                await vocabStorage.saveAll(vocabRes.data);
+            } else if (cached.length > 0) {
+                // If offline, use cached words
+                // Sort by next_review date for HLR or shuffle for random
+                let practiceWords = [...cached];
+                if (useHLR) {
+                    practiceWords = practiceWords
+                        .filter(w => !w.next_review || new Date(w.next_review) <= new Date())
+                        .slice(0, 20);
+                } else {
+                    practiceWords = practiceWords
+                        .sort(() => Math.random() - 0.5)
+                        .slice(0, 20);
+                }
+                setWords(practiceWords);
+            }
         } catch (err) {
-            console.error(err);
+            console.error('Failed to fetch words:', err);
+            // Fall back to cache
+            const cached = await vocabStorage.getAll();
+            if (cached.length > 0) {
+                const practiceWords = cached.sort(() => Math.random() - 0.5).slice(0, 20);
+                setWords(practiceWords);
+            }
         } finally {
             setLoading(false);
         }
@@ -62,14 +94,32 @@ function MobileFlashcard({ user }) {
             });
         }
 
-        try {
-            if (useHLR) {
-                await api.post('practice/result/', { word_id: currentWord.id, difficulty });
-            } else {
-                await api.post('progress/update/', { vocab_id: currentWord.id, correct: isCorrect });
+        // Save practice result (online or queue for offline)
+        if (isOnline) {
+            try {
+                if (useHLR) {
+                    await api.post('practice/result/', { word_id: currentWord.id, difficulty });
+                } else {
+                    await api.post('progress/update/', { vocab_id: currentWord.id, correct: isCorrect });
+                }
+            } catch (err) {
+                console.error('Failed to save result:', err);
+                // Queue for later sync
+                await syncQueue.addPracticeResult({
+                    word_id: currentWord.id,
+                    difficulty,
+                    correct: isCorrect,
+                    useHLR
+                });
             }
-        } catch (err) {
-            console.error(err);
+        } else {
+            // Queue for sync when back online
+            await syncQueue.addPracticeResult({
+                word_id: currentWord.id,
+                difficulty,
+                correct: isCorrect,
+                useHLR
+            });
         }
 
         setTimeout(() => {
