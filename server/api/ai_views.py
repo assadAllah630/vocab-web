@@ -2,13 +2,15 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-import google.generativeai as genai
 import json
 from .models import UserProfile
 from .prompts import ContextEngineer
 from .agent_exam import build_exam_graph
+from .gemini_helper import generate_content as generate_with_fallback
 
 from django_ratelimit.decorators import ratelimit
+
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -32,9 +34,6 @@ def ai_assistant(request):
         return Response({'error': 'Prompt is required'}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-2.0-flash')
-
         # Get user languages
         try:
             profile = request.user.profile
@@ -58,7 +57,8 @@ def ai_assistant(request):
             system_instruction = context_engineer.get_chat_system_instruction()
             final_prompt = f"{system_instruction}\n\nUser says: {prompt}"
 
-        response = model.generate_content(final_prompt)
+        # Use fallback helper for automatic model switching on quota exceeded
+        response = generate_with_fallback(api_key, final_prompt)
         
         # Handle JSON parsing for translation context
         if context == 'translation':
@@ -155,10 +155,8 @@ def validate_key(request):
         return Response({'valid': False, 'error': 'API Key is required'}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-2.0-flash')
-        # Generate a very simple response to test the key
-        response = model.generate_content("Hello")
+        # Use fallback helper for automatic model switching on quota exceeded
+        response = generate_with_fallback(api_key, "Hello")
         if response.text:
             return Response({'valid': True})
         else:
@@ -190,9 +188,6 @@ def bulk_translate(request):
         return Response({'error': 'Batch size limited to 20 words'}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-2.0-flash')
-
         # Get user languages
         try:
             profile = request.user.profile
@@ -237,7 +232,8 @@ def bulk_translate(request):
         JSON Response only.
         """
         
-        response = model.generate_content(prompt)
+        # Use fallback helper for automatic model switching on quota exceeded
+        response = generate_with_fallback(api_key, prompt)
         
         # Clean and parse JSON
         text = response.text.strip()

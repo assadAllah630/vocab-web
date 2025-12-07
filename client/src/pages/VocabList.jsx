@@ -475,9 +475,9 @@ function VocabList() {
                                             )}
 
                                             {/* Enhanced Metadata Section */}
-                                            {(word.synonyms?.length > 0 || word.antonyms?.length > 0 || word.related_concepts?.length > 0) && (
+                                            {(Array.isArray(word.synonyms) && word.synonyms.length > 0 || Array.isArray(word.antonyms) && word.antonyms.length > 0 || Array.isArray(word.related_concepts) && word.related_concepts.length > 0) && (
                                                 <div className="mt-4 pt-3 border-t border-slate-50 space-y-2">
-                                                    {word.synonyms?.length > 0 && (
+                                                    {Array.isArray(word.synonyms) && word.synonyms.length > 0 && (
                                                         <div className="flex flex-wrap gap-1 text-xs">
                                                             <span className="text-slate-400 font-medium mr-1">Syn:</span>
                                                             {word.synonyms.map((syn, i) => (
@@ -485,7 +485,7 @@ function VocabList() {
                                                             ))}
                                                         </div>
                                                     )}
-                                                    {word.antonyms?.length > 0 && (
+                                                    {Array.isArray(word.antonyms) && word.antonyms.length > 0 && (
                                                         <div className="flex flex-wrap gap-1 text-xs">
                                                             <span className="text-slate-400 font-medium mr-1">Ant:</span>
                                                             {word.antonyms.map((ant, i) => (
@@ -493,7 +493,7 @@ function VocabList() {
                                                             ))}
                                                         </div>
                                                     )}
-                                                    {word.related_concepts?.length > 0 && (
+                                                    {Array.isArray(word.related_concepts) && word.related_concepts.length > 0 && (
                                                         <div className="flex flex-wrap gap-1 text-xs">
                                                             <span className="text-slate-400 font-medium mr-1">Rel:</span>
                                                             {word.related_concepts.map((rel, i) => (

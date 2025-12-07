@@ -1,20 +1,20 @@
-import google.generativeai as genai
 import json
 import re
 import logging
+from .gemini_helper import get_model
 
 logger = logging.getLogger(__name__)
 
 class GrammarResearchAgent:
     """
     Agent for researching and generating grammar explanations.
-    Uses Google Gemini to synthesize information from authoritative sources.
+    Uses Google Gemini with automatic model fallback.
     """
     
     def __init__(self, api_key):
         self.api_key = api_key
-        genai.configure(api_key=self.api_key)
-        self.model = genai.GenerativeModel('gemini-2.0-flash')
+        self.model, self.model_name = get_model(api_key)
+        logger.info(f"[GrammarAgent] Using model: {self.model_name}")
         
     def generate_grammar_topic(self, topic, language, level, context_note=""):
         """

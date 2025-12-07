@@ -6,12 +6,12 @@ from ..models import Vocabulary, Tag, UserProfile
 from ..serializers import VocabularySerializer
 from ..hlr import HLRScheduler
 from ..prompts import ContextEngineer
+from ..gemini_helper import generate_content
 from django.db.models import Q
 from django.http import HttpResponse
 from django.utils import timezone
 import csv
 import io
-import google.generativeai as genai
 import json
 
 def enrich_vocabulary_with_ai(vocab, api_key):
@@ -19,9 +19,6 @@ def enrich_vocabulary_with_ai(vocab, api_key):
         return
 
     try:
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-2.5-flash')
-        
         # Get user languages
         try:
             profile = vocab.created_by.profile
@@ -34,7 +31,8 @@ def enrich_vocabulary_with_ai(vocab, api_key):
         context_engineer = ContextEngineer(native_lang_code, target_lang_code)
         prompt = context_engineer.get_enrichment_prompt(vocab.word, vocab.type, vocab.translation)
         
-        response = model.generate_content(prompt)
+        # Use centralized generate_content with automatic fallback
+        response = generate_content(api_key, prompt)
         # Clean response text to ensure valid JSON
         text = response.text.strip()
         if text.startswith('```json'):

@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from django_ratelimit.decorators import ratelimit
 from django.utils.decorators import method_decorator
 from django.db.models import Q
-import google.generativeai as genai
+from .gemini_helper import generate_content as gemini_generate
 from .models import GrammarTopic, Podcast, Vocabulary, UserProfile
 from .serializers import GrammarTopicSerializer, PodcastSerializer
 import os
@@ -297,10 +297,8 @@ STRICT REQUIREMENTS:
 Create a short story, dialogue, or informative text that naturally uses these words.
 """
         
-        # Generate text with Gemini
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-2.5-flash')
-        response = model.generate_content(prompt)
+        # Generate text with Gemini (with automatic model fallback)
+        response = gemini_generate(api_key, prompt)
         
         generated_text = response.text
         
@@ -373,9 +371,7 @@ def generate_podcast(request):
 Make it interesting and conversational, like a mini German lesson or story.
 Use simple, clear language suitable for language learners."""
             
-            genai.configure(api_key=gemini_key)
-            model = genai.GenerativeModel('gemini-2.5-flash')
-            response = model.generate_content(prompt)
+            response = gemini_generate(gemini_key, prompt)
             text = response.text
         
         # Get voice settings and title
@@ -673,9 +669,6 @@ def analyze_text(request):
 
         if api_key and new_words:
             try:
-                genai.configure(api_key=api_key)
-                model = genai.GenerativeModel('gemini-2.5-flash')
-                
                 # Limit to 200 words to avoid token limits and timeouts
                 words_to_filter = new_words[:200]
                 
@@ -692,7 +685,7 @@ def analyze_text(request):
                 Return the filtered list as a JSON array of strings. Example: ["word1", "word2"]
                 """
                 
-                response = model.generate_content(prompt)
+                response = gemini_generate(api_key, prompt)
                 text = response.text.strip()
                 if text.startswith('```json'):
                     text = text[7:]

@@ -7,7 +7,7 @@ import json
 import re
 import logging
 from typing import Dict, List, Any, Optional
-import google.generativeai as genai
+from .gemini_helper import get_model
 from .character_consistency_enforcer import CharacterConsistencyEnforcer
 
 logger = logging.getLogger(__name__)
@@ -16,9 +16,9 @@ class AdvancedTextAgent:
     """AI agent for generating educational content (stories, articles, dialogues)"""
     
     def __init__(self, api_key: str):
-        """Initialize agent with Gemini API key"""
-        genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel('gemini-2.0-flash')
+        """Initialize agent with Gemini API key and automatic model fallback"""
+        self.model, self.model_name = get_model(api_key)
+        logger.info(f"[AdvancedTextAgent] Using model: {self.model_name}")
         self.generation_config = {
             'temperature': 0.8,  # Higher for more creative content
             'top_p': 0.95,

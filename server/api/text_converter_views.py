@@ -87,11 +87,9 @@ class TextConverterAgentView(APIView):
         # Handle Gemini case
         if client == 'GEMINI':
             try:
-                import google.generativeai as genai
-                genai.configure(api_key=error_or_key)
-                gemini_model = genai.GenerativeModel('gemini-2.0-flash')
+                from .gemini_helper import generate_content
                 
-                logger.info(f"Converting text ({len(text)} chars) using Gemini")
+                logger.info(f"Converting text ({len(text)} chars) using Gemini with fallback")
                 
                 # Create a prompt for Gemini to format the text
                 prompt = f"""You are a text formatting assistant. Convert the following raw text into clean, readable Markdown.
@@ -111,7 +109,7 @@ Raw text to format:
 
 Return ONLY the formatted Markdown, no explanation."""
 
-                response = gemini_model.generate_content(prompt)
+                response = generate_content(error_or_key, prompt)
                 markdown = response.text.strip()
                 
                 # Try to extract title from first heading
