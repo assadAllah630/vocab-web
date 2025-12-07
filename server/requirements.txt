@@ -114,7 +114,7 @@ sentry-sdk>=2.0.0
 drf-spectacular>=0.27.0
 
 # Web Content Extraction Libraries
-lxml==4.9.4
+lxml==4.9.2
 trafilatura>=1.12.0
 newspaper4k>=0.9.0
 youtube-transcript-api>=0.6.2
