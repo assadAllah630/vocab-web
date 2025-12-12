@@ -34,6 +34,7 @@ class GeneratedContent(models.Model):
     topic = models.CharField(max_length=200)
     level = models.CharField(max_length=2, choices=LEVELS)
     target_language = models.CharField(max_length=2, choices=LANGUAGES)
+    native_language = models.CharField(max_length=2, choices=LANGUAGES, default='en', help_text='Translation language for content')
     
     # Content Structure (JSON)
     content_data = models.JSONField(help_text='Stores events/paragraphs/messages structure')

@@ -15,12 +15,15 @@ import {
     HelpCircle,
     ExternalLink,
     Zap,
-    Key
+    Key,
+    Cpu
 } from 'lucide-react';
 import api from '../../api';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const MobileProfile = ({ user, setUser }) => {
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const [loggingOut, setLoggingOut] = useState(false);
     const [stats, setStats] = useState({ totalWords: 0, streak: 0, level: 'B1' });
 
@@ -59,16 +62,16 @@ const MobileProfile = ({ user, setUser }) => {
     };
 
     const mainMenuItems = [
-        { icon: User, label: 'Edit Profile', subtitle: 'Update your personal info', path: '/m/me/edit' },
-        { icon: Globe, label: 'Language', subtitle: 'Learning preferences', path: '/m/me/language' },
-        { icon: Key, label: 'API Keys', subtitle: 'AI & service integrations', path: '/m/me/api-keys' },
-        { icon: Shield, label: 'Security', subtitle: 'Password settings', path: '/m/me/security' },
-        { icon: Bell, label: 'Notifications', subtitle: 'Reminders & alerts', path: '/m/me/notifications' },
+        { icon: User, label: t('editProfile'), subtitle: t('updatePersonalInfo'), path: '/m/me/edit' },
+        { icon: Globe, label: t('language'), subtitle: t('learningPreferences'), path: '/m/me/language' },
+        { icon: Cpu, label: t('aiGateway'), subtitle: t('multiProvider'), path: '/m/ai-gateway' },
+        { icon: Key, label: t('apiKeys'), subtitle: t('serviceIntegrations'), path: '/m/me/api-keys' },
+        { icon: Shield, label: t('security'), subtitle: t('passwordSettings'), path: '/m/me/security' },
     ];
 
     const secondaryMenuItems = [
-        { icon: HelpCircle, label: 'Help & Support', path: '/m/me/help' },
-        { icon: ExternalLink, label: 'About', path: '/m/me/about' },
+        { icon: HelpCircle, label: t('help'), path: '/m/me/help' },
+        { icon: ExternalLink, label: t('about'), path: '/m/me/about' },
     ];
 
     const getMemberSince = () => {
@@ -152,9 +155,9 @@ const MobileProfile = ({ user, setUser }) => {
                     className="grid grid-cols-3 gap-3"
                 >
                     {[
-                        { icon: BookOpen, value: stats.totalWords, label: 'Words', color: '#6366F1' },
-                        { icon: Flame, value: stats.streak, label: 'Day Streak', color: '#F59E0B' },
-                        { icon: Award, value: stats.level, label: 'Level', color: '#22C55E' }
+                        { icon: BookOpen, value: stats.totalWords, label: t('wordsCount'), color: '#6366F1' },
+                        { icon: Flame, value: stats.streak, label: t('dayStreak'), color: '#F59E0B' },
+                        { icon: Award, value: stats.level, label: t('level'), color: '#22C55E' }
                     ].map((stat, i) => (
                         <motion.div
                             key={stat.label}
@@ -201,8 +204,8 @@ const MobileProfile = ({ user, setUser }) => {
                             <Zap size={20} style={{ color: '#FFFFFF' }} />
                         </div>
                         <div>
-                            <p className="text-sm font-medium" style={{ color: '#FAFAFA' }}>Keep Learning!</p>
-                            <p className="text-xs" style={{ color: '#71717A' }}>Track your progress daily</p>
+                            <p className="text-sm font-medium" style={{ color: '#FAFAFA' }}>{t('keepLearning')}</p>
+                            <p className="text-xs" style={{ color: '#71717A' }}>{t('trackProgress')}</p>
                         </div>
                     </div>
                     <ChevronRight size={18} style={{ color: '#52525B' }} />
@@ -217,7 +220,7 @@ const MobileProfile = ({ user, setUser }) => {
                 className="px-5 mb-4"
             >
                 <p className="text-[11px] uppercase tracking-wider font-medium mb-3 px-1" style={{ color: '#52525B' }}>
-                    Account
+                    {t('account')}
                 </p>
                 <div
                     className="rounded-2xl overflow-hidden"
@@ -308,7 +311,7 @@ const MobileProfile = ({ user, setUser }) => {
                 >
                     <LogOut size={18} style={{ color: '#EF4444' }} />
                     <span className="font-medium" style={{ color: '#EF4444' }}>
-                        {loggingOut ? 'Signing out...' : 'Sign Out'}
+                        {loggingOut ? t('loading') : t('logout')}
                     </span>
                 </motion.button>
             </motion.div>
@@ -328,3 +331,4 @@ const MobileProfile = ({ user, setUser }) => {
 };
 
 export default MobileProfile;
+

@@ -28,6 +28,7 @@ const navigation = [
     { name: 'User Analytics', href: '/analytics/users', icon: ChartBarIcon },
     { name: 'AI Analytics', href: '/analytics/ai', icon: ChartBarIcon },
     { name: 'Content Stats', href: '/analytics/content', icon: ChartBarIcon },
+    { name: 'AI Gateway', href: '/monitoring/ai-gateway', icon: BoltIcon },
     { name: 'System Health', href: '/monitoring/health', icon: BoltIcon },
     { name: 'Error Logs', href: '/monitoring/errors', icon: ArrowRightOnRectangleIcon },
     { name: 'Audit Logs', href: '/monitoring/audit', icon: ClipboardDocumentListIcon },

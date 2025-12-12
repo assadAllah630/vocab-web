@@ -1,0 +1,444 @@
+/**
+ * Comprehensive Bidirectional Text CSS
+ * Handles Arabic + German/English mixed content display
+ */
+
+/* ============================================
+   ARABIC FONT - Cairo (Modern, Screen-Optimized)
+   ============================================ */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap');
+
+/* ============================================
+   CSS CUSTOM PROPERTIES FOR BIDI
+   ============================================ */
+:root {
+  --font-arabic: 'Cairo', 'Noto Sans Arabic', 'Segoe UI', sans-serif;
+  --font-latin: 'Inter', system-ui, sans-serif;
+  --line-height-arabic: 1.8;
+  --line-height-latin: 1.6;
+}
+
+/* ============================================
+   BIDIRECTIONAL TEXT FUNDAMENTALS
+   ============================================ */
+
+/* Isolate element from affecting surrounding text flow */
+.bidi-isolate {
+  unicode-bidi: isolate;
+}
+
+/* For paragraphs with mixed RTL/LTR content */
+.bidi-plaintext {
+  unicode-bidi: plaintext;
+}
+
+/* Override direction completely */
+.bidi-override {
+  unicode-bidi: bidi-override;
+}
+
+/* ============================================
+   RTL TEXT BLOCKS
+   ============================================ */
+
+.rtl-text {
+  direction: rtl;
+  text-align: right;
+  font-family: var(--font-arabic);
+  line-height: var(--line-height-arabic);
+}
+
+.ltr-text {
+  direction: ltr;
+  text-align: left;
+  font-family: var(--font-latin);
+  line-height: var(--line-height-latin);
+}
+
+/* Auto-detect based on content (use with JS) */
+[dir="rtl"] {
+  font-family: var(--font-arabic);
+  line-height: var(--line-height-arabic);
+}
+
+/* ============================================
+   TRANSLATION DISPLAY CLASSES
+   ============================================ */
+
+/* Arabic translation in any context */
+.translation-arabic,
+.translation-ar {
+  direction: rtl;
+  text-align: right;
+  font-family: var(--font-arabic);
+  line-height: var(--line-height-arabic);
+  unicode-bidi: isolate;
+}
+
+/* German/English translation */
+.translation-german,
+.translation-de,
+.translation-english,
+.translation-en {
+  direction: ltr;
+  text-align: left;
+}
+
+/* ============================================
+   TABLES WITH MIXED DIRECTIONS
+   ============================================ */
+
+.bidi-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+/* Auto-direction for table cells */
+.bidi-table td[dir="rtl"],
+.bidi-table th[dir="rtl"] {
+  text-align: right;
+  font-family: var(--font-arabic);
+  line-height: var(--line-height-arabic);
+}
+
+.bidi-table td[dir="ltr"],
+.bidi-table th[dir="ltr"] {
+  text-align: left;
+}
+
+/* ============================================
+   GRAMMAR EXAMPLES - BILINGUAL DISPLAY
+   ============================================ */
+
+/* Side-by-side bilingual example */
+.grammar-example-bidi {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  background: #1C1C1F;
+  border-radius: 0.75rem;
+  margin: 0.5rem 0;
+  border: 1px solid #27272A;
+}
+
+.grammar-example-bidi .target-text {
+  flex: 1;
+  direction: ltr;
+  text-align: left;
+  padding-right: 1rem;
+  border-right: 2px solid #6366F1;
+  color: #FAFAFA;
+}
+
+.grammar-example-bidi .translation-text {
+  flex: 1;
+  direction: rtl;
+  text-align: right;
+  font-family: var(--font-arabic);
+  color: #A1A1AA;
+}
+
+/* Stacked on mobile */
+@media (max-width: 640px) {
+  .grammar-example-bidi {
+    flex-direction: column;
+  }
+
+  .grammar-example-bidi .target-text {
+    border-right: none;
+    border-bottom: 2px solid #6366F1;
+    padding-bottom: 0.75rem;
+    padding-right: 0;
+    margin-bottom: 0.75rem;
+  }
+
+  .grammar-example-bidi .translation-text {
+    padding-top: 0;
+  }
+}
+
+/* ============================================
+   VISUAL LANGUAGE INDICATORS
+   ============================================ */
+
+.lang-badge {
+  font-size: 0.6rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: inline-block;
+  vertical-align: middle;
+  margin-inline-end: 0.5rem;
+}
+
+.lang-badge-ar {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22C55E;
+}
+
+.lang-badge-de {
+  background: rgba(99, 102, 241, 0.15);
+  color: #6366F1;
+}
+
+.lang-badge-en {
+  background: rgba(245, 151, 104, 0.15);
+  color: #F59768;
+}
+
+.lang-badge-ru {
+  background: rgba(236, 72, 153, 0.15);
+  color: #EC4899;
+}
+
+/* ============================================
+   INLINE MIXED TEXT
+   ============================================ */
+
+/* Inline Arabic in LTR context: "The word Buch (الكتاب)" */
+.inline-arabic {
+  direction: rtl;
+  unicode-bidi: embed;
+  font-family: var(--font-arabic);
+}
+
+/* Inline German/English in RTL context */
+.inline-latin {
+  direction: ltr;
+  unicode-bidi: embed;
+  font-family: var(--font-latin);
+}
+
+/* ============================================
+   VOCABULARY CARDS - BIDI
+   ============================================ */
+
+.vocab-card .vocab-word {
+  direction: ltr;
+  text-align: left;
+}
+
+.vocab-card .vocab-translation.native-ar {
+  direction: rtl;
+  text-align: right;
+  font-family: var(--font-arabic);
+}
+
+/* ============================================
+   FLASHCARD BIDIRECTIONAL
+   ============================================ */
+
+.flashcard-front {
+  direction: ltr;
+  text-align: center;
+}
+
+.flashcard-back.native-ar {
+  direction: rtl;
+  text-align: center;
+  font-family: var(--font-arabic);
+  line-height: var(--line-height-arabic);
+}
+
+/* ============================================
+   WORD BREAKDOWN DISPLAY
+   ============================================ */
+
+.word-breakdown {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.word-pair {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background: #1C1C1F;
+  border-radius: 8px;
+  border: 1px solid #27272A;
+}
+
+.word-pair .target-word {
+  font-weight: 600;
+  color: #FAFAFA;
+  font-size: 0.95rem;
+}
+
+.word-pair .arabic-translation {
+  font-size: 0.85rem;
+  color: #A1A1AA;
+  direction: rtl;
+  font-family: var(--font-arabic);
+  margin-top: 0.25rem;
+}
+
+/* ============================================
+   MERMAID DIAGRAMS WITH ARABIC LABELS
+   ============================================ */
+
+.mermaid-container text {
+  unicode-bidi: isolate;
+}
+
+/* ============================================
+   READER WORD PANEL - BIDI
+   ============================================ */
+
+.word-panel .word-definition.native-ar {
+  direction: rtl;
+  text-align: right;
+  font-family: var(--font-arabic);
+}
+
+/* ============================================
+   EXAM QUESTIONS - BIDI
+   ============================================ */
+
+.exam-question .translation-option.native-ar {
+  direction: rtl;
+  text-align: right;
+  font-family: var(--font-arabic);
+}
+
+/* ============================================
+   MARKDOWN CONTENT - BIDI AWARE
+   ============================================ */
+
+.bidi-markdown {
+  /* Default LTR for grammar content in target language */
+  direction: ltr;
+  text-align: left;
+}
+
+.bidi-markdown.native-rtl {
+  /* When native language is RTL, adjust UI direction */
+}
+
+/* Auto-direction paragraphs based on content */
+.bidi-markdown p {
+  unicode-bidi: plaintext;
+}
+
+/* Tables in markdown - per-cell direction */
+.bidi-markdown table td {
+  unicode-bidi: isolate;
+}
+
+/* Strong/bold text - isolate to preserve word order */
+.bidi-markdown strong,
+.bidi-markdown b {
+  unicode-bidi: isolate;
+}
+
+/* ============================================
+   DARK THEME ADJUSTMENTS FOR ARABIC
+   ============================================ */
+
+/* Arabic text often needs slightly higher contrast on dark backgrounds */
+.dark .rtl-text,
+.dark .translation-arabic {
+  font-weight: 500;
+  /* Slightly bolder for better legibility */
+}
+
+/* ============================================
+   ANIMATION SAFE - PREVENT TEXT SHIFT
+   ============================================ */
+
+/* Prevent layout shift during animations */
+.bidi-stable {
+  unicode-bidi: isolate;
+  contain: layout;
+}
+
+/* ============================================
+   RTL LAYOUT - FLEX DIRECTION FIXES
+   ============================================ */
+
+/* When document is RTL, reverse flex row to place icons on right */
+[dir="rtl"] .flex {
+  /* Flex row automatically reverses in RTL, but we may need explicit control */
+}
+
+/* Menu items - icon should be on right side in RTL */
+[dir="rtl"] .menu-item,
+[dir="rtl"] [class*="flex items-center gap"] {
+  /* Flex direction already reverses, text alignment is key */
+}
+
+/* Text alignment for RTL */
+[dir="rtl"] .text-left {
+  text-align: right;
+}
+
+[dir="rtl"] .text-right {
+  text-align: left;
+}
+
+/* Chevrons should flip in RTL */
+[dir="rtl"] .chevron-right {
+  transform: scaleX(-1);
+}
+
+/* Space between/around adjustments */
+[dir="rtl"] .justify-between {
+  flex-direction: row;
+}
+
+/* Profile card and menu items - keep icons visible on correct side */
+[dir="rtl"] .profile-menu-item {
+  flex-direction: row-reverse;
+}
+
+/* Stats grid - maintain LTR number display */
+[dir="rtl"] .stats-value {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+/* Keep numbers always LTR */
+[dir="rtl"] .number,
+[dir="rtl"] [data-number],
+[dir="rtl"] .text-2xl.font-bold,
+[dir="rtl"] .text-4xl.font-bold {
+  direction: ltr;
+  unicode-bidi: isolate;
+  display: inline-block;
+}
+
+/* Padding/Margin RTL swaps */
+[dir="rtl"] .pl-4,
+[dir="rtl"] .ps-4 {
+  padding-right: 1rem;
+  padding-left: 0;
+}
+
+[dir="rtl"] .pr-4,
+[dir="rtl"] .pe-4 {
+  padding-left: 1rem;
+  padding-right: 0;
+}
+
+[dir="rtl"] .ml-auto {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+[dir="rtl"] .mr-auto {
+  margin-right: 0;
+  margin-left: auto;
+}
+
+/* Border radius adjustments for RTL */
+[dir="rtl"] .rounded-l-xl {
+  border-radius: 0 0.75rem 0.75rem 0;
+}
+
+[dir="rtl"] .rounded-r-xl {
+  border-radius: 0.75rem 0 0 0.75rem;
+}

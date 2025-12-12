@@ -6,7 +6,7 @@ from ..models import Vocabulary, Tag, UserProfile
 from ..serializers import VocabularySerializer
 from ..hlr import HLRScheduler
 from ..prompts import ContextEngineer
-from ..gemini_helper import generate_content
+from ..unified_ai import generate_ai_content
 from django.db.models import Q
 from django.http import HttpResponse
 from django.utils import timezone
@@ -14,14 +14,15 @@ import csv
 import io
 import json
 
-def enrich_vocabulary_with_ai(vocab, api_key):
-    if not api_key:
+def enrich_vocabulary_with_ai(vocab, user):
+    """Enrich vocabulary using AI Gateway."""
+    if not user:
         return
 
     try:
         # Get user languages
         try:
-            profile = vocab.created_by.profile
+            profile = user.profile
             native_lang_code = profile.native_language
             target_lang_code = profile.target_language
         except UserProfile.DoesNotExist:
@@ -31,8 +32,8 @@ def enrich_vocabulary_with_ai(vocab, api_key):
         context_engineer = ContextEngineer(native_lang_code, target_lang_code)
         prompt = context_engineer.get_enrichment_prompt(vocab.word, vocab.type, vocab.translation)
         
-        # Use centralized generate_content with automatic fallback
-        response = generate_content(api_key, prompt)
+        # Use unified_ai with Gateway fallback
+        response = generate_ai_content(user, prompt)
         # Clean response text to ensure valid JSON
         text = response.text.strip()
         if text.startswith('```json'):
@@ -86,13 +87,20 @@ class VocabularyViewSet(viewsets.ModelViewSet):
     ordering = ['-created_at']  # Default ordering
 
     def get_queryset(self):
-        # Filter by user's target language
+        # Filter by user's language pair (target + native)
         try:
-            target_lang = self.request.user.profile.target_language
+            profile = self.request.user.profile
+            target_lang = profile.target_language
+            native_lang = profile.native_language
         except UserProfile.DoesNotExist:
             target_lang = 'de'
+            native_lang = 'en'
 
-        queryset = Vocabulary.objects.filter(created_by=self.request.user, language=target_lang)
+        queryset = Vocabulary.objects.filter(
+            created_by=self.request.user, 
+            language=target_lang,
+            native_language=native_lang
+        )
         
         # Search
         search = self.request.query_params.get('search')
@@ -140,21 +148,25 @@ class VocabularyViewSet(viewsets.ModelViewSet):
             print(f"Error initiating embedding generation: {e}")
 
     def perform_create(self, serializer):
-        # Set language to user's target language
+        # Set language pair from user's profile
         try:
-            target_lang = self.request.user.profile.target_language
+            profile = self.request.user.profile
+            target_lang = profile.target_language
+            native_lang = profile.native_language
         except UserProfile.DoesNotExist:
             target_lang = 'de'
+            native_lang = 'en'
             
-        vocab = serializer.save(created_by=self.request.user, language=target_lang)
+        vocab = serializer.save(
+            created_by=self.request.user, 
+            language=target_lang,
+            native_language=native_lang
+        )
         
-        # Trigger AI Enrichment
-        gemini_key = self.request.headers.get('X-Gemini-Key')
-        if gemini_key:
-            # Use background thread for AI enrichment
-            import threading
-            thread = threading.Thread(target=enrich_vocabulary_with_ai, args=(vocab, gemini_key))
-            thread.start()
+        # Trigger AI Enrichment via Gateway
+        import threading
+        thread = threading.Thread(target=enrich_vocabulary_with_ai, args=(vocab, self.request.user))
+        thread.start()
             
         # Trigger Embedding Generation
         self._generate_embedding_for_vocab(vocab, self.request)
@@ -206,11 +218,14 @@ class VocabularyViewSet(viewsets.ModelViewSet):
             created_count = 0
             errors = []
             
-            # Get user's target language for import
+            # Get user's language pair for import
             try:
-                target_lang = request.user.profile.target_language
+                profile = request.user.profile
+                target_lang = profile.target_language
+                native_lang = profile.native_language
             except UserProfile.DoesNotExist:
                 target_lang = 'de'
+                native_lang = 'en'
             
             for row in reader:
                 try:
@@ -230,11 +245,16 @@ class VocabularyViewSet(viewsets.ModelViewSet):
                     if not word_text:
                         continue
                         
-                    # Skip if word already exists for this user and language
-                    if Vocabulary.objects.filter(word__iexact=word_text, created_by=request.user, language=target_lang).exists():
+                    # Skip if word already exists for this language pair
+                    if Vocabulary.objects.filter(
+                        word__iexact=word_text, 
+                        created_by=request.user, 
+                        language=target_lang,
+                        native_language=native_lang
+                    ).exists():
                         continue
                     
-                    # Create vocabulary
+                    # Create vocabulary with language pair
                     vocab = Vocabulary.objects.create(
                         word=word_text,
                         translation=row.get('translation') or row.get('Translation'),
@@ -243,7 +263,8 @@ class VocabularyViewSet(viewsets.ModelViewSet):
                         synonyms=synonyms,
                         antonyms=antonyms,
                         created_by=request.user,
-                        language=target_lang
+                        language=target_lang,
+                        native_language=native_lang
                     )
                     
                     # Add tags
@@ -309,11 +330,18 @@ def get_vocab_by_status(request):
     user = request.user
     
     try:
-        target_lang = user.profile.target_language
+        profile = user.profile
+        target_lang = profile.target_language
+        native_lang = profile.native_language
     except UserProfile.DoesNotExist:
         target_lang = 'de'
+        native_lang = 'en'
         
-    queryset = Vocabulary.objects.filter(created_by=user, language=target_lang)
+    queryset = Vocabulary.objects.filter(
+        created_by=user, 
+        language=target_lang,
+        native_language=native_lang
+    )
     
     filtered_vocab = []
     now = timezone.now()

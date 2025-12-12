@@ -99,6 +99,7 @@ class Vocabulary(models.Model):
     related_concepts = models.JSONField(default=list, blank=True)  # New field for abstract concepts
     is_public = models.BooleanField(default=False)
     language = models.CharField(max_length=2, choices=LANGUAGES, default='de', db_index=True)
+    native_language = models.CharField(max_length=2, choices=LANGUAGES, default='en', db_index=True, help_text='User native language for translation context')
     
     # HLR Spaced Repetition Fields
     correct_count = models.IntegerField(default=0)
@@ -111,6 +112,7 @@ class Vocabulary(models.Model):
         ordering = ['-created_at']
         indexes = [
             models.Index(fields=['created_by', 'language']),
+            models.Index(fields=['created_by', 'language', 'native_language']),
             models.Index(fields=['created_by', '-created_at']),
             models.Index(fields=['created_by', 'type']),
             models.Index(fields=['created_by', 'last_practiced_at']),
@@ -124,6 +126,7 @@ class SavedText(models.Model):
     title = models.CharField(max_length=200)
     content = models.TextField()  # Markdown content
     language = models.CharField(max_length=2, choices=Vocabulary.LANGUAGES, default='de')
+    native_language = models.CharField(max_length=2, choices=Vocabulary.LANGUAGES, default='en', help_text='User native language context')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -168,6 +171,7 @@ class Exam(models.Model):
     
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='exams')
     language = models.CharField(max_length=2, choices=LANGUAGES, default='de')
+    native_language = models.CharField(max_length=2, choices=LANGUAGES, default='en', help_text='Translation language for exam questions')
     topic = models.CharField(max_length=200)
     difficulty = models.CharField(max_length=50)
     questions = models.JSONField(default=list)  # Stores the generated questions
@@ -236,6 +240,7 @@ class GrammarTopic(models.Model):
     examples = models.JSONField(default=list, blank=True)
     order = models.IntegerField(default=0)
     language = models.CharField(max_length=2, choices=LANGUAGES, default='de')
+    native_language = models.CharField(max_length=2, choices=LANGUAGES, default='en', help_text='Translation language for examples')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)

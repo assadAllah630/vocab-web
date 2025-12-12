@@ -3,6 +3,7 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../api';
 import { useExam } from '../../context/ExamContext';
+import { useTranslation } from '../../hooks/useTranslation';
 import {
     MobileClozeQuestion,
     MobileMultipleChoiceQuestion,
@@ -26,6 +27,7 @@ function MobileExamPlay() {
     const navigate = useNavigate();
     const location = useLocation();
     const { id } = useParams();
+    const { t } = useTranslation();
 
     const {
         activeExam: exam,
@@ -160,6 +162,9 @@ function MobileExamPlay() {
         setShowResultModal(false);
         setExamAnswers({});
         setShowExamResults(false);
+        setScore(0);
+        // Reload to reset timer and state
+        loadExam();
     };
 
     const handleNewExam = () => {
@@ -251,9 +256,9 @@ function MobileExamPlay() {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center p-6" style={{ backgroundColor: '#09090B' }}>
                 <AlertTriangle size={48} color="#71717A" className="mb-4" />
-                <h2 className="text-xl font-bold mb-2" style={{ color: '#FAFAFA' }}>No Active Exam</h2>
+                <h2 className="text-xl font-bold mb-2" style={{ color: '#FAFAFA' }}>{t('noActiveExam')}</h2>
                 <p className="text-center mb-6" style={{ color: '#71717A' }}>
-                    Generate a new exam or select one from your history
+                    {t('noExamDesc')}
                 </p>
                 <motion.button
                     whileTap={{ scale: 0.95 }}
@@ -264,7 +269,7 @@ function MobileExamPlay() {
                         color: '#FFFFFF'
                     }}
                 >
-                    Go to Exams
+                    {t('goToExams')}
                 </motion.button>
             </div>
         );
@@ -280,7 +285,7 @@ function MobileExamPlay() {
                     <motion.button
                         whileTap={{ scale: 0.9 }}
                         onClick={() => {
-                            if (isExamActive && !window.confirm('Leave exam? Progress will be lost.')) return;
+                            if (isExamActive && !window.confirm(t('leaveConfirm'))) return;
                             clearExam();
                             navigate('/m/exam');
                         }}
@@ -328,7 +333,7 @@ function MobileExamPlay() {
                                 className="text-xs font-bold"
                                 style={{ color: isLowTime ? '#EF4444' : '#6366F1' }}
                             >
-                                {isLowTime ? 'Time Running Out!' : 'Time Remaining'}
+                                {isLowTime ? t('timeRunningOut') : t('timeRemaining')}
                             </span>
                         </div>
                         <span
@@ -351,7 +356,7 @@ function MobileExamPlay() {
                     >
                         <CheckCircle size={16} color="#22C55E" />
                         <span className="text-sm font-bold" style={{ color: '#22C55E' }}>
-                            Review Mode - Answers Shown
+                            {t('reviewMode')}
                         </span>
                     </div>
                 )}
@@ -362,12 +367,11 @@ function MobileExamPlay() {
                 {exam.sections?.map((section, index) => renderSection(section, index))}
             </div>
 
-            {/* Bottom Action Bar */}
+            {/* Bottom Action Bar - Static (End of Exam) */}
             <div
-                className="fixed bottom-0 left-0 right-0 p-5 z-30"
+                className="p-5 mt-6"
                 style={{
-                    backgroundColor: '#09090B',
-                    borderTop: '1px solid #27272A'
+                    backgroundColor: 'transparent'
                 }}
             >
                 {!showResults ? (
@@ -382,7 +386,7 @@ function MobileExamPlay() {
                         }}
                     >
                         <Send size={20} />
-                        Submit Answers
+                        {t('submitAnswers')}
                     </motion.button>
                 ) : (
                     <div className="flex gap-3">
@@ -396,7 +400,7 @@ function MobileExamPlay() {
                             }}
                         >
                             <RotateCcw size={18} />
-                            Retake
+                            {t('retake')}
                         </motion.button>
                         <motion.button
                             whileTap={{ scale: 0.95 }}
@@ -408,7 +412,7 @@ function MobileExamPlay() {
                             }}
                         >
                             <Plus size={18} />
-                            New Exam
+                            {t('newExam')}
                         </motion.button>
                     </div>
                 )}
@@ -421,15 +425,15 @@ function MobileExamPlay() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-50 flex items-end justify-center p-4"
+                        className="fixed inset-0 z-[60] flex items-center justify-center p-4"
                         style={{ backgroundColor: 'rgba(0, 0, 0, 0.8)' }}
                         onClick={handleCloseResults}
                     >
                         <motion.div
-                            initial={{ y: 100, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            exit={{ y: 100, opacity: 0 }}
-                            className="w-full max-w-md rounded-t-3xl p-6 pb-10"
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="w-full max-w-md rounded-3xl p-6 pb-10"
                             style={{ backgroundColor: '#141416' }}
                             onClick={e => e.stopPropagation()}
                         >
@@ -469,7 +473,7 @@ function MobileExamPlay() {
                                             score >= 60 ? '#F59E0B' : '#EF4444'
                                     }}
                                 >
-                                    {score >= 80 ? 'Excellent!' : score >= 60 ? 'Good job!' : 'Keep practicing!'}
+                                    {score >= 80 ? t('excellent') : score >= 60 ? t('goodJob') : t('keepPracticing')}
                                 </p>
                             </div>
 
@@ -484,7 +488,7 @@ function MobileExamPlay() {
                                         color: '#09090B'
                                     }}
                                 >
-                                    Review Answers
+                                    {t('reviewAnswers')}
                                 </motion.button>
                                 <div className="grid grid-cols-2 gap-3">
                                     <motion.button
@@ -496,7 +500,7 @@ function MobileExamPlay() {
                                             color: '#FAFAFA'
                                         }}
                                     >
-                                        Retake
+                                        {t('retake')}
                                     </motion.button>
                                     <motion.button
                                         whileTap={{ scale: 0.95 }}
@@ -507,7 +511,7 @@ function MobileExamPlay() {
                                             color: '#FFFFFF'
                                         }}
                                     >
-                                        New Exam
+                                        {t('newExam')}
                                     </motion.button>
                                 </div>
                             </div>

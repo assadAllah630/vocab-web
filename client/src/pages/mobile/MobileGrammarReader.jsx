@@ -16,9 +16,12 @@ import {
     BookOpen
 } from 'lucide-react';
 
+import { useTranslation } from '../../hooks/useTranslation';
+
 function MobileGrammarReader() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const [topic, setTopic] = useState(null);
     const [loading, setLoading] = useState(true);
     const [fontSize, setFontSize] = useState(16);
@@ -147,20 +150,20 @@ function MobileGrammarReader() {
                                             initial={{ opacity: 0, scale: 0.95, y: 10 }}
                                             animate={{ opacity: 1, scale: 1, y: 0 }}
                                             exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                                            className="absolute right-0 top-12 w-40 rounded-xl overflow-hidden shadow-xl border border-[#27272A] z-50"
+                                            className="absolute ltr:right-0 rtl:left-0 top-12 w-48 rounded-xl overflow-hidden shadow-2xl border border-[#27272A] z-50 bg-[#1C1C1F]"
                                             style={{ backgroundColor: '#1C1C1F' }}
                                         >
                                             <button
                                                 onClick={handleEdit}
-                                                className="w-full px-4 py-3 flex items-center gap-3 text-sm font-medium text-[#FAFAFA] hover:bg-[#27272A]"
+                                                className="w-full px-4 py-3 flex items-center gap-3 text-sm font-medium text-[#FAFAFA] hover:bg-[#27272A] transition-colors"
                                             >
-                                                <Edit2 size={16} /> Edit
+                                                <Edit2 size={16} /> <span>{t('edit')}</span>
                                             </button>
                                             <button
                                                 onClick={handleDelete}
-                                                className="w-full px-4 py-3 flex items-center gap-3 text-sm font-medium text-[#EF4444] hover:bg-[#27272A]"
+                                                className="w-full px-4 py-3 flex items-center gap-3 text-sm font-medium text-[#EF4444] hover:bg-[#27272A] transition-colors"
                                             >
-                                                <Trash2 size={16} /> Delete
+                                                <Trash2 size={16} /> <span>{t('delete')}</span>
                                             </button>
                                         </motion.div>
                                     )}

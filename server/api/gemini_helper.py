@@ -4,21 +4,20 @@ Gemini AI Helper Module
 Provides centralized Gemini model configuration with automatic fallback
 when quota is exceeded on one model.
 
-Model order (best to worst by capability):
-1. gemini-2.5-flash - Latest, most capable
-2. gemini-2.0-flash - Fast, balanced
-3. gemini-2.0-flash-lite - Most generous free quota
+NOTE: For production use, prefer the AI Gateway which provides
+multi-provider fallback (Gemini -> OpenRouter -> Groq etc.)
 """
 import google.generativeai as genai
 import logging
 
 logger = logging.getLogger(__name__)
 
-# Models ordered from best capability to most generous quota
+# Models ordered from best to fallback (verified via list_models API)
 GEMINI_MODELS = [
-    'gemini-2.5-flash',      # Best: Latest and most capable
-    'gemini-2.0-flash',      # Good: Fast and balanced
-    'gemini-2.0-flash-lite', # Fallback: Most generous free tier
+    'gemini-2.0-flash',          # Primary - fast and reliable  
+    'gemini-2.0-flash-lite',     # Lighter version
+    'gemini-2.5-flash',          # Latest
+    'gemini-2.0-flash-exp',      # Experimental
 ]
 
 

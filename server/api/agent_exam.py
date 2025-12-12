@@ -2,9 +2,8 @@ import os
 from typing import TypedDict, List, Optional, Dict, Any
 import json
 from langgraph.graph import StateGraph, END
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_core.messages import SystemMessage, HumanMessage
 from pydantic import BaseModel, Field
+from .language_service import LanguageService
 
 # Define the state of the exam generation
 class ExamState(TypedDict):
@@ -15,6 +14,7 @@ class ExamState(TypedDict):
     grammar_list: Optional[str]
     notes: Optional[str]
     target_language: str  # Target language for the exam
+    native_language: str  # User's native language for translations
     
     # Internal state
     topic_analysis: Optional[str]
@@ -28,13 +28,12 @@ class ExamState(TypedDict):
     final_exam: Optional[Dict[str, Any]]
     logs: List[str]
 
-# Define the LLM
-def get_llm(api_key: str):
-    return ChatGoogleGenerativeAI(
-        model="gemini-2.5-flash",
-        google_api_key=api_key,
-        temperature=0.7
-    )
+# Use unified_ai for all AI calls (proper Gateway logging + failover)
+def call_ai(user, prompt: str) -> str:
+    """Call AI through unified_ai Gateway with full logging and failover."""
+    from .unified_ai import generate_ai_content
+    response = generate_ai_content(user, prompt, max_tokens=4096, temperature=0.7)
+    return response.text
 
 # --- Nodes ---
 
@@ -42,8 +41,7 @@ def analyzer_node(state: ExamState, config):
     """
     Analyzer Node: Deeply analyzes the topic to identify key concepts and misconceptions.
     """
-    api_key = config['configurable'].get('api_key')
-    llm = get_llm(api_key)
+    user = config['configurable'].get('user')
     
     target_lang = state.get('target_language', 'German')
     
@@ -60,8 +58,7 @@ def analyzer_node(state: ExamState, config):
     Output a concise analysis summary.
     """
     
-    response = llm.invoke([HumanMessage(content=prompt)])
-    analysis = response.content
+    analysis = call_ai(user, prompt)
     
     return {
         "topic_analysis": analysis,
@@ -72,8 +69,7 @@ def planner_node(state: ExamState, config):
     """
     Planning Node: Decides the structure of the exam based on inputs and analysis.
     """
-    api_key = config['configurable'].get('api_key')
-    llm = get_llm(api_key)
+    user = config['configurable'].get('user')
     
     prompt = f"""
     You are an expert language exam designer.
@@ -94,12 +90,13 @@ def planner_node(state: ExamState, config):
     - 'focus': specific focus for this section (e.g. "Past Tense verbs", "Travel vocabulary")
     
     Do not generate the actual questions yet. Just the plan.
+    Return valid JSON only.
     """
     
-    response = llm.invoke([SystemMessage(content="Return valid JSON only."), HumanMessage(content=prompt)])
+    response_text = call_ai(user, prompt)
     
     try:
-        text = response.content.replace('```json', '').replace('```', '').strip()
+        text = response_text.replace('```json', '').replace('```', '').strip()
         plan = json.loads(text)
         return {
             "exam_plan": plan, 
@@ -112,8 +109,7 @@ def generator_node(state: ExamState, config):
     """
     Generator Node: Creates the actual questions based on the plan.
     """
-    api_key = config['configurable'].get('api_key')
-    llm = get_llm(api_key)
+    user = config['configurable'].get('user')
     
     plan = state['exam_plan']
     
@@ -219,13 +215,18 @@ def generator_node(state: ExamState, config):
     7. Questions must be appropriate for {state['level']} level {lang_name} learners
     8. Return ONLY valid JSON - no markdown, no code blocks, no explanations
     
-    Generate the exam now:
+    Generate the exam now. Return ONLY valid JSON - no markdown, no code blocks.
     """
     
-    response = llm.invoke([SystemMessage(content="Return valid JSON only. No markdown."), HumanMessage(content=prompt)])
+    response_text = call_ai(user, prompt)
     
     try:
-        text = response.content.replace('```json', '').replace('```', '').strip()
+        text = response_text.replace('```json', '').replace('```', '').strip()
+        # Try to find JSON object boundaries
+        start_idx = text.find('{')
+        end_idx = text.rfind('}') + 1
+        if start_idx >= 0 and end_idx > start_idx:
+            text = text[start_idx:end_idx]
         exam_data = json.loads(text)
         return {
             "draft_questions": exam_data.get('sections', []),
@@ -233,14 +234,33 @@ def generator_node(state: ExamState, config):
             "logs": state.get("logs", []) + ["Draft generated."]
         }
     except Exception as e:
-        return {"logs": state.get("logs", []) + [f"Generation failed: {str(e)}"]}
+        # Fallback: Create a basic error exam structure so UI doesn't break
+        fallback_exam = {
+            "title": state.get('topic', 'Exam'),
+            "description": f"Exam on {state.get('topic', 'topic')}",
+            "sections": [{
+                "type": "multiple_choice",
+                "instruction": "AI generation had an issue. Please try again.",
+                "questions": [{
+                    "id": "error-1",
+                    "question": f"Generation Error: {str(e)[:100]}",
+                    "options": ["Try again", "Use different topic", "Wait and retry", "Contact support"],
+                    "correct_index": 0,
+                    "explanation": "The AI response was malformed. Please regenerate."
+                }]
+            }]
+        }
+        return {
+            "draft_questions": fallback_exam.get('sections', []),
+            "final_exam": fallback_exam,
+            "logs": state.get("logs", []) + [f"Generation issue: {str(e)[:50]}, using fallback"]
+        }
 
 def critic_node(state: ExamState, config):
     """
     Critic Node: Reviews the exam for quality and difficulty.
     """
-    api_key = config['configurable'].get('api_key')
-    llm = get_llm(api_key)
+    user = config['configurable'].get('user')
     
     exam = state['final_exam']
     
@@ -262,8 +282,7 @@ def critic_node(state: ExamState, config):
     If it needs changes, output "FAILED: <reason>" and suggest specific fixes.
     """
     
-    response = llm.invoke([HumanMessage(content=prompt)])
-    critique = response.content
+    critique = call_ai(user, prompt)
     
     passed = "PASSED" in critique
     
@@ -277,8 +296,7 @@ def refiner_node(state: ExamState, config):
     """
     Refiner Node: Fixes the exam based on the critique.
     """
-    api_key = config['configurable'].get('api_key')
-    llm = get_llm(api_key)
+    user = config['configurable'].get('user')
     
     prompt = f"""
     You are a Senior Editor. Fix the following exam based on the critique.
@@ -288,13 +306,13 @@ def refiner_node(state: ExamState, config):
     Current Exam:
     {json.dumps(state['final_exam'])}
     
-    Output the corrected JSON object for the full exam.
+    Output the corrected JSON object for the full exam. Return valid JSON only.
     """
     
-    response = llm.invoke([SystemMessage(content="Return valid JSON only."), HumanMessage(content=prompt)])
+    response_text = call_ai(user, prompt)
     
     try:
-        text = response.content.replace('```json', '').replace('```', '').strip()
+        text = response_text.replace('```json', '').replace('```', '').strip()
         exam_data = json.loads(text)
         return {
             "final_exam": exam_data,
@@ -303,7 +321,6 @@ def refiner_node(state: ExamState, config):
         }
     except Exception as e:
         return {"logs": state.get("logs", []) + [f"Refinement failed: {str(e)}"]}
-
 # --- Graph Construction ---
 
 def build_exam_graph():

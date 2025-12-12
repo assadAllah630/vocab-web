@@ -26,7 +26,18 @@ class VocabularySerializer(serializers.ModelSerializer):
 
     def validate_word(self, value):
         user = self.context['request'].user
-        if Vocabulary.objects.filter(created_by=user, word__iexact=value).exists():
+        # Get user's current native language context
+        try:
+            native_language = user.profile.native_language
+        except:
+            native_language = 'en'
+            
+        # Check for duplicates only within the same language pair (word + native_language)
+        if Vocabulary.objects.filter(
+            created_by=user, 
+            word__iexact=value,
+            native_language=native_language
+        ).exists():
             raise serializers.ValidationError("You have already added this word.")
         return value
 

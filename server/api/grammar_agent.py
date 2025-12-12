@@ -2,6 +2,7 @@ import json
 import re
 import logging
 from .gemini_helper import get_model
+from .language_service import LanguageService
 
 logger = logging.getLogger(__name__)
 
@@ -16,14 +17,24 @@ class GrammarResearchAgent:
         self.model, self.model_name = get_model(api_key)
         logger.info(f"[GrammarAgent] Using model: {self.model_name}")
         
-    def generate_grammar_topic(self, topic, language, level, context_note=""):
+    def generate_grammar_topic(self, topic, language, level, context_note="", native_language="en"):
         """
         Main entry point to generate a grammar topic.
+        
+        Args:
+            topic: Grammar topic to explain
+            language: Target language being learned
+            level: CEFR level
+            context_note: Additional context
+            native_language: User's native language for translations
         """
         try:
+            # Get native language name for prompts
+            native_lang_name = LanguageService.get_name(native_language)
+            
             # Stage 1 & 2: Research & Analysis (Simulated via LLM knowledge)
             # Stage 3: Content Generation
-            content = self._generate_content(topic, language, level, context_note)
+            content = self._generate_content(topic, language, level, context_note, native_lang_name)
             
             # Stage 4: Quality Assurance (Self-Correction)
             # In a more advanced version, we would have a separate verification step.
@@ -41,7 +52,7 @@ class GrammarResearchAgent:
                 "error": str(e)
             }
 
-    def _generate_content(self, topic, language, level, context_note):
+    def _generate_content(self, topic, language, level, context_note, native_lang_name="English"):
         """
         Generates the content using Gemini with retry logic and robust JSON parsing.
         """
@@ -75,7 +86,7 @@ Create a comprehensive grammar explanation with the following parameters:
 
 **Requirements**:
 1. Research this topic from authoritative sources (Deutsche Welle, Goethe Institut, Cambridge, etc.)
-2. Write a concise, accurate explanation in Markdown format
+2. Write a concise, accurate explanation in Markdown format. IMPORTANT: The explanation MUST be in **{native_lang_name}**, but keep grammar terms (like 'Akkusativ', 'Dativ') and examples in **{language}**.
 3. Include at least ONE Mermaid diagram to visualize complex structures. IMPORTANT:
    - Use `graph LR` or `graph TD`
    - ALWAYS quote node labels: `id["Label Text"]`
@@ -118,7 +129,7 @@ The JSON structure:
   "content": "The full explanation in Markdown format (escape all special characters)",
   "category": "verbs",
   "examples": [
-    {{"german": "Example sentence", "english": "Translation"}}
+    {{"target": "Example sentence in {language}", "translation": "{native_lang_name} translation"}}
   ],
   "word_count": 450,
   "mermaid_diagrams_count": 1,

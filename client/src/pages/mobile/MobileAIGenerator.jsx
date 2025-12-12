@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChevronLeftIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import { useTranslation } from '../../hooks/useTranslation';
 
 // Card component that supports both Lottie animations and static images
 const GeneratorCard = ({ title, description, lottieSrc, imageSrc, color, onClick, delay }) => (
@@ -53,28 +54,29 @@ const GeneratorCard = ({ title, description, lottieSrc, imageSrc, color, onClick
 
 const MobileAIGenerator = () => {
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     const generators = [
         {
             id: 'story',
-            title: 'Story Weaver',
-            description: 'Create engaging short stories with custom characters and plot twists.',
+            title: t('generatorStoryTitle'),
+            description: t('generatorStoryDesc'),
             lottieSrc: '/lottie/story_icon.lottie',
             color: 'from-[#8B5CF6] to-[#6366F1]',
             path: '/m/ai/story'
         },
         {
             id: 'dialogue',
-            title: 'Dialogue Master',
-            description: 'Generate realistic conversations for any scenario or tone.',
+            title: t('generatorDialogueTitle'),
+            description: t('generatorDialogueDesc'),
             lottieSrc: '/lottie/arty chat.lottie',
             color: 'from-[#EC4899] to-[#F43F5E]',
             path: '/m/ai/dialogue'
         },
         {
             id: 'article',
-            title: 'Article Writer',
-            description: 'Write informative articles on any topic with professional structure.',
+            title: t('generatorArticleTitle'),
+            description: t('generatorArticleDesc'),
             lottieSrc: '/lottie/university.lottie',
             color: 'from-[#10B981] to-[#059669]',
             path: '/m/ai/article'
@@ -96,7 +98,7 @@ const MobileAIGenerator = () => {
                         onClick={() => navigate('/m/ai/library')}
                         className="px-4 py-2 bg-[#18181B] border border-[#27272A] rounded-full flex items-center gap-2 hover:bg-[#27272A] transition-colors"
                     >
-                        <span className="text-sm font-medium text-white">📚 Library</span>
+                        <span className="text-sm font-medium text-white">📚 {t('library')}</span>
                     </button>
                 </div>
 
@@ -106,10 +108,10 @@ const MobileAIGenerator = () => {
                 >
                     <div className="flex items-center gap-2 mb-2">
                         <SparklesIcon className="w-6 h-6 text-[#6366F1]" />
-                        <span className="text-[#6366F1] font-bold tracking-wider text-sm uppercase">AI Studio</span>
+                        <span className="text-[#6366F1] font-bold tracking-wider text-sm uppercase">{t('aiStudio')}</span>
                     </div>
-                    <h1 className="text-4xl font-black text-white mb-2">Create & Learn</h1>
-                    <p className="text-[#A1A1AA] text-lg">What would you like to generate today?</p>
+                    <h1 className="text-4xl font-black text-white mb-2">{t('createAndLearn')}</h1>
+                    <p className="text-[#A1A1AA] text-lg">{t('generatePrompt')}</p>
                 </motion.div>
             </div>
 
@@ -129,3 +131,4 @@ const MobileAIGenerator = () => {
 };
 
 export default MobileAIGenerator;
+

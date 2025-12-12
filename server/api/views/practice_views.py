@@ -68,12 +68,19 @@ def get_words_for_practice(request):
     limit = int(request.query_params.get('limit', 20))
     
     try:
-        target_lang = user.profile.target_language
+        profile = user.profile
+        target_lang = profile.target_language
+        native_lang = profile.native_language
     except UserProfile.DoesNotExist:
         target_lang = 'de'
+        native_lang = 'en'
         
-    # Get all words for user and language
-    queryset = Vocabulary.objects.filter(created_by=user, language=target_lang)
+    # Get all words for user and language pair
+    queryset = Vocabulary.objects.filter(
+        created_by=user, 
+        language=target_lang,
+        native_language=native_lang
+    )
     
     # Calculate priority for each word
     # Note: For large datasets, this should be done in DB or cached.
@@ -291,7 +298,20 @@ def get_random_words(request):
     """
     Get 20 random words for non-HLR practice.
     """
-    count = Vocabulary.objects.filter(created_by=request.user).count()
+    try:
+        profile = request.user.profile
+        target_lang = profile.target_language
+        native_lang = profile.native_language
+    except UserProfile.DoesNotExist:
+        target_lang = 'de'
+        native_lang = 'en'
+    
+    base_filter = {
+        'created_by': request.user,
+        'language': target_lang,
+        'native_language': native_lang
+    }
+    count = Vocabulary.objects.filter(**base_filter).count()
     limit = 20
     
     if count == 0:
@@ -299,11 +319,11 @@ def get_random_words(request):
         
     # Efficient random selection
     if count <= limit:
-        queryset = Vocabulary.objects.filter(created_by=request.user)
+        queryset = Vocabulary.objects.filter(**base_filter)
     else:
         # Get random IDs
         import random
-        all_ids = list(Vocabulary.objects.filter(created_by=request.user).values_list('id', flat=True))
+        all_ids = list(Vocabulary.objects.filter(**base_filter).values_list('id', flat=True))
         random_ids = random.sample(all_ids, limit)
         queryset = Vocabulary.objects.filter(id__in=random_ids)
         
@@ -316,15 +336,28 @@ def get_matching_game_words(request):
     """
     Get 8 random words for the Memory Match game (Total 16 cards).
     """
-    count = Vocabulary.objects.filter(created_by=request.user).count()
+    try:
+        profile = request.user.profile
+        target_lang = profile.target_language
+        native_lang = profile.native_language
+    except UserProfile.DoesNotExist:
+        target_lang = 'de'
+        native_lang = 'en'
+    
+    base_filter = {
+        'created_by': request.user,
+        'language': target_lang,
+        'native_language': native_lang
+    }
+    count = Vocabulary.objects.filter(**base_filter).count()
     limit = 8 # 8 pairs = 16 cards
     
     if count < limit:
         # If not enough words, return what we have
-        queryset = Vocabulary.objects.filter(created_by=request.user)
+        queryset = Vocabulary.objects.filter(**base_filter)
     else:
         import random
-        all_ids = list(Vocabulary.objects.filter(created_by=request.user).values_list('id', flat=True))
+        all_ids = list(Vocabulary.objects.filter(**base_filter).values_list('id', flat=True))
         random_ids = random.sample(all_ids, limit)
         queryset = Vocabulary.objects.filter(id__in=random_ids)
         
@@ -339,11 +372,18 @@ def get_review_stats(request):
     """
     user = request.user
     try:
-        target_lang = user.profile.target_language
+        profile = user.profile
+        target_lang = profile.target_language
+        native_lang = profile.native_language
     except UserProfile.DoesNotExist:
         target_lang = 'de'
+        native_lang = 'en'
         
-    queryset = Vocabulary.objects.filter(created_by=user, language=target_lang)
+    queryset = Vocabulary.objects.filter(
+        created_by=user, 
+        language=target_lang,
+        native_language=native_lang
+    )
     
     needs_review = 0
     learning = 0

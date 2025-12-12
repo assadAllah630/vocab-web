@@ -6,10 +6,15 @@ import { X, ChevronLeft, Check, WifiOff } from 'lucide-react';
 import { AnimatedVolume, AnimatedTrophy, AnimatedSparkles, RatingFaces } from '../../components/AnimatedIcons';
 import confetti from 'canvas-confetti';
 import { vocabStorage, useOnlineStatus, syncQueue } from '../../utils/offlineStorage';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslationStyle } from '../../utils/bidi';
+import { useTranslation } from '../../hooks/useTranslation';
 
 function MobileFlashcard({ user }) {
     const navigate = useNavigate();
     const location = useLocation();
+    const { nativeLanguage, isNativeRTL } = useLanguage();
+    const { t } = useTranslation();
     const [words, setWords] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [loading, setLoading] = useState(true);
@@ -359,7 +364,13 @@ function MobileFlashcard({ user }) {
                                         <Check size={28} color="#FFFFFF" />
                                     </motion.div>
 
-                                    <h2 className="text-3xl font-bold text-center mb-4" style={{ color: '#FAFAFA' }}>
+                                    <h2
+                                        className="text-3xl font-bold text-center mb-4"
+                                        style={{
+                                            color: '#FAFAFA',
+                                            ...getTranslationStyle(nativeLanguage),
+                                        }}
+                                    >
                                         {currentWord.translation}
                                     </h2>
 

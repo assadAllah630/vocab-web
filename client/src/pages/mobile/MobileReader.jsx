@@ -32,8 +32,10 @@ import {
     VolumeX,
     Library,
     Trash2,
-    Clock
+    Clock,
+    RotateCcw
 } from 'lucide-react';
+import { useTranslation } from '../../hooks/useTranslation';
 
 // Import type detection
 const getFileIcon = (type) => {
@@ -49,6 +51,7 @@ const getFileIcon = (type) => {
 
 function MobileReader() {
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     // UI State
     const [activeTab, setActiveTab] = useState('import'); // 'import' | 'read' | 'library'
@@ -297,7 +300,7 @@ function MobileReader() {
 
     // Handle AI formatting
     const handleAIFormat = async () => {
-        if (!content || isFormatting || isFormatted) return;
+        if (!content || isFormatting) return;
 
         setIsFormatting(true);
         setError(null);
@@ -306,6 +309,8 @@ function MobileReader() {
             const res = await api.post('convert-text/', {
                 text: content,
                 source_type: sourceType
+            }, {
+                timeout: 180000 // 3 minutes timeout for heavy AI processing (retries)
             });
 
             if (res.data.success) {
@@ -408,8 +413,8 @@ function MobileReader() {
         {
             id: 'url',
             icon: Globe,
-            label: 'Web Article',
-            description: 'Extract text from any website, blog, or news article automatically.',
+            label: t('webArticle'),
+            description: t('webArticleDesc'),
             lottieSrc: '/lottie/Web Application Build.lottie',
             color: '#6366F1',
             gradient: 'from-indigo-500/20 to-purple-500/20'
@@ -417,8 +422,8 @@ function MobileReader() {
         {
             id: 'youtube',
             icon: Youtube,
-            label: 'YouTube Video',
-            description: 'Get transcripts from educational videos and language content.',
+            label: t('youtubeVideo'),
+            description: t('youtubeDesc'),
             lottieSrc: '/lottie/Youtube Logo Effect.lottie',
             color: '#EF4444',
             gradient: 'from-red-500/20 to-orange-500/20'
@@ -426,11 +431,20 @@ function MobileReader() {
         {
             id: 'file',
             icon: Upload,
-            label: 'Upload Document',
-            description: 'Import PDF, Word docs, text files, and images with OCR.',
+            label: t('uploadDoc'),
+            description: t('uploadDocDesc'),
             lottieSrc: '/lottie/document checking loader.lottie',
             color: '#10B981',
             gradient: 'from-emerald-500/20 to-teal-500/20'
+        },
+        {
+            id: 'text',
+            icon: FileText,
+            label: t('pasteText'),
+            description: t('pasteTextDesc'),
+            lottieSrc: '/lottie/Files.lottie',
+            color: '#F59E0B',
+            gradient: 'from-amber-500/20 to-orange-500/20'
         }
     ];
 
@@ -477,7 +491,7 @@ function MobileReader() {
 
                         <h1 className="text-lg font-bold text-[#FAFAFA] flex items-center gap-2">
                             <BookOpen size={20} className="text-indigo-500" />
-                            Reader
+                            {t('reader')}
                         </h1>
 
                         <div className="flex items-center gap-1">
@@ -487,13 +501,13 @@ function MobileReader() {
                                     <motion.button
                                         whileTap={{ scale: 0.9 }}
                                         onClick={handleAIFormat}
-                                        disabled={isFormatting || isFormatted}
-                                        className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${isFormatted ? 'text-emerald-400' : 'text-[#A1A1AA]'}`}
+                                        disabled={isFormatting}
+                                        className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${isFormatted ? 'text-green-500' : 'text-[#A1A1AA]'}`}
                                     >
                                         {isFormatting ? (
                                             <Loader2 size={20} className="animate-spin text-indigo-500" />
                                         ) : isFormatted ? (
-                                            <CheckCircle2 size={20} />
+                                            <RotateCcw size={20} />
                                         ) : (
                                             <Wand2 size={20} />
                                         )}
@@ -649,7 +663,7 @@ function MobileReader() {
                                 onClick={() => setActiveTab('library')}
                                 className="px-4 py-2 bg-[#18181B] border border-[#27272A] rounded-full flex items-center gap-2 hover:bg-[#27272A] transition-colors"
                             >
-                                <span className="text-sm font-medium text-white">📚 Library</span>
+                                <span className="text-sm font-medium text-white">📚 {t('library')}</span>
                             </motion.button>
                         </div>
 
@@ -659,10 +673,10 @@ function MobileReader() {
                         >
                             <div className="flex items-center gap-2 mb-2">
                                 <BookOpen size={22} className="text-indigo-500" />
-                                <span className="text-indigo-500 font-bold tracking-wider text-sm uppercase">Smart Reader</span>
+                                <span className="text-indigo-500 font-bold tracking-wider text-sm uppercase">{t('smartReader')}</span>
                             </div>
-                            <h1 className="text-4xl font-black text-white mb-2">Read & Learn</h1>
-                            <p className="text-[#A1A1AA] text-lg">Import content and build your vocabulary.</p>
+                            <h1 className="text-4xl font-black text-white mb-2">{t('readAndLearn')}</h1>
+                            <p className="text-[#A1A1AA] text-lg">{t('readerSubtitle')}</p>
                         </motion.div>
                     </div>
 
@@ -749,10 +763,50 @@ function MobileReader() {
                                     </>
                                 ) : (
                                     <>
-                                        <Sparkles size={20} />
-                                        Extract Content
+                                        Start Reading <ChevronLeft className="rotate-180" size={20} />
                                     </>
                                 )}
+                            </motion.button>
+                        </motion.div>
+                    )}
+
+                    {/* Paste Text Mode */}
+                    {importMode === 'text' && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="space-y-4 px-5"
+                        >
+                            <button
+                                onClick={() => setImportMode(null)}
+                                className="flex items-center gap-2 text-[#71717A] text-sm mb-4"
+                            >
+                                <ChevronLeft size={18} /> Back
+                            </button>
+
+                            <div className="relative">
+                                <FileText size={20} className="absolute left-4 top-4 text-[#71717A]" />
+                                <textarea
+                                    value={content}
+                                    onChange={(e) => setContent(e.target.value)}
+                                    placeholder="Paste your text here..."
+                                    className="w-full pl-12 pr-4 py-4 rounded-xl bg-[#141416] border border-[#27272A] text-[#FAFAFA] placeholder:text-[#52525B] focus:border-amber-500 focus:outline-none text-base min-h-[200px]"
+                                />
+                            </div>
+
+                            <motion.button
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => {
+                                    if (!content.trim()) return;
+                                    setTitle('Pasted Text');
+                                    setSourceType('text');
+                                    setActiveTab('read');
+                                    setImportMode(null);
+                                }}
+                                disabled={!content.trim()}
+                                className="w-full py-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-base disabled:opacity-50 flex items-center justify-center gap-2"
+                            >
+                                Start Reading <ChevronLeft className="rotate-180" size={20} />
                             </motion.button>
                         </motion.div>
                     )}

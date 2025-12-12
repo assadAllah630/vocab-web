@@ -13,6 +13,7 @@ import AIAnalytics from './pages/analytics/AIAnalytics';
 import ContentAnalytics from './pages/analytics/ContentAnalytics';
 import CohortAnalytics from './pages/analytics/CohortAnalytics';
 import SystemHealth from './pages/monitoring/SystemHealth';
+import AIGateway from './pages/monitoring/AIGateway';
 import ErrorLogs from './pages/monitoring/ErrorLogs';
 import AuditLogs from './pages/monitoring/AuditLogs';
 import Settings from './pages/settings/Settings';
@@ -62,6 +63,7 @@ function App() {
             {/* Monitoring Routes */}
             <Route path="monitoring" element={<Navigate to="monitoring/health" replace />} />
             <Route path="monitoring/health" element={<SystemHealth />} />
+            <Route path="monitoring/ai-gateway" element={<AIGateway />} />
             <Route path="monitoring/errors" element={<ErrorLogs />} />
             <Route path="monitoring/audit" element={<AuditLogs />} />
 

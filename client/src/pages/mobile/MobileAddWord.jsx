@@ -2,20 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../../api';
 import { X, Sparkles, ChevronDown, Check } from 'lucide-react';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const typeOptions = [
-    { value: 'noun', label: 'Noun' },
-    { value: 'verb', label: 'Verb' },
-    { value: 'adjective', label: 'Adjective' },
-    { value: 'adverb', label: 'Adverb' },
-    { value: 'phrase', label: 'Phrase' },
-    { value: 'preposition', label: 'Preposition' },
-    { value: 'other', label: 'Other' }
+    { value: 'noun', labelKey: 'typeNoun' },
+    { value: 'verb', labelKey: 'typeVerb' },
+    { value: 'adjective', labelKey: 'typeAdjective' },
+    { value: 'adverb', labelKey: 'typeAdverb' },
+    { value: 'phrase', labelKey: 'typePhrase' },
+    { value: 'preposition', labelKey: 'typePreposition' },
+    { value: 'other', labelKey: 'typeOther' }
 ];
 
 function MobileAddWord({ user }) {
     const navigate = useNavigate();
     const { id } = useParams();
+    const { t } = useTranslation();
     const isEditing = !!id;
 
     const [formData, setFormData] = useState({
@@ -63,16 +65,20 @@ function MobileAddWord({ user }) {
                 prompt: formData.word,
                 context: 'translation'
             });
-            if (!res.data.error) {
-                setFormData(prev => ({
-                    ...prev,
-                    translation: res.data.translation || prev.translation,
-                    type: res.data.type?.toLowerCase() || prev.type,
-                    example: res.data.example || prev.example,
-                    synonyms: res.data.synonyms?.join(', ') || prev.synonyms,
-                    antonyms: res.data.antonyms?.join(', ') || prev.antonyms
-                }));
-            }
+            // Validate type against allowed options
+            const returnedType = res.data.type?.toLowerCase();
+            const isValidType = typeOptions.some(opt => opt.value === returnedType);
+            const finalType = isValidType ? returnedType : 'other';
+
+            setFormData(prev => ({
+                ...prev,
+                translation: res.data.translation || prev.translation,
+                type: finalType,
+                example: res.data.example || prev.example,
+                synonyms: res.data.synonyms?.join(', ') || prev.synonyms,
+                antonyms: res.data.antonyms?.join(', ') || prev.antonyms,
+                related_concepts: res.data.related_concepts?.join(', ') || prev.related_concepts
+            }));
         } catch (err) {
             console.error(err);
         } finally {
@@ -132,7 +138,7 @@ function MobileAddWord({ user }) {
                     <X size={22} />
                 </button>
                 <h1 className="text-base font-semibold" style={{ color: '#FAFAFA' }}>
-                    {isEditing ? 'Edit Word' : 'Add Word'}
+                    {isEditing ? t('edit') : t('addWord')}
                 </h1>
                 <button
                     onClick={handleSubmit}
@@ -140,7 +146,7 @@ function MobileAddWord({ user }) {
                     className="text-sm font-semibold disabled:opacity-40"
                     style={{ color: '#6366F1' }}
                 >
-                    {loading ? 'Saving...' : 'Save'}
+                    {loading ? t('saving') : t('save')}
                 </button>
             </div>
 
@@ -149,21 +155,22 @@ function MobileAddWord({ user }) {
                 {/* Word Input */}
                 <div>
                     <label className="block text-xs font-medium mb-2" style={{ color: '#71717A' }}>
-                        Word / Phrase
+                        {t('word')}
                     </label>
                     <div className="relative">
                         <input
                             type="text"
                             value={formData.word}
                             onChange={e => setFormData({ ...formData, word: e.target.value })}
-                            placeholder="Enter word..."
-                            className="w-full px-4 py-3.5 rounded-xl text-base outline-none"
+                            onChange={e => setFormData({ ...formData, word: e.target.value })}
+                            placeholder={t('enterWord')}
+                            className="w-full px-4 rtl:pl-12 ltr:pr-12 py-3.5 rounded-xl text-base outline-none"
                             style={inputStyle}
                         />
                         <button
                             onClick={handleAITranslate}
                             disabled={aiLoading || !formData.word}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-lg disabled:opacity-40"
+                            className="absolute rtl:left-3 ltr:right-3 top-1/2 -translate-y-1/2 p-2 rounded-lg disabled:opacity-40"
                             style={{ backgroundColor: '#27272A' }}
                         >
                             {aiLoading ? (
@@ -178,13 +185,15 @@ function MobileAddWord({ user }) {
                 {/* Translation */}
                 <div>
                     <label className="block text-xs font-medium mb-2" style={{ color: '#71717A' }}>
-                        Translation
+                        {t('translation')}
                     </label>
                     <input
                         type="text"
                         value={formData.translation}
                         onChange={e => setFormData({ ...formData, translation: e.target.value })}
-                        placeholder="Enter translation..."
+                        value={formData.translation}
+                        onChange={e => setFormData({ ...formData, translation: e.target.value })}
+                        placeholder={t('enterTranslation')}
                         className="w-full px-4 py-3.5 rounded-xl text-base outline-none"
                         style={inputStyle}
                     />
@@ -193,14 +202,16 @@ function MobileAddWord({ user }) {
                 {/* Type */}
                 <div>
                     <label className="block text-xs font-medium mb-2" style={{ color: '#71717A' }}>
-                        Type
+                        {t('wordType')}
                     </label>
                     <button
                         onClick={() => setShowTypePicker(true)}
                         className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl"
                         style={inputStyle}
                     >
-                        <span className="capitalize" style={{ color: '#FAFAFA' }}>{formData.type}</span>
+                        <span className="capitalize" style={{ color: '#FAFAFA' }}>
+                            {typeOptions.find(o => o.value === formData.type)?.labelKey ? t(typeOptions.find(o => o.value === formData.type).labelKey) : formData.type}
+                        </span>
                         <ChevronDown size={18} style={{ color: '#71717A' }} />
                     </button>
                 </div>
@@ -208,13 +219,13 @@ function MobileAddWord({ user }) {
                 {/* Example */}
                 <div>
                     <label className="block text-xs font-medium mb-2" style={{ color: '#71717A' }}>
-                        Example (optional)
+                        {t('exampleOptional')}
                     </label>
                     <textarea
                         rows={2}
                         value={formData.example}
                         onChange={e => setFormData({ ...formData, example: e.target.value })}
-                        placeholder="Use it in a sentence..."
+                        placeholder={t('useInSentence')}
                         className="w-full px-4 py-3 rounded-xl text-base outline-none resize-none"
                         style={inputStyle}
                     />
@@ -223,13 +234,13 @@ function MobileAddWord({ user }) {
                 {/* Synonyms */}
                 <div>
                     <label className="block text-xs font-medium mb-2" style={{ color: '#71717A' }}>
-                        Synonyms
+                        {t('synonyms')}
                     </label>
                     <input
                         type="text"
                         value={formData.synonyms}
                         onChange={e => setFormData({ ...formData, synonyms: e.target.value })}
-                        placeholder="Comma separated..."
+                        placeholder={t('commaSeparated')}
                         className="w-full px-4 py-3.5 rounded-xl text-base outline-none"
                         style={inputStyle}
                     />
@@ -238,13 +249,13 @@ function MobileAddWord({ user }) {
                 {/* Antonyms */}
                 <div>
                     <label className="block text-xs font-medium mb-2" style={{ color: '#71717A' }}>
-                        Antonyms
+                        {t('antonyms')}
                     </label>
                     <input
                         type="text"
                         value={formData.antonyms}
                         onChange={e => setFormData({ ...formData, antonyms: e.target.value })}
-                        placeholder="Comma separated..."
+                        placeholder={t('commaSeparated')}
                         className="w-full px-4 py-3.5 rounded-xl text-base outline-none"
                         style={inputStyle}
                     />
@@ -253,13 +264,13 @@ function MobileAddWord({ user }) {
                 {/* Related Concepts */}
                 <div>
                     <label className="block text-xs font-medium mb-2" style={{ color: '#71717A' }}>
-                        Related Concepts
+                        {t('relatedConcepts')}
                     </label>
                     <input
                         type="text"
                         value={formData.related_concepts}
                         onChange={e => setFormData({ ...formData, related_concepts: e.target.value })}
-                        placeholder="Comma separated..."
+                        placeholder={t('commaSeparated')}
                         className="w-full px-4 py-3.5 rounded-xl text-base outline-none"
                         style={inputStyle}
                     />
@@ -268,7 +279,7 @@ function MobileAddWord({ user }) {
                 {/* Tags */}
                 <div>
                     <label className="block text-xs font-medium mb-2" style={{ color: '#71717A' }}>
-                        Tags
+                        {t('tags')}
                     </label>
                     <div className="flex gap-2">
                         <input
@@ -276,7 +287,7 @@ function MobileAddWord({ user }) {
                             value={tagInput}
                             onChange={e => setTagInput(e.target.value)}
                             onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
-                            placeholder="Add tag..."
+                            placeholder={t('addTag')}
                             className="flex-1 px-4 py-3 rounded-xl text-sm outline-none"
                             style={inputStyle}
                         />
@@ -286,7 +297,7 @@ function MobileAddWord({ user }) {
                             className="px-4 py-3 rounded-xl text-sm font-medium disabled:opacity-40"
                             style={{ backgroundColor: '#6366F1', color: '#FFFFFF' }}
                         >
-                            Add
+                            {t('add')}
                         </button>
                     </div>
                     {formData.tags.length > 0 && (
@@ -309,51 +320,53 @@ function MobileAddWord({ user }) {
                         </div>
                     )}
                 </div>
-            </div>
+            </div >
 
             {/* Type Picker Modal */}
-            {showTypePicker && (
-                <div
-                    className="fixed inset-0 z-50 flex items-end justify-center"
-                    style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
-                    onClick={() => setShowTypePicker(false)}
-                >
+            {
+                showTypePicker && (
                     <div
-                        className="w-full rounded-t-2xl overflow-hidden"
-                        style={{
-                            backgroundColor: '#141416',
-                            paddingBottom: 'env(safe-area-inset-bottom, 0px)'
-                        }}
-                        onClick={e => e.stopPropagation()}
+                        className="fixed inset-0 z-50 flex items-end justify-center"
+                        style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
+                        onClick={() => setShowTypePicker(false)}
                     >
-                        <div className="p-4 border-b" style={{ borderColor: '#27272A' }}>
-                            <h3 className="text-base font-semibold" style={{ color: '#FAFAFA' }}>
-                                Word Type
-                            </h3>
-                        </div>
-                        <div className="py-2">
-                            {typeOptions.map(option => (
-                                <button
-                                    key={option.value}
-                                    onClick={() => {
-                                        setFormData({ ...formData, type: option.value });
-                                        setShowTypePicker(false);
-                                    }}
-                                    className="w-full flex items-center justify-between px-5 py-3.5"
-                                >
-                                    <span className="text-sm font-medium" style={{ color: '#FAFAFA' }}>
-                                        {option.label}
-                                    </span>
-                                    {formData.type === option.value && (
-                                        <Check size={18} style={{ color: '#6366F1' }} />
-                                    )}
-                                </button>
-                            ))}
+                        <div
+                            className="w-full rounded-t-2xl overflow-hidden"
+                            style={{
+                                backgroundColor: '#141416',
+                                paddingBottom: 'env(safe-area-inset-bottom, 0px)'
+                            }}
+                            onClick={e => e.stopPropagation()}
+                        >
+                            <div className="p-4 border-b" style={{ borderColor: '#27272A' }}>
+                                <h3 className="text-base font-semibold" style={{ color: '#FAFAFA' }}>
+                                    {t('wordType')}
+                                </h3>
+                            </div>
+                            <div className="py-2">
+                                {typeOptions.map(option => (
+                                    <button
+                                        key={option.value}
+                                        onClick={() => {
+                                            setFormData({ ...formData, type: option.value });
+                                            setShowTypePicker(false);
+                                        }}
+                                        className="w-full flex items-center justify-between px-5 py-3.5"
+                                    >
+                                        <span className="text-sm font-medium" style={{ color: '#FAFAFA' }}>
+                                            {t(option.labelKey)}
+                                        </span>
+                                        {formData.type === option.value && (
+                                            <Check size={18} style={{ color: '#6366F1' }} />
+                                        )}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 }
 

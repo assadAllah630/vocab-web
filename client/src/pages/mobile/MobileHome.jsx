@@ -18,6 +18,7 @@ import {
 import { AnimatedIcon, GlowingZap, BouncingFlame } from '../../components/AnimatedIcons';
 import streakFlame from '../../assets/streak-flame.png';
 import { statsStorage, vocabStorage, useOnlineStatus } from '../../utils/offlineStorage';
+import { useTranslation } from '../../hooks/useTranslation';
 
 // Motivational messages based on streak
 const getMotivation = (streak) => {
@@ -39,6 +40,7 @@ const getGreeting = () => {
 
 function MobileHome({ user }) {
     const navigate = useNavigate();
+    const { t, translations } = useTranslation();
     const [stats, setStats] = useState({
         totalWords: 0,
         streak: 0,
@@ -120,10 +122,10 @@ function MobileHome({ user }) {
     }
 
     const actions = [
-        { icon: Plus, label: 'Add', color: '#22C55E', action: () => navigate('/m/words/add') },
-        { icon: Play, label: 'Review', color: '#6366F1', action: () => navigate('/m/practice/flashcard?hlr=true') },
-        { icon: Sparkles, label: 'Quiz', color: '#A855F7', action: () => navigate('/m/exam') },
-        { icon: BookOpen, label: 'Games', color: '#F59E0B', action: () => navigate('/m/games') }
+        { icon: Plus, label: t('add'), color: '#22C55E', action: () => navigate('/m/words/add') },
+        { icon: Play, label: t('review'), color: '#6366F1', action: () => navigate('/m/practice/flashcard?hlr=true') },
+        { icon: Sparkles, label: t('quiz'), color: '#A855F7', action: () => navigate('/m/exam') },
+        { icon: BookOpen, label: t('games'), color: '#F59E0B', action: () => navigate('/m/games') }
     ];
 
     return (
@@ -165,7 +167,7 @@ function MobileHome({ user }) {
             >
                 <div className="flex items-center justify-between">
                     <div>
-                        <p className="text-sm" style={{ color: '#71717A' }}>{getGreeting()} 👋</p>
+                        <p className="text-sm" style={{ color: '#71717A' }}>{t('goodMorning')} 👋</p>
                         <h1 className="text-2xl font-bold mt-0.5" style={{ color: '#FAFAFA' }}>
                             {user?.username || 'Learner'}
                         </h1>
@@ -181,12 +183,13 @@ function MobileHome({ user }) {
                     >
                         {user?.username?.charAt(0).toUpperCase() || 'U'}
                     </motion.button>
-                </div>
-            </motion.div>
+                </div >
+            </motion.div >
 
             {/* Streak Card - Animated */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
+            < motion.div
+                initial={{ opacity: 0, y: 20 }
+                }
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
                 className="px-5 mb-4"
@@ -231,7 +234,7 @@ function MobileHome({ user }) {
                                 >
                                     {stats.streak}
                                 </motion.span>
-                                <span className="text-lg font-medium" style={{ color: '#A1A1AA' }}>day streak</span>
+                                <span className="text-lg font-medium" style={{ color: '#A1A1AA' }}>{t('dayStreak')}</span>
                             </div>
                             <p className="text-sm mt-1" style={{ color: '#71717A' }}>
                                 {motivation.emoji} {motivation.message}
@@ -239,10 +242,10 @@ function MobileHome({ user }) {
                         </div>
                     </div>
                 </motion.div>
-            </motion.div>
+            </motion.div >
 
             {/* Stats Row */}
-            <motion.div
+            < motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
@@ -250,9 +253,9 @@ function MobileHome({ user }) {
             >
                 <div className="grid grid-cols-3 gap-3">
                     {[
-                        { icon: BookOpen, value: stats.totalWords, label: 'Words', color: '#6366F1' },
-                        { icon: Target, value: stats.needsReview, label: 'To Review', color: '#F59E0B' },
-                        { icon: TrendingUp, value: stats.todayProgress, label: 'Today', color: '#22C55E' }
+                        { icon: BookOpen, value: stats.totalWords, label: t('wordsCount'), color: '#6366F1' },
+                        { icon: Target, value: stats.needsReview, label: t('toReview'), color: '#F59E0B' },
+                        { icon: TrendingUp, value: stats.todayProgress, label: t('today'), color: '#22C55E' }
                     ].map((stat, i) => (
                         <motion.div
                             key={stat.label}
@@ -268,10 +271,10 @@ function MobileHome({ user }) {
                         </motion.div>
                     ))}
                 </div>
-            </motion.div>
+            </motion.div >
 
             {/* Progress Bar */}
-            <motion.div
+            < motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
@@ -284,7 +287,7 @@ function MobileHome({ user }) {
                     <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
                             <Trophy size={18} style={{ color: '#F59E0B' }} />
-                            <span className="font-medium" style={{ color: '#FAFAFA' }}>Daily Goal</span>
+                            <span className="font-medium" style={{ color: '#FAFAFA' }}>{t('dailyGoal')}</span>
                         </div>
                         <span className="text-sm font-semibold" style={{ color: progressPercent >= 100 ? '#22C55E' : '#A1A1AA' }}>
                             {stats.todayProgress}/{stats.dailyGoal}
@@ -305,52 +308,54 @@ function MobileHome({ user }) {
                     </div>
                     {progressPercent < 100 && (
                         <p className="text-xs mt-2" style={{ color: '#71717A' }}>
-                            {stats.dailyGoal - stats.todayProgress} more to complete your goal!
+                            {stats.dailyGoal - stats.todayProgress} {t('moreToComplete')}
                         </p>
                     )}
                 </div>
-            </motion.div>
+            </motion.div >
 
             {/* Review Banner */}
-            {stats.needsReview > 0 && (
-                <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.5 }}
-                    className="px-5 mb-5"
-                >
-                    <motion.button
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => navigate('/m/practice/flashcard?hlr=true')}
-                        className="w-full rounded-xl p-5 flex items-center justify-between relative overflow-hidden"
-                        style={{ background: 'linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)' }}
+            {
+                stats.needsReview > 0 && (
+                    <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.5 }}
+                        className="px-5 mb-5"
                     >
-                        <motion.div
-                            animate={{ x: [0, 100, 0] }}
-                            transition={{ duration: 3, repeat: Infinity }}
-                            className="absolute inset-0 opacity-20"
-                            style={{ background: 'linear-gradient(90deg, transparent 0%, white 50%, transparent 100%)' }}
-                        />
-                        <div className="text-left relative z-10">
-                            <div className="flex items-center gap-2">
-                                <Zap size={20} style={{ color: '#FFFFFF' }} />
-                                <p className="font-bold text-lg" style={{ color: '#FFFFFF' }}>
-                                    {stats.needsReview} words ready
+                        <motion.button
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => navigate('/m/practice/flashcard?hlr=true')}
+                            className="w-full rounded-xl p-5 flex items-center justify-between relative overflow-hidden"
+                            style={{ background: 'linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)' }}
+                        >
+                            <motion.div
+                                animate={{ x: [0, 100, 0] }}
+                                transition={{ duration: 3, repeat: Infinity }}
+                                className="absolute inset-0 opacity-20"
+                                style={{ background: 'linear-gradient(90deg, transparent 0%, white 50%, transparent 100%)' }}
+                            />
+                            <div className="text-left relative z-10">
+                                <div className="flex items-center gap-2">
+                                    <Zap size={20} style={{ color: '#FFFFFF' }} />
+                                    <p className="font-bold text-lg" style={{ color: '#FFFFFF' }}>
+                                        {stats.needsReview} words ready
+                                    </p>
+                                </div>
+                                <p className="text-sm opacity-80 mt-1" style={{ color: '#FFFFFF' }}>
+                                    Tap to start your review session
                                 </p>
                             </div>
-                            <p className="text-sm opacity-80 mt-1" style={{ color: '#FFFFFF' }}>
-                                Tap to start your review session
-                            </p>
-                        </div>
-                        <motion.div
-                            animate={{ x: [0, 5, 0] }}
-                            transition={{ duration: 1, repeat: Infinity }}
-                        >
-                            <ChevronRight size={24} style={{ color: '#FFFFFF' }} />
-                        </motion.div>
-                    </motion.button>
-                </motion.div>
-            )}
+                            <motion.div
+                                animate={{ x: [0, 5, 0] }}
+                                transition={{ duration: 1, repeat: Infinity }}
+                            >
+                                <ChevronRight size={24} style={{ color: '#FFFFFF' }} />
+                            </motion.div>
+                        </motion.button>
+                    </motion.div>
+                )
+            }
 
             {/* Quick Actions */}
             <motion.div
@@ -359,7 +364,7 @@ function MobileHome({ user }) {
                 transition={{ delay: 0.6 }}
                 className="px-5"
             >
-                <h2 className="text-sm font-semibold mb-3" style={{ color: '#A1A1AA' }}>Quick Actions</h2>
+                <h2 className="text-sm font-semibold mb-3" style={{ color: '#A1A1AA' }}>{t('quickActions')}</h2>
                 <div className="grid grid-cols-4 gap-3">
                     {actions.map((item, i) => (
                         <motion.button
@@ -397,10 +402,10 @@ function MobileHome({ user }) {
                 className="px-5 py-6 mt-4 text-center"
             >
                 <p className="text-sm" style={{ color: '#52525B' }}>
-                    "Every word you learn opens a new door." ✨
+                    "{t('everyWord')}" ✨
                 </p>
             </motion.div>
-        </div>
+        </div >
     );
 }
 

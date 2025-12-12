@@ -19,10 +19,12 @@ import {
     Brain
 } from 'lucide-react';
 import { AnimatedIcon } from '../../components/AnimatedIcons';
+import { useTranslation } from '../../hooks/useTranslation';
 
 function MobileExam() {
     const navigate = useNavigate();
     const { activeExam, isExamActive } = useExam();
+    const { t } = useTranslation();
     const [activeTab, setActiveTab] = useState('new');
     const [history, setHistory] = useState([]);
     const [communityExams, setCommunityExams] = useState([]);
@@ -81,9 +83,9 @@ function MobileExam() {
     };
 
     const tabs = [
-        { id: 'new', label: 'New', icon: Plus },
-        { id: 'history', label: 'History', icon: Clock },
-        { id: 'community', label: 'Community', icon: Users }
+        { id: 'new', label: t('newExam'), icon: Plus },
+        { id: 'history', label: t('examHistory'), icon: Clock },
+        { id: 'community', label: t('communityExams'), icon: Users }
     ];
 
     return (
@@ -99,7 +101,7 @@ function MobileExam() {
                     >
                         <ChevronLeft size={22} color="#A1A1AA" />
                     </motion.button>
-                    <h1 className="text-xl font-bold" style={{ color: '#FAFAFA' }}>AI Quiz</h1>
+                    <h1 className="text-xl font-bold" style={{ color: '#FAFAFA' }}>{t('exams')}</h1>
                     <div className="w-10" />
                 </div>
 
@@ -172,7 +174,7 @@ function MobileExam() {
                                 <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center mb-4">
                                     <Sparkles size={28} color="#FFFFFF" />
                                 </div>
-                                <h2 className="text-xl font-bold text-white mb-2">Generate AI Exam</h2>
+                                <h2 className="text-xl font-bold text-white mb-2">{t('generateExam')}</h2>
                                 <p className="text-white/80 text-sm">
                                     Create a custom exam with AI-generated questions
                                 </p>

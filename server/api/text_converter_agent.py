@@ -179,16 +179,17 @@ Otherwise respond with:
 If valid, respond: {"valid": true}
 If issues, respond: {"valid": false, "issues": [...], "fixed_markdown": "..."}"""
 
-    def __init__(self, ai_client, model: str = "gpt-4o-mini"):
+    def __init__(self, user, model: str = "gpt-4o-mini"):
         """
-        Initialize the agent with an AI client.
+        Initialize the agent with a user (for AI Gateway access).
         
         Args:
-            ai_client: OpenAI-compatible client
-            model: Model to use for processing
+            user: Django User object
+            model: Model key (used for logging or specific provider selection if needed)
         """
-        self.client = ai_client
+        self.user = user
         self.model = model
+        self.client = None # Deprecated, using UnifiedAI
         self.processing_log: List[str] = []
     
     def convert(self, text: str, source_type: str = "unknown") -> AgentResult:
@@ -259,24 +260,42 @@ If issues, respond: {"valid": false, "issues": [...], "fixed_markdown": "..."}""
         self.processing_log.append(message)
         logger.info(message)
     
-    def _call_ai(self, system: str, user: str, json_mode: bool = False) -> str:
-        """Make AI API call."""
+    def _call_ai(self, system: str, user_prompt: str, json_mode: bool = False, quality_tier: str = None) -> str:
+        """Make AI API call via Unified AI Gateway."""
         try:
-            kwargs = {
-                "model": self.model,
-                "messages": [
-                    {"role": "system", "content": system},
-                    {"role": "user", "content": user}
-                ],
-                "temperature": 0.3,
-                "max_tokens": 4000
-            }
+            from api.unified_ai import generate_ai_content
+            
+            # Combine system and user prompts
+            full_prompt = f"{system}\n\n{user_prompt}"
+            
+            # Call Unified AI
+            # Note: Max tokens adjusted for Gateway
+            capabilities = []
             
             if json_mode:
-                kwargs["response_format"] = {"type": "json_object"}
+                capabilities.append('json_mode')
+                if not quality_tier:
+                    quality_tier = 'high'  # Require high quality for JSON tasks
             
-            response = self.client.chat.completions.create(**kwargs)
-            return response.choices[0].message.content
+            response = generate_ai_content(
+                user=self.user,
+                prompt=full_prompt,
+                max_tokens=4000, 
+                temperature=0.3,
+                required_capabilities=capabilities,
+                quality_tier=quality_tier
+            )
+            
+            response_text = response.text
+            
+            if json_mode:
+                # Cleanup Markdown code blocks if present
+                if "```json" in response_text:
+                    response_text = response_text.split("```json")[1].split("```")[0].strip()
+                elif "```" in response_text:
+                    response_text = response_text.split("```")[1].split("```")[0].strip()
+            
+            return response_text
             
         except Exception as e:
             logger.error(f"AI call failed: {e}")
@@ -410,7 +429,16 @@ Plan how to divide this text into sections:
         )
         
         try:
-            section.processed_content = self._call_ai(worker_prompt, prompt)
+            # Use high quality tier for better formatting
+            content = self._call_ai(worker_prompt, prompt, quality_tier='high')
+            
+            # Cleanup Markdown code blocks if present (common with OpenRouter/Gemini)
+            if "```markdown" in content:
+                content = content.split("```markdown")[1].split("```")[0].strip()
+            elif "```" in content:
+                content = content.split("```")[1].split("```")[0].strip()
+                
+            section.processed_content = content
             self._log(f"   → Section {section.id} processed")
         except Exception as e:
             # Fallback: keep original with minimal formatting
@@ -513,18 +541,18 @@ FORMATTED:
 
 
 # Convenience function
-def convert_text_to_markdown(text: str, ai_client, source_type: str = "unknown", model: str = "gpt-4o-mini") -> AgentResult:
+def convert_text_to_markdown(text: str, user, source_type: str = "unknown", model: str = "gpt-4o-mini") -> AgentResult:
     """
     Convert plain text to rich Markdown using the multi-agent converter.
     
     Args:
         text: Plain text to convert
-        ai_client: OpenAI-compatible client
+        user: Django User object (for AI Gateway)
         source_type: Type of source content
         model: AI model to use
         
     Returns:
         AgentResult with processed Markdown
     """
-    agent = TextConverterAgent(ai_client, model)
+    agent = TextConverterAgent(user, model)
     return agent.convert(text, source_type)

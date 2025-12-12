@@ -93,11 +93,13 @@ def generate_advanced_text(request):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        # Get user's Gemini API key
-        api_key = request.user.profile.gemini_api_key
-        if not api_key:
+        # Check if user has any AI capability (gateway keys OR legacy key)
+        from .unified_ai import get_ai_status
+        ai_status = get_ai_status(request.user)
+        
+        if not ai_status['has_gateway_keys'] and not ai_status['has_legacy_key']:
             return Response(
-                {'error': 'Gemini API key required. Please add it in Settings.'},
+                {'error': 'No API keys available. Add a key in Settings or AI Gateway.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
@@ -159,8 +161,15 @@ def generate_advanced_text(request):
                 'structure_type': request.data.get('structure_type', 'Standard'),
             })
         
-        # Initialize agent
-        agent = AdvancedTextAgent(api_key)
+        # Initialize agent with user for Gateway multi-key fallback
+        # Get native language from user profile for translations
+        native_language = 'en'
+        try:
+            native_language = request.user.profile.native_language
+        except:
+            pass
+        
+        agent = AdvancedTextAgent(request.user, native_language=native_language)
         
         # Generate content based on type
         if content_type == 'story':
@@ -194,7 +203,7 @@ def generate_advanced_text(request):
                 event['image_base64'] = None
                 event['image_provider'] = None
         
-        # Save to database
+        # Save to database with language pair
         generated_content = GeneratedContent.objects.create(
             user=request.user,
             content_type=content_type,
@@ -202,6 +211,7 @@ def generate_advanced_text(request):
             topic=topic,
             level=level,
             target_language=params['target_language'],
+            native_language=native_language,
             content_data=result,
             total_words=total_words,
             vocabulary_used=vocab_used,
@@ -236,7 +246,20 @@ def list_generated_content(request):
     """
     List user's generated content with optional filtering
     """
-    queryset = GeneratedContent.objects.filter(user=request.user)
+    # Filter by user and language pair
+    try:
+        profile = request.user.profile
+        target_lang = profile.target_language
+        native_lang = profile.native_language
+    except:
+        target_lang = 'de'
+        native_lang = 'en'
+    
+    queryset = GeneratedContent.objects.filter(
+        user=request.user,
+        target_language=target_lang,
+        native_language=native_lang
+    )
     
     # Apply filters
     content_type = request.query_params.get('content_type')
@@ -337,9 +360,19 @@ def get_image_generation_status(request, pk):
     events = content.content_data.get('events', [])
     pending_events = [e for e in events if e.get('image_status') == 'pending']
     
+    # Also catch 'generating' events that might be stuck (e.g. from server restart)
+    # Since this function is synchronous, any 'generating' status when we enter means it's stuck from a previous failed/killed request
+    stuck_events = [e for e in events if e.get('image_status') == 'generating']
+    
+    event_to_process = None
+    
     if pending_events:
-        # Pick the first pending event
         event_to_process = pending_events[0]
+    elif stuck_events:
+        logger.warning(f"Found stuck 'generating' event for story {pk}, retrying...")
+        event_to_process = stuck_events[0]
+    
+    if event_to_process:
         event_index = events.index(event_to_process)
         
         # Update status to generating

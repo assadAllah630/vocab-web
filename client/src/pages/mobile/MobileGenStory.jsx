@@ -13,6 +13,7 @@ import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import MobileAIWizardLayout from '../../components/mobile/MobileAIWizardLayout';
 import MobileStoryDisplay from '../../components/mobile/MobileStoryDisplay';
 import api from '../../api';
+import { useTranslation } from '../../hooks/useTranslation';
 
 // Helper function to render text with highlighted vocabulary
 const renderStyledText = (text) => {
@@ -55,19 +56,21 @@ const GENRES = [
 ];
 
 // Expanded Plot Types with descriptions
+// Note: PLOT_TYPES labels will be translated in render
 const PLOT_TYPES = [
-    { id: 'Standard', label: 'Standard', desc: 'Classic beginning, middle, end' },
-    { id: 'Surprise Ending', label: 'Surprise Ending', desc: 'Unexpected twist at the end' },
-    { id: 'Moral Lesson', label: 'Moral Lesson', desc: 'Story with a valuable message' },
-    { id: 'Open Ending', label: 'Open Ending', desc: 'Let the reader imagine' },
-    { id: "Hero's Journey", label: "Hero's Journey", desc: 'Classic adventure arc' },
-    { id: 'Flashback', label: 'Flashback', desc: 'Starts in present, revisits past' },
-    { id: 'Parallel Stories', label: 'Parallel Stories', desc: 'Two storylines that connect' },
-    { id: 'Mystery Solve', label: 'Mystery Solve', desc: 'Clues leading to revelation' },
+    { id: 'Standard', descKey: 'standardDesc' },
+    { id: 'Surprise Ending', descKey: 'surpriseEndingDesc' },
+    { id: 'Moral Lesson', descKey: 'moralLessonDesc' },
+    { id: 'Open Ending', descKey: 'openEndingDesc' },
+    { id: "Hero's Journey", descKey: 'herosJourneyDesc' },
+    { id: 'Flashback', descKey: 'flashbackDesc' },
+    { id: 'Parallel Stories', descKey: 'parallelStoriesDesc' },
+    { id: 'Mystery Solve', descKey: 'mysterySolveDesc' }
 ];
 
 const MobileGenStory = () => {
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [generatedContent, setGeneratedContent] = useState(null);
@@ -132,6 +135,41 @@ const MobileGenStory = () => {
         }
     };
 
+    // Polling for image generation status
+    React.useEffect(() => {
+        let pollInterval;
+
+        if (step === 4 && generatedContent?.id && formData.generate_images) {
+            console.log("Starting image polling for story", generatedContent.id);
+
+            const checkImageStatus = async () => {
+                try {
+                    const res = await api.get(`ai/generated-content/${generatedContent.id}/images/status/`);
+
+                    // If we got valid status back
+                    if (res.data.status !== 'none' && res.data.content) {
+                        setGeneratedContent(prev => ({
+                            ...prev,
+                            content: res.data.content
+                        }));
+                    }
+                } catch (err) {
+                    console.error("Error polling image status:", err);
+                }
+            };
+
+            // Poll every 3 seconds
+            pollInterval = setInterval(checkImageStatus, 3000);
+
+            // Initial check immediately
+            checkImageStatus();
+        }
+
+        return () => {
+            if (pollInterval) clearInterval(pollInterval);
+        };
+    }, [step, generatedContent?.id, formData.generate_images]);
+
     const handleSave = () => {
         navigate('/m');
     };
@@ -148,7 +186,7 @@ const MobileGenStory = () => {
     const renderStep1 = () => (
         <div className="space-y-6">
             <div>
-                <label className="text-[#A1A1AA] text-sm font-bold uppercase mb-3 block">Genre</label>
+                <label className="text-[#A1A1AA] text-sm font-bold uppercase mb-3 block">{t('genre')}</label>
                 <div className="grid grid-cols-3 gap-2">
                     {GENRES.map(g => (
                         <motion.button
@@ -181,7 +219,7 @@ const MobileGenStory = () => {
                                         </span>
                                     )}
                                 </div>
-                                <span className="text-xs font-bold">{g.label}</span>
+                                <span className="text-xs font-bold">{t('genre' + g.id.replace(' ', '').replace('-', '').replace("'", ''))}</span>
                             </div>
                         </motion.button>
                     ))}
@@ -189,7 +227,7 @@ const MobileGenStory = () => {
             </div>
 
             <div>
-                <label className="text-[#A1A1AA] text-sm font-bold uppercase mb-3 block">Plot Type</label>
+                <label className="text-[#A1A1AA] text-sm font-bold uppercase mb-3 block">{t('plotType')}</label>
                 <div className="space-y-2">
                     {PLOT_TYPES.map(p => (
                         <motion.button
@@ -201,9 +239,9 @@ const MobileGenStory = () => {
                                 : 'bg-[#18181B] border-[#27272A] text-[#A1A1AA]'
                                 }`}
                         >
-                            <div className="font-bold">{p.label}</div>
+                            <div className="font-bold">{p.id}</div>
                             <div className={`text-xs mt-1 ${formData.plot_type === p.id ? 'text-white/70' : 'text-[#71717A]'}`}>
-                                {p.desc}
+                                {p.descKey ? t(p.descKey) : p.desc}
                             </div>
                         </motion.button>
                     ))}
@@ -211,12 +249,12 @@ const MobileGenStory = () => {
             </div>
 
             <div>
-                <label className="text-[#A1A1AA] text-sm font-bold uppercase mb-3 block">Setting</label>
+                <label className="text-[#A1A1AA] text-sm font-bold uppercase mb-3 block">{t('setting')}</label>
                 <input
                     type="text"
                     value={formData.setting}
                     onChange={e => setFormData({ ...formData, setting: e.target.value })}
-                    placeholder="e.g. A magical forest in winter"
+                    placeholder={t('settingPlaceholder')}
                     className="w-full bg-[#18181B] border border-[#27272A] rounded-xl p-4 text-white outline-none focus:border-[#6366F1] placeholder:text-[#52525B]"
                 />
             </div>
@@ -226,7 +264,7 @@ const MobileGenStory = () => {
     // Step 2: Characters
     const renderStep2 = () => (
         <div className="space-y-6">
-            <p className="text-[#71717A] text-sm">Add characters to make your story more personal. You can skip this step if you prefer.</p>
+            <p className="text-[#71717A] text-sm">{t('addCharacterDesc')}</p>
 
             {formData.characters.length > 0 && (
                 <div className="space-y-3">
@@ -261,19 +299,19 @@ const MobileGenStory = () => {
                     className="bg-[#18181B] p-4 rounded-xl border border-[#6366F1] space-y-4"
                 >
                     <input
-                        placeholder="Name (e.g. Zara)"
+                        placeholder={t('characterName')}
                         value={charInput.name}
                         onChange={e => setCharInput({ ...charInput, name: e.target.value })}
                         className="w-full bg-[#09090B] border border-[#27272A] rounded-lg p-3 text-white outline-none focus:border-[#6366F1]"
                     />
                     <input
-                        placeholder="Role (e.g. Detective, Student)"
+                        placeholder={t('characterRole')}
                         value={charInput.role}
                         onChange={e => setCharInput({ ...charInput, role: e.target.value })}
                         className="w-full bg-[#09090B] border border-[#27272A] rounded-lg p-3 text-white outline-none focus:border-[#6366F1]"
                     />
                     <input
-                        placeholder="Traits (e.g. Brave, Curious)"
+                        placeholder={t('characterTraits')}
                         value={charInput.traits}
                         onChange={e => setCharInput({ ...charInput, traits: e.target.value })}
                         className="w-full bg-[#09090B] border border-[#27272A] rounded-lg p-3 text-white outline-none focus:border-[#6366F1]"
@@ -283,14 +321,14 @@ const MobileGenStory = () => {
                             onClick={() => setShowCharForm(false)}
                             className="flex-1 py-3 rounded-lg bg-[#27272A] text-white font-bold"
                         >
-                            Cancel
+                            {t('cancel')}
                         </button>
                         <button
                             onClick={handleAddCharacter}
                             disabled={!charInput.name || !charInput.role}
                             className="flex-1 py-3 rounded-lg bg-[#6366F1] text-white font-bold disabled:opacity-50"
                         >
-                            Add Character
+                            {t('addCharacter')}
                         </button>
                     </div>
                 </motion.div>
@@ -300,17 +338,18 @@ const MobileGenStory = () => {
                     className="w-full py-4 rounded-xl border-2 border-dashed border-[#27272A] text-[#A1A1AA] font-bold flex items-center justify-center gap-2 hover:border-[#6366F1] hover:text-[#6366F1] transition-colors active:scale-[0.98]"
                 >
                     <UserPlusIcon className="w-5 h-5" />
-                    Add Character
+                    {t('addCharacter')}
                 </button>
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 
     // Step 3: Details
     const renderStep3 = () => (
         <div className="space-y-6">
             <div>
-                <label className="text-[#A1A1AA] text-sm font-bold uppercase mb-3 block">Language Level</label>
+                <label className="text-[#A1A1AA] text-sm font-bold uppercase mb-3 block">{t('level')}</label>
                 <div className="flex gap-2">
                     {['A1', 'A2', 'B1', 'B2', 'C1'].map(l => (
                         <button
@@ -329,8 +368,8 @@ const MobileGenStory = () => {
 
             <div>
                 <div className="flex justify-between items-center mb-3">
-                    <label className="text-[#A1A1AA] text-sm font-bold uppercase">Story Length</label>
-                    <span className="text-[#6366F1] font-mono font-bold">{formData.word_count} words</span>
+                    <label className="text-[#A1A1AA] text-sm font-bold uppercase">{t('storyLength')}</label>
+                    <span className="text-[#6366F1] font-mono font-bold">{formData.word_count} {t('words').toLowerCase()}</span>
                 </div>
                 <input
                     type="range"
@@ -342,9 +381,9 @@ const MobileGenStory = () => {
                     className="w-full accent-[#6366F1] h-2"
                 />
                 <div className="flex justify-between text-xs text-[#52525B] mt-2">
-                    <span>Short</span>
-                    <span>Medium</span>
-                    <span>Long</span>
+                    <span>{t('short')}</span>
+                    <span>{t('medium')}</span>
+                    <span>{t('long')}</span>
                 </div>
             </div>
 
@@ -354,8 +393,8 @@ const MobileGenStory = () => {
                         <PhotoIcon className="w-5 h-5 text-purple-400" />
                     </div>
                     <div>
-                        <div className="font-bold text-white">AI Illustrations</div>
-                        <div className="text-xs text-[#71717A]">Generate images for each scene</div>
+                        <div className="font-bold text-white">{t('aiIllustrations')}</div>
+                        <div className="text-xs text-[#71717A]">{t('aiIllustrationsDesc')}</div>
                     </div>
                 </div>
                 <button
@@ -388,21 +427,21 @@ const MobileGenStory = () => {
 
     return (
         <MobileAIWizardLayout
-            title="Story Weaver"
+            title={t('storyWeaver')}
             subtitle={
-                step === 1 ? "Choose your Concept" :
-                    step === 2 ? "Cast your Characters" :
-                        step === 3 ? "Fine-tune Details" :
-                            "Your Story"
+                step === 1 ? t('chooseConcept') :
+                    step === 2 ? t('castCharacters') :
+                        step === 3 ? t('fineTuneDetails') :
+                            t('yourStory')
             }
             currentStep={step}
             totalSteps={4}
             onBack={step > 1 ? () => setStep(step - 1) : undefined}
             onNext={step === 3 ? handleGenerate : step === 4 ? handleSave : () => setStep(step + 1)}
             isNextDisabled={step === 1 && !isStep1Valid}
-            nextLabel={step === 3 ? 'Generate Story' : step === 4 ? 'Save to Library' : 'Next'}
+            nextLabel={step === 3 ? t('generateStory') : step === 4 ? t('saveToLibrary') : t('next')}
             loading={loading}
-            loadingMessage="Weaving your story..."
+            loadingMessage={t('weavingStory')}
         >
             {step === 1 && renderStep1()}
             {step === 2 && renderStep2()}

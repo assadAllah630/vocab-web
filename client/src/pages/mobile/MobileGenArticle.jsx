@@ -16,24 +16,26 @@ import {
 import MobileAIWizardLayout from '../../components/mobile/MobileAIWizardLayout';
 import MobileArticleDisplay from '../../components/mobile/MobileArticleDisplay';
 import api from '../../api';
+import { useTranslation } from '../../hooks/useTranslation';
 
 // Expanded Styles with colors
+// Note: Labels translated in render
 const STYLES = [
-    { id: 'Informative', label: 'News Article', icon: NewspaperIcon, desc: 'Clear, factual reporting', color: 'from-blue-500 to-cyan-500' },
-    { id: 'Blog', label: 'Blog Post', icon: PencilSquareIcon, desc: 'Engaging, personal tone', color: 'from-pink-500 to-rose-500' },
-    { id: 'Academic', label: 'Academic', icon: AcademicCapIcon, desc: 'Formal, structured analysis', color: 'from-purple-500 to-violet-600' },
-    { id: 'Opinion', label: 'Opinion Piece', icon: ChatBubbleBottomCenterTextIcon, desc: 'Persuasive and thought-provoking', color: 'from-orange-500 to-amber-500' },
-    { id: 'Educational', label: 'Educational', icon: LightBulbIcon, desc: 'Clear explanations for learning', color: 'from-green-500 to-emerald-500' },
-    { id: 'Technical', label: 'Technical', icon: ArrowTrendingUpIcon, desc: 'In-depth technical analysis', color: 'from-slate-500 to-zinc-600' },
+    { id: 'Informative', labelKey: 'styleInformative', icon: NewspaperIcon, desc: 'Clear, factual reporting', color: 'from-blue-500 to-cyan-500' },
+    { id: 'Blog', labelKey: 'styleBlog', icon: PencilSquareIcon, desc: 'Engaging, personal tone', color: 'from-pink-500 to-rose-500' },
+    { id: 'Academic', labelKey: 'styleAcademic', icon: AcademicCapIcon, desc: 'Formal, structured analysis', color: 'from-purple-500 to-violet-600' },
+    { id: 'Opinion', labelKey: 'styleOpinion', icon: ChatBubbleBottomCenterTextIcon, desc: 'Persuasive and thought-provoking', color: 'from-orange-500 to-amber-500' },
+    { id: 'Educational', labelKey: 'styleEducational', icon: LightBulbIcon, desc: 'Clear explanations for learning', color: 'from-green-500 to-emerald-500' },
+    { id: 'Technical', labelKey: 'styleTechnical', icon: ArrowTrendingUpIcon, desc: 'In-depth technical analysis', color: 'from-slate-500 to-zinc-600' },
 ];
 
 // Expanded Structures
 const STRUCTURES = [
-    { id: 'Standard', label: 'Standard Essay', icon: NewspaperIcon, desc: 'Intro, body, conclusion' },
-    { id: 'Listicle', label: 'List / Top 10', icon: ListBulletIcon, desc: 'Numbered points format' },
-    { id: 'How-to', label: 'How-to Guide', icon: LightBulbIcon, desc: 'Step-by-step instructions' },
-    { id: 'Problem-Solution', label: 'Problem-Solution', icon: ArrowTrendingUpIcon, desc: 'Issue and resolution format' },
-    { id: 'Comparison', label: 'Comparison', icon: MegaphoneIcon, desc: 'Compare two or more items' },
+    { id: 'Standard', labelKey: 'structStandard', icon: NewspaperIcon, desc: 'Intro, body, conclusion' },
+    { id: 'Listicle', labelKey: 'structListicle', icon: ListBulletIcon, desc: 'Numbered points format' },
+    { id: 'How-to', labelKey: 'structHowTo', icon: LightBulbIcon, desc: 'Step-by-step instructions' },
+    { id: 'Problem-Solution', labelKey: 'structProblem', icon: ArrowTrendingUpIcon, desc: 'Issue and resolution format' },
+    { id: 'Comparison', labelKey: 'structComparison', icon: MegaphoneIcon, desc: 'Compare two or more items' },
 ];
 
 // Topic Suggestions
@@ -48,6 +50,7 @@ const TOPIC_SUGGESTIONS = [
 
 const MobileGenArticle = () => {
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [generatedContent, setGeneratedContent] = useState(null);
@@ -99,11 +102,11 @@ const MobileGenArticle = () => {
     const renderStep1 = () => (
         <div className="space-y-6">
             <div>
-                <label className="text-[#A1A1AA] text-sm font-bold uppercase mb-3 block">Topic</label>
+                <label className="text-[#A1A1AA] text-sm font-bold uppercase mb-3 block">{t('topic')}</label>
                 <textarea
                     value={formData.topic}
                     onChange={e => setFormData({ ...formData, topic: e.target.value })}
-                    placeholder="What would you like to write about?"
+                    placeholder={t('topicPlaceholder')}
                     className="w-full bg-[#18181B] border border-[#27272A] rounded-xl p-4 text-white outline-none focus:border-[#6366F1] h-20 resize-none placeholder:text-[#52525B]"
                 />
                 <div className="flex flex-wrap gap-2 mt-3">
@@ -122,7 +125,7 @@ const MobileGenArticle = () => {
             </div>
 
             <div>
-                <label className="text-[#A1A1AA] text-sm font-bold uppercase mb-3 block">Writing Style</label>
+                <label className="text-[#A1A1AA] text-sm font-bold uppercase mb-3 block">{t('writingStyle')}</label>
                 <div className="grid grid-cols-2 gap-2">
                     {STYLES.map(s => (
                         <motion.button
@@ -139,7 +142,7 @@ const MobileGenArticle = () => {
                             )}
                             <div className="relative z-10">
                                 <s.icon className="w-5 h-5 mb-2" />
-                                <div className="font-bold text-sm">{s.label}</div>
+                                <div className="font-bold text-sm">{t(s.labelKey)}</div>
                                 <div className={`text-[10px] ${formData.article_style === s.id ? 'text-white/70' : 'text-[#71717A]'}`}>
                                     {s.desc}
                                 </div>
@@ -155,7 +158,7 @@ const MobileGenArticle = () => {
     const renderStep2 = () => (
         <div className="space-y-6">
             <div>
-                <label className="text-[#A1A1AA] text-sm font-bold uppercase mb-3 block">Article Structure</label>
+                <label className="text-[#A1A1AA] text-sm font-bold uppercase mb-3 block">{t('articleStructure')}</label>
                 <div className="space-y-2">
                     {STRUCTURES.map(s => (
                         <motion.button
@@ -171,7 +174,7 @@ const MobileGenArticle = () => {
                                 <s.icon className="w-5 h-5" />
                             </div>
                             <div>
-                                <div className="font-bold">{s.label}</div>
+                                <div className="font-bold">{t(s.labelKey)}</div>
                                 <div className={`text-xs ${formData.structure_type === s.id ? 'text-white/70' : 'text-[#71717A]'}`}>
                                     {s.desc}
                                 </div>
@@ -232,8 +235,8 @@ const MobileGenArticle = () => {
                         {selectedStyle && <selectedStyle.icon className="w-5 h-5 text-white" />}
                     </div>
                     <div>
-                        <div className="font-bold text-white">Article Preview</div>
-                        <div className="text-xs text-[#71717A]">{selectedStyle?.label} • {selectedStructure?.label}</div>
+                        <div className="font-bold text-white">{t('articlePreview')}</div>
+                        <div className="text-xs text-[#71717A]">{selectedStyle ? t(selectedStyle.labelKey) : ''} • {selectedStructure ? t(selectedStructure.labelKey) : ''}</div>
                     </div>
                 </div>
                 <div className="flex gap-3 text-xs text-[#71717A]">
@@ -267,21 +270,21 @@ const MobileGenArticle = () => {
 
     return (
         <MobileAIWizardLayout
-            title="Article Writer"
+            title={t('articleWriter')}
             subtitle={
-                step === 1 ? "Choose Topic & Style" :
-                    step === 2 ? "Define Structure" :
-                        step === 3 ? "Fine-tune Details" :
-                            "Your Article"
+                step === 1 ? t('chooseTopicStyle') :
+                    step === 2 ? t('defineStructure') :
+                        step === 3 ? t('fineTuneDetails') :
+                            t('yourStory')
             }
             currentStep={step}
             totalSteps={4}
             onBack={step > 1 ? () => setStep(step - 1) : undefined}
             onNext={step === 3 ? handleGenerate : step === 4 ? handleSave : () => setStep(step + 1)}
             isNextDisabled={step === 1 && !isStep1Valid}
-            nextLabel={step === 3 ? 'Generate Article' : step === 4 ? 'Save to Library' : 'Next'}
+            nextLabel={step === 3 ? t('generateArticle') : step === 4 ? t('saveToLibrary') : t('next')}
             loading={loading}
-            loadingMessage="Writing article..."
+            loadingMessage={t('writingArticle')}
         >
             {step === 1 && renderStep1()}
             {step === 2 && renderStep2()}

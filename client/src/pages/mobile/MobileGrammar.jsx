@@ -13,6 +13,7 @@ import {
     Loader2,
     AlertCircle
 } from 'lucide-react';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const LEVELS = ['A1', 'A2', 'B1'];
 
@@ -34,6 +35,7 @@ const CATEGORIES = {
 function MobileGrammar() {
     const navigate = useNavigate();
     const location = useLocation();
+    const { t } = useTranslation();
     const [selectedLevel, setSelectedLevel] = useState('A1');
     const [topics, setTopics] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -135,7 +137,7 @@ function MobileGrammar() {
                     >
                         <ChevronLeft size={22} color="#A1A1AA" />
                     </motion.button>
-                    <h1 className="text-xl font-black text-[#FAFAFA]">Grammar</h1>
+                    <h1 className="text-xl font-bold" style={{ color: '#FAFAFA' }}>{t('grammar')}</h1>
                     <motion.button
                         whileTap={{ scale: 0.9 }}
                         onClick={() => navigate('/m/grammar/generate')}
@@ -199,9 +201,9 @@ function MobileGrammar() {
                         <div className="w-16 h-16 rounded-full bg-[#1C1C1F] flex items-center justify-center mx-auto mb-4">
                             <BookOpen size={32} color="#71717A" />
                         </div>
-                        <h3 className="text-lg font-bold text-[#FAFAFA] mb-2">No topics found</h3>
-                        <p className="text-sm text-[#71717A] mb-6">
-                            {searchQuery ? 'Try a different search term' : `No grammar topics for ${selectedLevel} yet`}
+                        <h2 className="text-2xl font-bold mb-2" style={{ color: '#FAFAFA' }}>{t('grammarGuide')}</h2>
+                        <p className="text-sm opacity-80 mb-4">
+                            {t('grammarDesc')}
                         </p>
                         <motion.button
                             whileTap={{ scale: 0.95 }}

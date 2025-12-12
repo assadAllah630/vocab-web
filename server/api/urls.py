@@ -178,6 +178,9 @@ urlpatterns = [
     # Monitoring
     path('health/', health_check, name='health_check'),
     
+    # AI Gateway - Multi-Provider API Key Management
+    path('ai-gateway/', include('api.ai_gateway.urls')),
+    
     # Admin Panel API
     path('admin/', include('api.admin_urls')),
 ]

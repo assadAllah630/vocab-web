@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from '../hooks/useTranslation';
 
 /**
  * Animated icon wrapper with pulsing effect
@@ -131,5 +132,38 @@ export const RatingFaces = ({ rating, onRate, className = '' }) => {
         </div>
     );
 };
+
+// Sub-components for individual usage (e.g. Flashcards)
+const RatedButton = ({ onClick, className, emoji, labelKey, colorClass }) => {
+    // Import hook inside the component so valid hook call
+    const { t } = useTranslation();
+    return (
+        <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={onClick}
+            className={`w-full aspect-square rounded-2xl bg-[#27272A] flex flex-col items-center justify-center gap-2 border border-[#3F3F46] ${className}`}
+        >
+            <span className="text-4xl">{emoji}</span>
+            <span className={`text-xs font-bold ${colorClass}`}>{t(labelKey)}</span>
+        </motion.button>
+    );
+};
+
+RatingFaces.Sad = ({ onClick, className = '' }) => (
+    <RatedButton onClick={onClick} className={className} emoji="😞" labelKey="rateAgain" colorClass="text-[#EF4444]" />
+);
+
+RatingFaces.Worried = ({ onClick, className = '' }) => (
+    <RatedButton onClick={onClick} className={className} emoji="😐" labelKey="rateHard" colorClass="text-[#F59E0B]" />
+);
+
+RatingFaces.Happy = ({ onClick, className = '' }) => (
+    <RatedButton onClick={onClick} className={className} emoji="🙂" labelKey="rateGood" colorClass="text-[#3B82F6]" />
+);
+
+RatingFaces.Excited = ({ onClick, className = '' }) => (
+    <RatedButton onClick={onClick} className={className} emoji="🤩" labelKey="rateEasy" colorClass="text-[#22C55E]" />
+);
 
 export default AnimatedIcon;

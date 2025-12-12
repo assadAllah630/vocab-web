@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'drf_spectacular',  # API Documentation
     'api',
+    'api.ai_gateway.apps.AiGatewayConfig',  # Multi-Provider AI Gateway Module
 ]
 
 MIDDLEWARE = [
@@ -392,3 +393,45 @@ if SENTRY_DSN and not DEBUG:
         print("✅ Sentry monitoring enabled")
     except ImportError:
         print("⚠️ sentry-sdk not installed. Run: pip install sentry-sdk")
+
+# ==========================================
+# CELERY CONFIGURATION
+# ==========================================
+# Broker URL (using Redis or memory for local dev)
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'memory://')
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'cache+memory://')
+
+# Task settings
+CELERY_TASK_ALWAYS_EAGER = DEBUG and not os.environ.get('CELERY_BROKER_URL')  # Run tasks sync in dev
+CELERY_TASK_EAGER_PROPAGATES = True
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+
+# Beat schedule for AI Gateway v2.0 tasks
+from celery.schedules import crontab
+
+CELERY_BEAT_SCHEDULE = {
+    # Unblock expired model instances (every 30 seconds)
+    'ai-gateway-refresh-blocked': {
+        'task': 'ai_gateway.refresh_blocked_instances',
+        'schedule': 30.0,
+    },
+    # Reset minute quotas (every 60 seconds)
+    'ai-gateway-reset-minute-quotas': {
+        'task': 'ai_gateway.reset_minute_quotas',
+        'schedule': 60.0,
+    },
+    # Reset daily quotas (midnight UTC)
+    'ai-gateway-reset-daily-quotas': {
+        'task': 'ai_gateway.reset_daily_quotas',
+        'schedule': crontab(hour=0, minute=0),
+    },
+    # Cleanup old failure logs (3 AM UTC)
+    'ai-gateway-cleanup-failure-logs': {
+        'task': 'ai_gateway.cleanup_old_failure_logs',
+        'schedule': crontab(hour=3, minute=0),
+    },
+}
+

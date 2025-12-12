@@ -2,23 +2,27 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useExam } from '../../context/ExamContext';
+import { useTranslation } from '../../hooks/useTranslation';
 import { Clock, Play, X, AlertTriangle } from 'lucide-react';
 
 function MobileFloatingExamTimer() {
     const { activeExam, timeLeft, isExamActive, formatTime, clearExam } = useExam();
     const navigate = useNavigate();
     const location = useLocation();
+    const { t } = useTranslation();
 
     // Don't show on exam pages or if no active exam
     const isExamPage = location.pathname.includes('/m/exam');
     if (!activeExam || !isExamActive || isExamPage) return null;
 
-    const handleReturn = () => {
+    const handleReturn = (e) => {
+        e.stopPropagation();
         navigate('/m/exam/play');
     };
 
-    const handleClose = () => {
-        if (window.confirm('Are you sure you want to cancel this exam? All progress will be lost.')) {
+    const handleClose = (e) => {
+        e.stopPropagation();
+        if (window.confirm(t('cancelExamConfirm'))) {
             clearExam();
         }
     };
@@ -31,12 +35,13 @@ function MobileFloatingExamTimer() {
                 initial={{ opacity: 0, y: 100, scale: 0.9 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 100, scale: 0.9 }}
-                className="fixed bottom-24 left-5 right-5 z-40"
+                className="fixed bottom-24 left-5 right-5 z-[60]"
+                onClick={handleReturn}
             >
                 <motion.div
                     animate={isLowTime ? { scale: [1, 1.02, 1] } : {}}
                     transition={{ duration: 0.5, repeat: isLowTime ? Infinity : 0 }}
-                    className="rounded-2xl p-4 flex items-center gap-4"
+                    className="rounded-2xl p-4 flex items-center gap-4 cursor-pointer"
                     style={{
                         backgroundColor: isLowTime ? 'rgba(239, 68, 68, 0.95)' : 'rgba(99, 102, 241, 0.95)',
                         backdropFilter: 'blur(12px)',
@@ -62,7 +67,7 @@ function MobileFloatingExamTimer() {
                     {/* Info */}
                     <div className="flex-1">
                         <p className="text-xs font-bold text-white/80 uppercase tracking-wider">
-                            {isLowTime ? 'Time Running Out!' : 'Exam in Progress'}
+                            {isLowTime ? t('timeRunningOut') : t('examInProgress')}
                         </p>
                         <p className="text-xl font-mono font-bold text-white">
                             {formatTime(timeLeft)}

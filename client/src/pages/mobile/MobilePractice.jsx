@@ -10,53 +10,55 @@ import {
     Sparkles,
     ChevronRight
 } from 'lucide-react';
+import { useTranslation } from '../../hooks/useTranslation';
 
 function MobilePractice() {
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     const mainModes = [
         {
             id: 'flashcards',
-            title: 'Flashcards',
-            desc: 'Spaced repetition review',
+            title: t('flashcards'),
+            desc: t('review'),
             icon: Layers,
             action: () => navigate('/m/practice/flashcard?hlr=true')
         },
         {
             id: 'quiz',
-            title: 'AI Quiz',
-            desc: 'Personalized questions',
+            title: t('quiz'),
+            desc: t('exams'),
             icon: Brain,
             action: () => navigate('/m/exam')
         },
         {
             id: 'games',
-            title: 'Games',
-            desc: 'Learn while playing',
+            title: t('games'),
+            desc: t('playNow'),
             icon: Gamepad2,
             action: () => navigate('/m/games')
         },
         {
             id: 'grammar',
-            title: 'Grammar',
-            desc: 'Master the rules',
+            title: t('grammar'),
+            desc: t('generateLesson'),
             icon: BookOpen,
             action: () => navigate('/m/grammar')
         }
     ];
 
     const moreTools = [
-        { id: 'reader', title: 'Smart Reader', icon: FileText, action: () => navigate('/m/reader') },
+        { id: 'reader', title: t('reader'), icon: FileText, action: () => navigate('/m/reader') },
         { id: 'podcasts', title: 'Podcasts', icon: Headphones, action: () => navigate('/podcasts') },
-        { id: 'generator', title: 'AI Generator', icon: Sparkles, action: () => navigate('/m/ai') }
+        { id: 'generator', title: t('generate'), icon: Sparkles, action: () => navigate('/m/ai') }
     ];
 
     return (
         <div className="min-h-screen" style={{ backgroundColor: 'transparent' }}>
             {/* Header */}
             <div className="px-5 pt-14 pb-6">
-                <h1 className="text-xl font-semibold" style={{ color: '#FAFAFA' }}>Practice</h1>
-                <p className="text-sm mt-1" style={{ color: '#71717A' }}>Choose your learning mode</p>
+                <h1 className="text-xl font-semibold" style={{ color: '#FAFAFA' }}>{t('practice')}</h1>
+                <p className="text-sm mt-1" style={{ color: '#71717A' }}>{t('selectGame')}</p>
             </div>
 
             {/* Main Modes */}
@@ -87,7 +89,7 @@ function MobilePractice() {
 
             {/* More Tools */}
             <div className="px-5">
-                <h2 className="text-sm font-medium mb-3" style={{ color: '#A1A1AA' }}>More Tools</h2>
+                <h2 className="text-sm font-medium mb-3" style={{ color: '#A1A1AA' }}>{t('more')}</h2>
                 <div
                     className="rounded-xl overflow-hidden"
                     style={{ backgroundColor: '#141416', border: '1px solid #27272A' }}

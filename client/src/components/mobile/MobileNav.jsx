@@ -12,41 +12,44 @@ import {
     Sparkles,
     User
 } from 'lucide-react';
-
-const tabs = [
-    {
-        id: 'home',
-        path: '/m',
-        label: 'Home',
-        icon: House,
-        activeIcon: Home
-    },
-    {
-        id: 'words',
-        path: '/m/words',
-        label: 'Words',
-        icon: BookText,
-        activeIcon: BookOpen
-    },
-    {
-        id: 'practice',
-        path: '/m/practice',
-        label: 'Learn',
-        icon: GraduationCap,
-        activeIcon: Sparkles
-    },
-    {
-        id: 'me',
-        path: '/m/me',
-        label: 'Profile',
-        icon: UserCircle,
-        activeIcon: User
-    }
-];
+import { useTranslation } from '../../hooks/useTranslation';
 
 function MobileNav() {
     const location = useLocation();
     const navigate = useNavigate();
+    const { t } = useTranslation();
+
+    // Tabs with translated labels
+    const tabs = [
+        {
+            id: 'home',
+            path: '/m',
+            label: t('home'),
+            icon: House,
+            activeIcon: Home
+        },
+        {
+            id: 'words',
+            path: '/m/words',
+            label: t('words'),
+            icon: BookText,
+            activeIcon: BookOpen
+        },
+        {
+            id: 'practice',
+            path: '/m/practice',
+            label: t('learn'),
+            icon: GraduationCap,
+            activeIcon: Sparkles
+        },
+        {
+            id: 'me',
+            path: '/m/me',
+            label: t('profile'),
+            icon: UserCircle,
+            activeIcon: User
+        }
+    ];
 
     const getActiveTab = () => {
         const path = location.pathname;

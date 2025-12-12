@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../api';
 import { useLanguage } from '../context/LanguageContext';
+import { getTranslationStyle } from '../utils/bidi';
 import {
     SpeakerWaveIcon,
     TrashIcon,
@@ -17,7 +18,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 function VocabList() {
-    const { currentLanguage } = useLanguage();
+    const { currentLanguage, nativeLanguage, isNativeRTL } = useLanguage();
     const [vocab, setVocab] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -463,7 +464,15 @@ function VocabList() {
 
                                             <div className="mb-4">
                                                 <h3 className="text-2xl font-bold text-slate-900 mb-1">{word.word}</h3>
-                                                <p className="text-lg text-slate-600 font-medium">{word.translation}</p>
+                                                <p
+                                                    className="text-lg font-medium"
+                                                    style={{
+                                                        color: '#475569',
+                                                        ...getTranslationStyle(nativeLanguage),
+                                                    }}
+                                                >
+                                                    {word.translation}
+                                                </p>
                                             </div>
 
                                             {word.example && (

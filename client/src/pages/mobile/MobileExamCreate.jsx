@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../api';
 import { useExam } from '../../context/ExamContext';
+import { useTranslation } from '../../hooks/useTranslation';
 import {
     ChevronLeft,
     Sparkles,
@@ -22,24 +23,25 @@ import {
 
 const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
-const QUESTION_TYPES = [
-    { id: 'cloze', label: 'Fill in Blanks', icon: PenTool },
-    { id: 'multiple_choice', label: 'Multiple Choice', icon: ListChecks },
-    { id: 'matching', label: 'Matching', icon: GraduationCap },
-    { id: 'reading', label: 'Reading', icon: BookOpen },
-];
-
-const STEPS = [
-    { id: 'analyzer', label: 'Analyzing Topic', icon: Search },
-    { id: 'planner', label: 'Planning Blueprint', icon: ClipboardList },
-    { id: 'generator', label: 'Drafting Questions', icon: PenTool },
-    { id: 'critic', label: 'Quality Review', icon: Star },
-    { id: 'refiner', label: 'Refining Exam', icon: Zap },
-];
-
 function MobileExamCreate() {
     const navigate = useNavigate();
     const { startExam } = useExam();
+    const { t } = useTranslation();
+
+    const QUESTION_TYPES = [
+        { id: 'cloze', label: t('typeCloze'), icon: PenTool },
+        { id: 'multiple_choice', label: t('typeMultipleChoice'), icon: ListChecks },
+        { id: 'matching', label: t('typeMatching'), icon: GraduationCap },
+        { id: 'reading', label: t('typeReading'), icon: BookOpen },
+    ];
+
+    const STEPS = [
+        { id: 'analyzer', label: t('stepAnalyzing'), icon: Search },
+        { id: 'planner', label: t('stepPlanning'), icon: ClipboardList },
+        { id: 'generator', label: t('stepDrafting'), icon: PenTool },
+        { id: 'critic', label: t('stepReviewing'), icon: Star },
+        { id: 'refiner', label: t('stepRefining'), icon: Zap },
+    ];
 
     // Form state
     const [topic, setTopic] = useState('');
@@ -76,11 +78,11 @@ function MobileExamCreate() {
 
     const handleGenerate = async () => {
         if (!topic.trim()) {
-            setError('Please enter a topic');
+            setError(t('enterTopicError'));
             return;
         }
         if (selectedTypes.length === 0) {
-            setError('Please select at least one question type');
+            setError(t('selectTypeError'));
             return;
         }
 
@@ -118,7 +120,7 @@ function MobileExamCreate() {
         } catch (err) {
             clearInterval(stepInterval);
             console.error("Generation failed:", err);
-            setError(err.response?.data?.error || "Failed to generate exam. Please try again.");
+            setError(err.response?.data?.error || t('error'));
         } finally {
             setLoading(false);
         }
@@ -137,7 +139,7 @@ function MobileExamCreate() {
                     >
                         <ChevronLeft size={22} color="#A1A1AA" />
                     </motion.button>
-                    <h1 className="text-xl font-bold" style={{ color: '#FAFAFA' }}>Create Exam</h1>
+                    <h1 className="text-xl font-bold" style={{ color: '#FAFAFA' }}>{t('createExam')}</h1>
                     <div className="w-10" />
                 </div>
             </div>
@@ -166,13 +168,13 @@ function MobileExamCreate() {
                 <div className="space-y-2">
                     <label className="text-sm font-bold flex items-center gap-2" style={{ color: '#A1A1AA' }}>
                         <Brain size={16} style={{ color: '#6366F1' }} />
-                        TOPIC
+                        {t('topicLabel')}
                     </label>
                     <input
                         type="text"
                         value={topic}
                         onChange={e => setTopic(e.target.value)}
-                        placeholder="e.g., German Travel, Business English"
+                        placeholder={t('topicPlaceholder')}
                         className="w-full px-4 py-4 rounded-xl text-base outline-none transition-all"
                         style={{
                             backgroundColor: '#141416',
@@ -187,7 +189,7 @@ function MobileExamCreate() {
                 <div className="space-y-2">
                     <label className="text-sm font-bold flex items-center gap-2" style={{ color: '#A1A1AA' }}>
                         <GraduationCap size={16} style={{ color: '#6366F1' }} />
-                        LEVEL
+                        {t('levelLabel')}
                     </label>
                     <div className="grid grid-cols-6 gap-2">
                         {LEVELS.map(l => (
@@ -213,7 +215,7 @@ function MobileExamCreate() {
                 <div className="space-y-2">
                     <label className="text-sm font-bold flex items-center gap-2" style={{ color: '#A1A1AA' }}>
                         <ListChecks size={16} style={{ color: '#6366F1' }} />
-                        QUESTION TYPES
+                        {t('questionTypesLabel')}
                     </label>
                     <div className="grid grid-cols-2 gap-3">
                         {QUESTION_TYPES.map(type => {
@@ -264,7 +266,7 @@ function MobileExamCreate() {
                 >
                     <Sparkles size={16} color="#6366F1" />
                     <span className="text-sm font-medium" style={{ color: '#A1A1AA' }}>
-                        {showAdvanced ? 'Hide' : 'Show'} Advanced Options
+                        {showAdvanced ? t('hideAdvanced') : t('showAdvanced')}
                     </span>
                 </motion.button>
 
@@ -279,12 +281,12 @@ function MobileExamCreate() {
                         >
                             <div className="space-y-2">
                                 <label className="text-xs font-bold" style={{ color: '#71717A' }}>
-                                    VOCABULARY FOCUS
+                                    {t('vocabFocusLabel')}
                                 </label>
                                 <textarea
                                     value={vocabFocus}
                                     onChange={e => setVocabFocus(e.target.value)}
-                                    placeholder="List specific words to include..."
+                                    placeholder={t('vocabFocusPlaceholder')}
                                     className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none h-20"
                                     style={{
                                         backgroundColor: '#141416',
@@ -297,12 +299,12 @@ function MobileExamCreate() {
 
                             <div className="space-y-2">
                                 <label className="text-xs font-bold" style={{ color: '#71717A' }}>
-                                    GRAMMAR FOCUS
+                                    {t('grammarFocusLabel')}
                                 </label>
                                 <textarea
                                     value={grammarFocus}
                                     onChange={e => setGrammarFocus(e.target.value)}
-                                    placeholder="List specific grammar rules to test..."
+                                    placeholder={t('grammarFocusPlaceholder')}
                                     className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none h-20"
                                     style={{
                                         backgroundColor: '#141416',
@@ -315,12 +317,12 @@ function MobileExamCreate() {
 
                             <div className="space-y-2">
                                 <label className="text-xs font-bold" style={{ color: '#71717A' }}>
-                                    ADDITIONAL NOTES
+                                    {t('notesLabel')}
                                 </label>
                                 <textarea
                                     value={notes}
                                     onChange={e => setNotes(e.target.value)}
-                                    placeholder="Any extra instructions for the AI..."
+                                    placeholder={t('notesPlaceholder')}
                                     className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none h-20"
                                     style={{
                                         backgroundColor: '#141416',
@@ -355,7 +357,7 @@ function MobileExamCreate() {
                                     <Loader2 size={20} color="#6366F1" />
                                 </motion.div>
                                 <span className="text-sm font-bold" style={{ color: '#FAFAFA' }}>
-                                    AI Agent Working...
+                                    {t('aiWorking')}
                                 </span>
                             </div>
 
@@ -403,7 +405,7 @@ function MobileExamCreate() {
                                                     className="text-xs"
                                                     style={{ color: '#6366F1' }}
                                                 >
-                                                    Processing...
+                                                    {t('processing')}
                                                 </motion.span>
                                             )}
                                         </motion.div>
@@ -429,12 +431,12 @@ function MobileExamCreate() {
                     {loading ? (
                         <>
                             <Loader2 size={20} className="animate-spin" />
-                            Generating...
+                            {t('generate')}...
                         </>
                     ) : (
                         <>
                             <Sparkles size={20} />
-                            Generate Exam
+                            {t('generateExam')}
                         </>
                     )}
                 </motion.button>

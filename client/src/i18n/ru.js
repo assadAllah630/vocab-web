@@ -1,0 +1,67 @@
+// Russian translations
+export const ru = {
+    // Navigation
+    home: 'Главная',
+    learn: 'Учить',
+    words: 'Слова',
+    profile: 'Профиль',
+
+    // Home page
+    goodMorning: 'Доброе утро',
+    goodAfternoon: 'Добрый день',
+    goodEvening: 'Добрый вечер',
+    dayStreak: 'дней подряд',
+    startLearning: 'Начни учиться сегодня',
+    today: 'Сегодня',
+    toReview: 'На повторение',
+    wordsCount: 'Слов',
+    dailyGoal: 'Дневная цель',
+    moreToComplete: 'ещё до цели',
+    quickActions: 'Быстрые действия',
+    games: 'Игры',
+    quiz: 'Тест',
+    review: 'Повторить',
+    add: 'Добавить',
+    everyWord: 'Каждое слово открывает новую дверь',
+
+    // Profile page
+    member: 'Участник',
+    level: 'УРОВЕНЬ',
+    keepLearning: 'Продолжай учиться',
+    trackProgress: 'Следи за прогрессом каждый день',
+    account: 'АККАУНТ',
+    editProfile: 'Редактировать профиль',
+    updatePersonalInfo: 'Обновить личные данные',
+    language: 'Язык',
+    learningPreferences: 'Настройки обучения',
+    aiGateway: 'AI Шлюз',
+    multiProvider: 'Управление AI провайдерами',
+    apiKeys: 'API Ключи',
+    serviceIntegrations: 'Интеграции сервисов',
+    security: 'Безопасность',
+    passwordSettings: 'Настройки пароля',
+    about: 'О приложении',
+    appVersion: 'Версия приложения',
+    help: 'Помощь',
+    faqSupport: 'FAQ и поддержка',
+    logout: 'Выйти',
+
+    // Language settings
+    languageSettings: 'Настройки языка',
+    iSpeak: 'Я говорю на',
+    imLearning: 'Я изучаю',
+    selectNativeLanguage: 'Выбрать родной язык',
+    selectTargetLanguage: 'Выбрать изучаемый язык',
+    save: 'Сохранить',
+    saving: 'Сохранение...',
+    saved: 'Сохранено!',
+    languageInfo: 'Выберите родной язык и язык для изучения. Это влияет на AI переводы и словарь.',
+
+    // Common
+    back: 'Назад',
+    cancel: 'Отмена',
+    confirm: 'Подтвердить',
+    loading: 'Загрузка...',
+    error: 'Ошибка',
+    success: 'Успех',
+};

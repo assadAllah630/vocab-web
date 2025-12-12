@@ -5,6 +5,7 @@ import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import mermaid from 'mermaid';
+import { containsRTL } from '../utils/bidi';
 import './GrammarViewer.css';
 
 const MermaidDiagram = ({ children }) => {
@@ -86,6 +87,41 @@ const GrammarViewer = ({ topic }) => {
                     remarkPlugins={[remarkGfm]}
                     rehypePlugins={[rehypeRaw]}
                     components={{
+                        // BiDi-aware table cells
+                        td: ({ children, ...props }) => {
+                            const text = typeof children === 'string' ? children :
+                                React.Children.toArray(children).join('');
+                            const isRTL = containsRTL(text);
+                            return (
+                                <td
+                                    dir={isRTL ? 'rtl' : 'ltr'}
+                                    style={{
+                                        textAlign: isRTL ? 'right' : 'left',
+                                        unicodeBidi: 'isolate',
+                                        fontFamily: isRTL ? "'Cairo', 'Noto Sans Arabic', sans-serif" : 'inherit',
+                                    }}
+                                    {...props}
+                                >
+                                    {children}
+                                </td>
+                            );
+                        },
+                        th: ({ children, ...props }) => {
+                            const text = typeof children === 'string' ? children : '';
+                            const isRTL = containsRTL(text);
+                            return (
+                                <th
+                                    dir={isRTL ? 'rtl' : 'ltr'}
+                                    style={{
+                                        textAlign: isRTL ? 'right' : 'left',
+                                        unicodeBidi: 'isolate',
+                                    }}
+                                    {...props}
+                                >
+                                    {children}
+                                </th>
+                            );
+                        },
                         code({ node, inline, className, children, ...props }) {
                             const match = /language-(\w+)/.exec(className || '')
                             const isMermaid = match && match[1].toLowerCase() === 'mermaid';

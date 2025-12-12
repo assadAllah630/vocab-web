@@ -1,0 +1,67 @@
+// German translations
+export const de = {
+    // Navigation
+    home: 'Startseite',
+    learn: 'Lernen',
+    words: 'Wörter',
+    profile: 'Profil',
+
+    // Home page
+    goodMorning: 'Guten Morgen',
+    goodAfternoon: 'Guten Tag',
+    goodEvening: 'Guten Abend',
+    dayStreak: 'Tage Serie',
+    startLearning: 'Beginne deine Lernreise heute',
+    today: 'Heute',
+    toReview: 'Zu wiederholen',
+    wordsCount: 'Wörter',
+    dailyGoal: 'Tagesziel',
+    moreToComplete: 'mehr um dein Ziel zu erreichen',
+    quickActions: 'Schnellaktionen',
+    games: 'Spiele',
+    quiz: 'Quiz',
+    review: 'Wiederholen',
+    add: 'Hinzufügen',
+    everyWord: 'Jedes Wort öffnet eine neue Tür',
+
+    // Profile page
+    member: 'Mitglied',
+    level: 'STUFE',
+    keepLearning: 'Weiter lernen',
+    trackProgress: 'Verfolge deinen Fortschritt täglich',
+    account: 'KONTO',
+    editProfile: 'Profil bearbeiten',
+    updatePersonalInfo: 'Persönliche Daten aktualisieren',
+    language: 'Sprache',
+    learningPreferences: 'Lernpräferenzen',
+    aiGateway: 'KI-Gateway',
+    multiProvider: 'Multi-Provider KI-Verwaltung',
+    apiKeys: 'API-Schlüssel',
+    serviceIntegrations: 'KI- und Dienstintegrationen',
+    security: 'Sicherheit',
+    passwordSettings: 'Passwort-Einstellungen',
+    about: 'Über',
+    appVersion: 'App-Version und Info',
+    help: 'Hilfe',
+    faqSupport: 'FAQ & Support',
+    logout: 'Abmelden',
+
+    // Language settings
+    languageSettings: 'Spracheinstellungen',
+    iSpeak: 'Ich spreche',
+    imLearning: 'Ich lerne',
+    selectNativeLanguage: 'Muttersprache wählen',
+    selectTargetLanguage: 'Zielsprache wählen',
+    save: 'Speichern',
+    saving: 'Speichern...',
+    saved: 'Gespeichert!',
+    languageInfo: 'Wähle deine Muttersprache und die Sprache, die du lernen möchtest. Dies beeinflusst KI-Übersetzungen und Vokabular.',
+
+    // Common
+    back: 'Zurück',
+    cancel: 'Abbrechen',
+    confirm: 'Bestätigen',
+    loading: 'Laden...',
+    error: 'Fehler',
+    success: 'Erfolg',
+};

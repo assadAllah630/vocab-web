@@ -37,15 +37,19 @@ class ContextEngineer:
         return f"""
         Translate the following word or phrase to {self.native_lang} (or from {self.native_lang} to {self.target_lang} if it's already {self.native_lang}).
         Provide the translation, type (noun/verb/adjective/article/pronoun/numeral/adverb/preposition/conjunction/interjection), a simple example sentence in {self.target_lang}, synonyms, antonyms, and related concepts.
-        Return ONLY valid JSON in this format: 
+        Return ONLY valid JSON.
+        Do NOT wrap in markdown code blocks.
+        Use double quotes for all keys and string values.
+        
+        Example format: 
         {{
-            'translation': '...', 
-            'type': '...', 
-            'example': '...',
-            'synonyms': ['syn1', 'syn2', 'syn3'],
-            'antonyms': ['ant1', 'ant2', 'ant3'],
-            'related_concepts': ['rel1', 'rel2', 'rel3']
-        }}.
+            "translation": "...", 
+            "type": "...", 
+            "example": "...",
+            "synonyms": ["syn1", "syn2", "syn3"],
+            "antonyms": ["ant1", "ant2", "ant3"],
+            "related_concepts": ["rel1", "rel2", "rel3"]
+        }}
         Word: {text}
         """
 

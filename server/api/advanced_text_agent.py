@@ -6,24 +6,48 @@ AI-powered educational content generation for language learners
 import json
 import re
 import logging
-from typing import Dict, List, Any, Optional
-from .gemini_helper import get_model
+from typing import Dict, List, Any, Optional, Union
+from django.contrib.auth.models import User
 from .character_consistency_enforcer import CharacterConsistencyEnforcer
+from .language_service import LanguageService
 
 logger = logging.getLogger(__name__)
 
 class AdvancedTextAgent:
     """AI agent for generating educational content (stories, articles, dialogues)"""
     
-    def __init__(self, api_key: str):
-        """Initialize agent with Gemini API key and automatic model fallback"""
-        self.model, self.model_name = get_model(api_key)
-        logger.info(f"[AdvancedTextAgent] Using model: {self.model_name}")
+    def __init__(self, api_key_or_user: Union[str, User], native_language: str = 'en', use_gateway: bool = True):
+        """
+        Initialize agent.
+        
+        Args:
+            api_key_or_user: Either a Gemini API key string OR a Django User object
+            native_language: User's native language code (e.g., 'ar', 'en') for translations
+            use_gateway: If True and User provided, use AI Gateway with multi-key fallback
+        """
+        self.user = None
+        self.api_key = None
+        self.use_gateway = use_gateway
+        self.native_language = native_language
+        self.native_lang_name = LanguageService.get_name(native_language)
+        
+        print(f"DEBUG: AdvancedTextAgent init. Input: {api_key_or_user}, Type: {type(api_key_or_user)}, Native: {native_language}")
+        if not isinstance(api_key_or_user, str) and api_key_or_user is not None:
+            self.user = api_key_or_user
+            print("DEBUG: Using AI Gateway Mode")
+            logger.info(f"[AdvancedTextAgent] Using AI Gateway. Native lang: {self.native_lang_name}")
+        else:
+            # Legacy mode: direct API key
+            self.api_key = api_key_or_user
+            from .gemini_helper import get_model
+            self.model, self.model_name = get_model(self.api_key)
+            logger.info(f"[AdvancedTextAgent] Legacy mode with model: {self.model_name}")
+        
         self.generation_config = {
-            'temperature': 0.8,  # Higher for more creative content
+            'temperature': 0.8,
             'top_p': 0.95,
             'top_k': 40,
-            'max_output_tokens': 8192, # Increased for longer responses with image prompts
+            'max_output_tokens': 8192,
         }
         self.consistency_enforcer = CharacterConsistencyEnforcer()
     
@@ -207,7 +231,7 @@ CRITICAL: Output ONLY valid JSON in this exact format:
       "event_number": 1,
       "title": "Event title with emoji 🎒",
       "content": "Event text here. Use **vocabulary** for important words.",
-      "translation": "English translation of this event",
+      "translation": "{self.native_lang_name} translation of this event",
       "vocabulary_in_event": ["word1", "word2"],
       "grammar_in_event": ["grammar_point1"]{', "image_prompt": {"positive_prompt": "...", "negative_prompt": "...", "style": "...", "aspect_ratio": "16:9"}' if generate_images else ''}
     }}
@@ -288,7 +312,7 @@ CRITICAL: Output ONLY valid JSON in this exact format:
       "paragraph_number": 1,
       "heading": "Introduction",
       "content": "Paragraph text with **vocabulary** highlighted. Use markdown formatting.",
-      "translation": "English translation of this paragraph",
+      "translation": "{self.native_lang_name} translation of this paragraph",
       "vocabulary_in_paragraph": ["word1", "word2"],
       "grammar_in_paragraph": ["grammar1"]
     }}
@@ -372,7 +396,7 @@ CRITICAL: Output ONLY valid JSON in this exact format:
       "message_number": 1,
       "speaker": "Anna",
       "text": "Message with **vocabulary** highlighted",
-      "translation": "English translation of the message",
+      "translation": "{self.native_lang_name} translation of the message",
       "vocabulary_in_message": ["word1"],
       "grammar_in_message": ["grammar1"]
     }}
@@ -392,32 +416,50 @@ IMPORTANT:
     # ========== Helper Methods ==========
     
     def _call_gemini(self, prompt: str) -> str:
-        """Call Gemini API with prompt"""
+        """Call AI with prompt - uses Gateway if user set, else direct Gemini"""
         try:
-            response = self.model.generate_content(
-                prompt,
-                generation_config=self.generation_config
-            )
-            return response.text
+            print(f"DEBUG: _call_gemini. self.user={self.user}")
+            if self.user is not None:
+                # Use AI Gateway with multi-key, multi-provider fallback
+                print("DEBUG: Calling unified_ai.generate_ai_content")
+                from .unified_ai import generate_ai_content
+                response = generate_ai_content(
+                    self.user, 
+                    prompt, 
+                    max_tokens=self.generation_config.get('max_output_tokens', 8192),
+                    temperature=self.generation_config.get('temperature', 0.8)
+                )
+                return response.text
+            else:
+                # Legacy: direct Gemini SDK call
+                response = self.model.generate_content(
+                    prompt,
+                    generation_config=self.generation_config
+                )
+                return response.text
         except Exception as e:
-            raise Exception(f"Gemini API error: {str(e)}")
+            raise Exception(f"AI generation error: {str(e)}")
     
     def _parse_json_response(self, response: str) -> Dict[str, Any]:
-        """Parse JSON from Gemini response, handling markdown code blocks"""
-        # Remove markdown code blocks if present
-        response = response.strip()
-        if response.startswith('```'):
-            # Extract JSON from code block
-            lines = response.split('\n')
-            # Remove first line (```json or ```)
-            lines = lines[1:]
-            # Remove last line (```)
-            if lines[-1].strip() == '```':
-                lines = lines[:-1]
-            response = '\n'.join(lines)
-        
+        """Parse JSON from Gemini response, handling markdown code blocks and extra text"""
         try:
-            return json.loads(response)
+            # 1. Try to find the JSON object boundaries
+            start_idx = response.find('{')
+            end_idx = response.rfind('}')
+            
+            if start_idx != -1 and end_idx != -1:
+                json_str = response[start_idx:end_idx+1]
+                return json.loads(json_str)
+            else:
+                # Fallback: maybe it's just raw but dirty
+                return json.loads(response)
+                
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON Parse Error: {e} | Content snippet: {response[:200]}")
+            # Final desperate attempt: aggressive cleanup
+            clean_str = re.sub(r'^[^{]*', '', response) # Remove everything before first {
+            clean_str = re.sub(r'[^}]*$', '', clean_str) # Remove everything after last }
+            return json.loads(clean_str)
         except json.JSONDecodeError as e:
             # Try to extract JSON if there's extra text
             json_match = re.search(r'\{.*\}', response, re.DOTALL)

@@ -11,30 +11,32 @@ import MobileAIWizardLayout from '../../components/mobile/MobileAIWizardLayout';
 import MobileDialogueDisplay from '../../components/mobile/MobileDialogueDisplay';
 import { ToneIcons, ScenarioIcons } from '../../components/AnimatedAIIcons';
 import api from '../../api';
+import { useTranslation } from '../../hooks/useTranslation';
 
 // Expanded Tones with colors (animated icons from AnimatedAIIcons)
+// Expanded Tones with colors
 const TONES = [
-    { id: 'Neutral', label: 'Neutral', color: 'from-slate-400 to-slate-500' },
-    { id: 'Formal', label: 'Formal', color: 'from-blue-500 to-indigo-600' },
-    { id: 'Casual', label: 'Casual', color: 'from-green-400 to-emerald-500' },
-    { id: 'Humorous', label: 'Humorous', color: 'from-yellow-400 to-orange-400' },
-    { id: 'Argumentative', label: 'Debate', color: 'from-red-500 to-rose-600' },
-    { id: 'Romantic', label: 'Romantic', color: 'from-pink-400 to-rose-400' },
-    { id: 'Professional', label: 'Business', color: 'from-gray-500 to-zinc-600' },
-    { id: 'Supportive', label: 'Supportive', color: 'from-teal-400 to-cyan-500' },
-    { id: 'Mysterious', label: 'Mysterious', color: 'from-purple-500 to-violet-600' },
+    { id: 'Neutral', labelKey: 'toneNeutral', color: 'from-slate-400 to-slate-500' },
+    { id: 'Formal', labelKey: 'toneFormal', color: 'from-blue-500 to-indigo-600' },
+    { id: 'Casual', labelKey: 'toneCasual', color: 'from-green-400 to-emerald-500' },
+    { id: 'Humorous', labelKey: 'toneHumorous', color: 'from-yellow-400 to-orange-400' },
+    { id: 'Argumentative', labelKey: 'toneArgumentative', color: 'from-red-500 to-rose-600' },
+    { id: 'Romantic', labelKey: 'toneRomantic', color: 'from-pink-400 to-rose-400' },
+    { id: 'Professional', labelKey: 'toneProfessional', color: 'from-gray-500 to-zinc-600' },
+    { id: 'Supportive', labelKey: 'toneSupportive', color: 'from-teal-400 to-cyan-500' },
+    { id: 'Mysterious', labelKey: 'toneMysterious', color: 'from-purple-500 to-violet-600' },
 ];
 
-// Scenario Presets (animated icons from AnimatedAIIcons)
+// Scenario Presets
 const SCENARIO_PRESETS = [
-    { id: 'cafe', label: 'At a Café', desc: 'Ordering drinks and chatting' },
-    { id: 'shopping', label: 'Shopping', desc: 'Buying clothes or groceries' },
-    { id: 'airport', label: 'At the Airport', desc: 'Check-in and boarding' },
-    { id: 'doctor', label: 'Doctor Visit', desc: 'Health-related conversation' },
-    { id: 'interview', label: 'Job Interview', desc: 'Professional discussion' },
-    { id: 'restaurant', label: 'Restaurant', desc: 'Ordering food and service' },
-    { id: 'hotel', label: 'Hotel Check-in', desc: 'Booking and room requests' },
-    { id: 'phone', label: 'Phone Call', desc: 'Customer service or inquiry' },
+    { id: 'cafe', labelKey: 'scenarioCafe', desc: 'Ordering drinks and chatting' },
+    { id: 'shopping', labelKey: 'scenarioShopping', desc: 'Buying clothes or groceries' },
+    { id: 'airport', labelKey: 'scenarioAirport', desc: 'Check-in and boarding' },
+    { id: 'doctor', labelKey: 'scenarioDoctor', desc: 'Health-related conversation' },
+    { id: 'interview', labelKey: 'scenarioInterview', desc: 'Professional discussion' },
+    { id: 'restaurant', labelKey: 'scenarioRestaurant', desc: 'Ordering food and service' },
+    { id: 'hotel', labelKey: 'scenarioHotel', desc: 'Booking and room requests' },
+    { id: 'phone', labelKey: 'scenarioPhone', desc: 'Customer service or inquiry' },
 ];
 
 // Get animated icon for tone
@@ -51,6 +53,7 @@ const getScenarioIcon = (scenarioId) => {
 
 const MobileGenDialogue = () => {
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [generatedContent, setGeneratedContent] = useState(null);
@@ -133,7 +136,7 @@ const MobileGenDialogue = () => {
     const renderStep1 = () => (
         <div className="space-y-6">
             <div>
-                <label className="text-[#A1A1AA] text-sm font-bold uppercase mb-3 block">Quick Scenarios</label>
+                <label className="text-[#A1A1AA] text-sm font-bold uppercase mb-3 block">{t('quickScenarios')}</label>
                 <div className="grid grid-cols-4 gap-2 mb-4">
                     {SCENARIO_PRESETS.map(preset => (
                         <motion.button
@@ -143,37 +146,37 @@ const MobileGenDialogue = () => {
                             className="p-2 rounded-xl bg-[#18181B] border border-[#27272A] text-center hover:border-[#6366F1] transition-colors flex flex-col items-center"
                         >
                             <div className="mb-1">{getScenarioIcon(preset.id)}</div>
-                            <span className="text-[10px] text-[#A1A1AA] font-medium">{preset.label}</span>
+                            <span className="text-[10px] text-[#A1A1AA] font-medium">{t(preset.labelKey)}</span>
                         </motion.button>
                     ))}
                 </div>
                 <textarea
                     value={formData.scenario}
                     onChange={e => setFormData({ ...formData, scenario: e.target.value })}
-                    placeholder="Or describe your own scenario..."
+                    placeholder={t('scenarioPlaceholder')}
                     className="w-full bg-[#18181B] border border-[#27272A] rounded-xl p-4 text-white outline-none focus:border-[#6366F1] h-24 resize-none placeholder:text-[#52525B]"
                 />
             </div>
 
             <div>
-                <label className="text-[#A1A1AA] text-sm font-bold uppercase mb-3 block">Conversation Tone</label>
+                <label className="text-[#A1A1AA] text-sm font-bold uppercase mb-3 block">{t('conversationTone')}</label>
                 <div className="grid grid-cols-3 gap-2">
-                    {TONES.map(t => (
+                    {TONES.map(toneItem => (
                         <motion.button
-                            key={t.id}
+                            key={toneItem.id}
                             whileTap={{ scale: 0.95 }}
-                            onClick={() => setFormData({ ...formData, tone: t.id })}
-                            className={`p-3 rounded-xl border text-center transition-all relative overflow-hidden ${formData.tone === t.id
-                                    ? 'border-white/30 text-white'
-                                    : 'bg-[#18181B] border-[#27272A] text-[#A1A1AA]'
+                            onClick={() => setFormData({ ...formData, tone: toneItem.id })}
+                            className={`p-3 rounded-xl border text-center transition-all relative overflow-hidden ${formData.tone === toneItem.id
+                                ? 'border-white/30 text-white'
+                                : 'bg-[#18181B] border-[#27272A] text-[#A1A1AA]'
                                 }`}
                         >
-                            {formData.tone === t.id && (
-                                <div className={`absolute inset-0 bg-gradient-to-br ${t.color} opacity-80`} />
+                            {formData.tone === toneItem.id && (
+                                <div className={`absolute inset-0 bg-gradient-to-br ${toneItem.color} opacity-80`} />
                             )}
                             <div className="relative z-10 flex flex-col items-center">
-                                <div className="mb-1">{getToneIcon(t.id)}</div>
-                                <span className="text-xs font-bold">{t.label}</span>
+                                <div className="mb-1">{getToneIcon(toneItem.id)}</div>
+                                <span className="text-xs font-bold">{t(toneItem.labelKey)}</span>
                             </div>
                         </motion.button>
                     ))}
@@ -185,7 +188,7 @@ const MobileGenDialogue = () => {
     // Step 2: Speakers
     const renderStep2 = () => (
         <div className="space-y-6">
-            <p className="text-[#71717A] text-sm">Add speakers for your conversation. Leave empty for auto-generated characters.</p>
+            <p className="text-[#71717A] text-sm">{t('addSpeakerDesc')}</p>
 
             {formData.speakers.length > 0 && (
                 <div className="space-y-3">
@@ -220,13 +223,13 @@ const MobileGenDialogue = () => {
                     className="bg-[#18181B] p-4 rounded-xl border border-[#6366F1] space-y-4"
                 >
                     <input
-                        placeholder="Name (e.g. Marco)"
+                        placeholder={t('characterName')}
                         value={speakerInput.name}
                         onChange={e => setSpeakerInput({ ...speakerInput, name: e.target.value })}
                         className="w-full bg-[#09090B] border border-[#27272A] rounded-lg p-3 text-white outline-none focus:border-[#6366F1]"
                     />
                     <input
-                        placeholder="Personality (e.g. Friendly, Talkative)"
+                        placeholder={t('personality')}
                         value={speakerInput.personality}
                         onChange={e => setSpeakerInput({ ...speakerInput, personality: e.target.value })}
                         className="w-full bg-[#09090B] border border-[#27272A] rounded-lg p-3 text-white outline-none focus:border-[#6366F1]"
@@ -236,7 +239,7 @@ const MobileGenDialogue = () => {
                             onClick={() => setShowSpeakerForm(false)}
                             className="flex-1 py-3 rounded-lg bg-[#27272A] text-white font-bold"
                         >
-                            Cancel
+                            {t('cancel')}
                         </button>
                         <button
                             onClick={handleAddSpeaker}
@@ -253,7 +256,7 @@ const MobileGenDialogue = () => {
                     className="w-full py-4 rounded-xl border-2 border-dashed border-[#27272A] text-[#A1A1AA] font-bold flex items-center justify-center gap-2 hover:border-[#6366F1] hover:text-[#6366F1] transition-colors active:scale-[0.98]"
                 >
                     <UserGroupIcon className="w-5 h-5" />
-                    Add Speaker
+                    {t('addSpeaker')}
                 </button>
             )}
         </div>
@@ -270,8 +273,8 @@ const MobileGenDialogue = () => {
                             key={l}
                             onClick={() => setFormData({ ...formData, level: l })}
                             className={`flex-1 py-3 rounded-xl font-bold transition-all ${formData.level === l
-                                    ? 'bg-[#6366F1] text-white shadow-lg shadow-[#6366F1]/30'
-                                    : 'bg-[#18181B] text-[#A1A1AA] border border-[#27272A]'
+                                ? 'bg-[#6366F1] text-white shadow-lg shadow-[#6366F1]/30'
+                                : 'bg-[#18181B] text-[#A1A1AA] border border-[#27272A]'
                                 }`}
                         >
                             {l}
@@ -308,8 +311,8 @@ const MobileGenDialogue = () => {
                         <ChatBubbleLeftRightIcon className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                        <div className="font-bold text-white">Dialogue Preview</div>
-                        <div className="text-xs text-[#71717A]">{selectedTone?.label} conversation</div>
+                        <div className="font-bold text-white">{t('dialoguePreview')}</div>
+                        <div className="text-xs text-[#71717A]">{selectedTone ? t(selectedTone.labelKey) : ''} conversation</div>
                     </div>
                 </div>
                 <div className="text-sm text-[#A1A1AA] bg-[#09090B] rounded-lg p-3">
@@ -338,21 +341,21 @@ const MobileGenDialogue = () => {
 
     return (
         <MobileAIWizardLayout
-            title="Dialogue Master"
+            title={t('dialogueMaster')}
             subtitle={
-                step === 1 ? "Set the Scene" :
-                    step === 2 ? "Who's Talking?" :
-                        step === 3 ? "Fine-tune Details" :
-                            "Conversation"
+                step === 1 ? t('setScene') :
+                    step === 2 ? t('whosTalking') :
+                        step === 3 ? t('fineTuneDetails') :
+                            t('yourStory')
             }
             currentStep={step}
             totalSteps={4}
             onBack={step > 1 ? () => setStep(step - 1) : undefined}
             onNext={step === 3 ? handleGenerate : step === 4 ? handleSave : () => setStep(step + 1)}
             isNextDisabled={(step === 1 && !isStep1Valid) || (step === 2 && !isStep2Valid)}
-            nextLabel={step === 3 ? 'Generate Dialogue' : step === 4 ? 'Save to Library' : 'Next'}
+            nextLabel={step === 3 ? t('generateDialogue') : step === 4 ? t('saveToLibrary') : t('next')}
             loading={loading}
-            loadingMessage="Writing script..."
+            loadingMessage={t('writingScript')}
         >
             {step === 1 && renderStep1()}
             {step === 2 && renderStep2()}

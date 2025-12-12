@@ -11,27 +11,38 @@ class ExamViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        # Filter by user and language
+        # Filter by user and language pair
         try:
-            target_lang = self.request.user.profile.target_language
+            profile = self.request.user.profile
+            target_lang = profile.target_language
+            native_lang = profile.native_language
         except UserProfile.DoesNotExist:
             target_lang = 'de'
+            native_lang = 'en'
             
-        return Exam.objects.filter(user=self.request.user, language=target_lang).prefetch_related('attempts').order_by('-updated_at')
+        return Exam.objects.filter(
+            user=self.request.user, 
+            language=target_lang,
+            native_language=native_lang
+        ).prefetch_related('attempts').order_by('-updated_at')
 
     @action(detail=False, methods=['get'])
     def community(self, request):
         """Get public exams from people I follow"""
         try:
-            target_lang = request.user.profile.target_language
+            profile = request.user.profile
+            target_lang = profile.target_language
+            native_lang = profile.native_language
         except UserProfile.DoesNotExist:
             target_lang = 'de'
+            native_lang = 'en'
             
         following_ids = UserRelationship.objects.filter(follower=request.user).values_list('following_id', flat=True)
         
         exams = Exam.objects.filter(
             user_id__in=following_ids, 
             language=target_lang,
+            native_language=native_lang,
             is_public=True
         ).prefetch_related('attempts', 'user__profile').order_by('-created_at')
         
@@ -61,9 +72,12 @@ class ExamViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         try:
-            target_lang = request.user.profile.target_language
+            profile = request.user.profile
+            target_lang = profile.target_language
+            native_lang = profile.native_language
         except UserProfile.DoesNotExist:
             target_lang = 'de'
+            native_lang = 'en'
         
         topic = request.data.get('topic')
         difficulty = request.data.get('difficulty')
@@ -72,11 +86,12 @@ class ExamViewSet(viewsets.ModelViewSet):
         feedback = request.data.get('feedback', {})
         score = request.data.get('score', 0)
         
-        # Try to find existing exam with same topic, difficulty, and questions
+        # Try to find existing exam with same topic, difficulty, language pair, and questions
         
         existing_exam = Exam.objects.filter(
             user=request.user,
             language=target_lang,
+            native_language=native_lang,
             topic=topic,
             difficulty=difficulty
         ).first()
@@ -100,10 +115,11 @@ class ExamViewSet(viewsets.ModelViewSet):
             serializer = self.get_serializer(existing_exam)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
-            # New exam - create exam and first attempt
+            # New exam - create exam and first attempt with language pair
             exam = Exam.objects.create(
                 user=request.user,
                 language=target_lang,
+                native_language=native_lang,
                 topic=topic,
                 difficulty=difficulty,
                 questions=questions,

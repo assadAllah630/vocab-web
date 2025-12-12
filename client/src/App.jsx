@@ -42,6 +42,7 @@ const MobileSecuritySettings = lazy(() => import('./pages/mobile/MobileSecurityS
 const MobileAPISettings = lazy(() => import('./pages/mobile/MobileAPISettings'));
 const MobileHelp = lazy(() => import('./pages/mobile/MobileHelp'));
 const MobileAbout = lazy(() => import('./pages/mobile/MobileAbout'));
+const MobileAIGateway = lazy(() => import('./pages/mobile/MobileAIGateway'));
 
 
 // Lazy load pages (loaded on demand)
@@ -65,6 +66,7 @@ const TextGenerator = lazy(() => import('./pages/TextGenerator'));
 const PodcastCreator = lazy(() => import('./pages/PodcastCreator'));
 const MyPodcasts = lazy(() => import('./pages/MyPodcasts'));
 const TextReader = lazy(() => import('./pages/TextReader'));
+const AIGateway = lazy(() => import('./pages/AIGateway'));
 
 // Advanced Text Generator
 const AdvancedTextGenerator = lazy(() => import('./pages/AdvancedTextGenerator'));
@@ -258,6 +260,7 @@ function App() {
                         <Route path="me/security" element={<MobileSecuritySettings user={user} />} />
                         <Route path="me/help" element={<MobileHelp />} />
                         <Route path="me/about" element={<MobileAbout />} />
+                        <Route path="ai-gateway" element={<MobileAIGateway />} />
                       </Route>
 
                       {/* ===== DESKTOP ROUTES ===== */}
@@ -288,6 +291,7 @@ function App() {
                       <Route path="/podcast-creator" element={<ProtectedRoute><PodcastCreator /></ProtectedRoute>} />
                       <Route path="/podcasts" element={<ProtectedRoute><MyPodcasts /></ProtectedRoute>} />
                       <Route path="/reader" element={<ProtectedRoute><TextReader /></ProtectedRoute>} />
+                      <Route path="/ai-gateway" element={<ProtectedRoute><AIGateway /></ProtectedRoute>} />
                     </Routes>
                   </Suspense>
                   <FloatingExamTimer />

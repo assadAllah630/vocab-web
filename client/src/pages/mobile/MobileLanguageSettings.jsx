@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Globe, Check, ChevronRight } from 'lucide-react';
 import api from '../../api';
+import { useLanguage } from '../../context/LanguageContext';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const LANGUAGES = [
     { code: 'en', name: 'English', flag: '🇬🇧' },
@@ -13,6 +15,15 @@ const LANGUAGES = [
 
 const MobileLanguageSettings = ({ user, setUser }) => {
     const navigate = useNavigate();
+    const {
+        currentLanguage,
+        nativeLanguage: contextNativeLang,
+        switchLanguage,
+        switchNativeLanguage,
+        isNativeRTL
+    } = useLanguage();
+    const { t } = useTranslation();
+
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
     const [nativeLang, setNativeLang] = useState('en');
@@ -21,28 +32,25 @@ const MobileLanguageSettings = ({ user, setUser }) => {
     const [showTargetPicker, setShowTargetPicker] = useState(false);
 
     useEffect(() => {
-        if (user?.profile) {
-            setNativeLang(user.profile.native_language || 'en');
-            setTargetLang(user.profile.target_language || 'de');
-        }
-    }, [user]);
+        // Initialize from context or user profile
+        setNativeLang(contextNativeLang || user?.profile?.native_language || 'en');
+        setTargetLang(currentLanguage || user?.profile?.target_language || 'de');
+    }, [contextNativeLang, currentLanguage, user]);
 
     const handleSave = async () => {
         setSaving(true);
         try {
-            await api.post('update_profile/', {
-                native_language: nativeLang,
-                target_language: targetLang
-            });
+            // Use context functions for proper RTL updates
+            if (nativeLang !== contextNativeLang) {
+                await switchNativeLanguage(nativeLang);
+            }
+            if (targetLang !== currentLanguage) {
+                await switchLanguage(targetLang);
+            }
 
-            setUser(prev => ({
-                ...prev,
-                profile: {
-                    ...prev.profile,
-                    native_language: nativeLang,
-                    target_language: targetLang
-                }
-            }));
+            // Update document direction based on native language
+            const RTL_LANGUAGES = ['ar', 'he', 'fa', 'ur'];
+            document.documentElement.dir = RTL_LANGUAGES.includes(nativeLang) ? 'rtl' : 'ltr';
 
             setSaved(true);
             setTimeout(() => navigate(-1), 1000);
@@ -122,7 +130,7 @@ const MobileLanguageSettings = ({ user, setUser }) => {
                     <ArrowLeft size={20} style={{ color: '#A1A1AA' }} />
                 </button>
                 <h1 className="text-lg font-semibold" style={{ color: '#FAFAFA' }}>
-                    Language Settings
+                    {t('languageSettings')}
                 </h1>
                 <motion.button
                     whileTap={{ scale: 0.95 }}
@@ -135,7 +143,7 @@ const MobileLanguageSettings = ({ user, setUser }) => {
                         opacity: saving ? 0.7 : 1
                     }}
                 >
-                    {saving ? 'Saving...' : saved ? 'Saved!' : 'Save'}
+                    {saving ? t('saving') : saved ? t('saved') : t('save')}
                 </motion.button>
             </div>
 
@@ -147,7 +155,7 @@ const MobileLanguageSettings = ({ user, setUser }) => {
                 >
                     <Globe size={20} style={{ color: '#6366F1' }} className="flex-shrink-0 mt-0.5" />
                     <p className="text-sm" style={{ color: '#A1A1AA' }}>
-                        Choose your native language and the language you want to learn. This affects AI translations and vocabulary.
+                        {t('languageInfo')}
                     </p>
                 </div>
 
@@ -156,7 +164,7 @@ const MobileLanguageSettings = ({ user, setUser }) => {
                     {/* Native Language */}
                     <div>
                         <label className="text-sm font-medium mb-2 block" style={{ color: '#71717A' }}>
-                            I speak
+                            {t('iSpeak')}
                         </label>
                         <button
                             onClick={() => setShowNativePicker(true)}
@@ -176,7 +184,7 @@ const MobileLanguageSettings = ({ user, setUser }) => {
                     {/* Target Language */}
                     <div>
                         <label className="text-sm font-medium mb-2 block" style={{ color: '#71717A' }}>
-                            I'm learning
+                            {t('imLearning')}
                         </label>
                         <button
                             onClick={() => setShowTargetPicker(true)}
@@ -196,23 +204,27 @@ const MobileLanguageSettings = ({ user, setUser }) => {
             </div>
 
             {/* Pickers */}
-            {showNativePicker && (
-                <LanguagePicker
-                    selected={nativeLang}
-                    onSelect={setNativeLang}
-                    onClose={() => setShowNativePicker(false)}
-                    title="Select Native Language"
-                />
-            )}
-            {showTargetPicker && (
-                <LanguagePicker
-                    selected={targetLang}
-                    onSelect={setTargetLang}
-                    onClose={() => setShowTargetPicker(false)}
-                    title="Select Target Language"
-                />
-            )}
-        </div>
+            {
+                showNativePicker && (
+                    <LanguagePicker
+                        selected={nativeLang}
+                        onSelect={setNativeLang}
+                        onClose={() => setShowNativePicker(false)}
+                        title="Select Native Language"
+                    />
+                )
+            }
+            {
+                showTargetPicker && (
+                    <LanguagePicker
+                        selected={targetLang}
+                        onSelect={setTargetLang}
+                        onClose={() => setShowTargetPicker(false)}
+                        title="Select Target Language"
+                    />
+                )
+            }
+        </div >
     );
 };
 

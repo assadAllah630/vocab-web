@@ -20,6 +20,56 @@ class ImageGenerationProvider:
     def generate(self, prompt: str, negative_prompt: str, width: int = 1024, height: int = 576) -> Dict[str, Any]:
         raise NotImplementedError
 
+
+class PollinationsProvider(ImageGenerationProvider):
+    """
+    Pollinations.AI - FREE image generation with NO API key required!
+    Uses Stable Diffusion models.
+    """
+    API_URL = "https://image.pollinations.ai/prompt"
+    
+    def __init__(self):
+        logger.info("PollinationsProvider initialized (FREE, no API key needed)")
+    
+    def generate(self, prompt: str, negative_prompt: str, width: int = 1024, height: int = 576) -> Dict[str, Any]:
+        from urllib.parse import quote
+        
+        # Pollinations doesn't support negative prompts in the same way, so we embed key terms
+        full_prompt = prompt
+        if negative_prompt:
+            # Add "not" keywords for better results
+            full_prompt = f"{prompt}, high quality, detailed, professional"
+        
+        # URL encode the prompt
+        encoded_prompt = quote(full_prompt)
+        
+        # Build URL with parameters
+        url = f"{self.API_URL}/{encoded_prompt}?width={width}&height={height}&nologo=true"
+        
+        try:
+            logger.info(f"Pollinations generating: {prompt[:50]}...")
+            
+            response = requests.get(url, timeout=120, allow_redirects=True)
+            
+            if response.status_code == 200 and len(response.content) > 1000:
+                image_base64 = base64.b64encode(response.content).decode("utf-8")
+                logger.info(f"Pollinations SUCCESS! Image size: {len(response.content)} bytes")
+                
+                return {
+                    "success": True,
+                    "image_base64": image_base64,
+                    "provider": "Pollinations.AI (FREE)"
+                }
+            else:
+                return {
+                    "success": False,
+                    "error": f"Invalid response: {response.status_code}, size: {len(response.content)}"
+                }
+                
+        except Exception as e:
+            logger.error(f"Pollinations error: {str(e)}")
+            return {"success": False, "error": str(e)}
+
 class StableHordeProvider(ImageGenerationProvider):
     """
     Provider for Stable Horde (AI Horde).
@@ -173,17 +223,18 @@ class ImageGenerationAgent:
         
         self.providers = []
         
-        # Priority 1: Stable Horde (Free)
-        # Always add Stable Horde, using anonymous key if none provided
+        # Priority 1: Pollinations.AI (FREE, no API key needed!)
+        self.providers.append(PollinationsProvider())
+        
+        # Priority 2: Stable Horde (Free, but slower)
         horde_key_to_use = self.horde_key or "0000000000"
         self.providers.append(StableHordeProvider(horde_key_to_use))
         
-        # Priority 2: Hugging Face (Fast, Rate Limited)
+        # Priority 3: Hugging Face (Fast, Rate Limited)
         if self.hf_token:
             self.providers.append(HuggingFaceProvider(self.hf_token))
             
-        if not self.providers:
-            logger.warning("No image generation providers available. Please set STABLE_HORDE_API_KEY or HUGGINGFACE_API_TOKEN.")
+        logger.info(f"ImageGenerationAgent initialized with {len(self.providers)} providers")
             
         self.validator = ImageQualityValidator()
         

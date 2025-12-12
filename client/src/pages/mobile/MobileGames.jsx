@@ -13,15 +13,17 @@ import {
     Zap,
     Crown
 } from 'lucide-react';
+import { useTranslation } from '../../hooks/useTranslation';
 
 function MobileGames() {
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     const games = [
         {
             id: 'memory',
-            title: 'Memory Match',
-            description: 'Find matching word-translation pairs',
+            title: t('memoryGame'),
+            description: t('selectGame'),
             icon: Puzzle,
             gradient: 'linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%)',
             shadowColor: 'rgba(99, 102, 241, 0.4)',

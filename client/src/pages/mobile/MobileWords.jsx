@@ -4,9 +4,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../api';
 import { Search, Plus, Trash2, Pencil, WifiOff, RefreshCw, Sparkles, Loader2 } from 'lucide-react';
 import { vocabStorage, useOnlineStatus, syncQueue } from '../../utils/offlineStorage';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslationStyle } from '../../utils/bidi';
+import { useTranslation } from '../../hooks/useTranslation';
 
 function MobileWords() {
     const navigate = useNavigate();
+    const { nativeLanguage, isNativeRTL } = useLanguage();
+    const { t } = useTranslation();
     const [words, setWords] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [loading, setLoading] = useState(true);
@@ -313,7 +318,13 @@ function MobileWords() {
                                             </span>
                                         )}
                                     </div>
-                                    <p className="text-sm truncate" style={{ color: '#71717A' }}>
+                                    <p
+                                        className="text-sm truncate"
+                                        style={{
+                                            color: '#71717A',
+                                            ...getTranslationStyle(nativeLanguage),
+                                        }}
+                                    >
                                         {word.translation}
                                     </p>
                                 </div>

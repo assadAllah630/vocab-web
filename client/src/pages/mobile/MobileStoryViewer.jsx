@@ -29,6 +29,45 @@ const MobileStoryViewer = () => {
         fetchContent();
     }, [id]);
 
+    // Polling for pending images
+    useEffect(() => {
+        let pollInterval;
+
+        // If content is loaded and has pending images (or we suspect checks needed)
+        if (content && content.has_images) {
+
+            // Function to check status
+            const checkStatus = async () => {
+                try {
+                    const res = await api.get(`ai/generated-content/${id}/images/status/`);
+                    if (res.data.status !== 'none' && res.data.content) {
+                        setContent(prev => ({
+                            ...prev,
+                            content_data: res.data.content
+                        }));
+                    } else if (res.data.status === 'none') {
+                        // All done, stop polling
+                        clearInterval(pollInterval);
+                    }
+                } catch (e) {
+                    console.error("Polling error", e);
+                }
+            };
+
+            // Start polling if we see any pending items in current state
+            const hasPending = content.content_data.events?.some(e => e.image_status === 'pending' || e.image_status === 'generating');
+
+            if (hasPending) {
+                console.log("Found pending images, starting polling...");
+                pollInterval = setInterval(checkStatus, 3000);
+            }
+        }
+
+        return () => {
+            if (pollInterval) clearInterval(pollInterval);
+        };
+    }, [content, id]);
+
     if (loading) {
         return (
             <div className="min-h-screen bg-[#09090B] flex items-center justify-center">

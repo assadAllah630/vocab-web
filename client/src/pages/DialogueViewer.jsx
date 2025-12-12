@@ -11,10 +11,13 @@ import {
 } from '@heroicons/react/24/outline';
 import ReactMarkdown from 'react-markdown';
 import api from '../api';
+import { useLanguage } from '../context/LanguageContext';
+import { getTranslationStyle } from '../utils/bidi';
 
 function DialogueViewer() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { nativeLanguage } = useLanguage();
     const [dialogue, setDialogue] = useState(null);
     const [loading, setLoading] = useState(true);
     const [revealedTranslations, setRevealedTranslations] = useState(new Set());
@@ -189,6 +192,7 @@ function DialogueViewer() {
                                                     exit={{ opacity: 0, height: 0 }}
                                                     className={`mt-2 pt-2 border-t text-sm ${isFirstChar ? 'border-slate-100 text-slate-600' : 'border-indigo-500 text-indigo-100'
                                                         }`}
+                                                    style={getTranslationStyle(nativeLanguage)}
                                                 >
                                                     {msg.translation}
                                                 </motion.div>
@@ -243,7 +247,7 @@ function DialogueViewer() {
                     )}
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
 

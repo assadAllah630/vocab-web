@@ -10,6 +10,8 @@ import {
     SparklesIcon
 } from '@heroicons/react/24/outline';
 import { BookmarkIcon as BookmarkSolidIcon } from '@heroicons/react/24/solid';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTranslationStyle } from '../../utils/bidi';
 
 /**
  * Enhanced story display component with reader tools
@@ -20,6 +22,9 @@ const MobileStoryDisplay = ({
     level,
     topic
 }) => {
+    // Get native language for RTL support
+    const { nativeLanguage, isNativeRTL } = useLanguage();
+
     // Support both 'events' and 'chapters' field names
     const events = content?.events || content?.chapters || [];
     const [expandedEvent, setExpandedEvent] = useState(0);
@@ -215,8 +220,8 @@ const MobileStoryDisplay = ({
                                             <button
                                                 onClick={() => speakEvent(index, event.content)}
                                                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${isSpeaking && speakingEvent === index
-                                                        ? 'bg-[#EF4444] text-white'
-                                                        : 'bg-[#18181B] text-[#A1A1AA] hover:text-white'
+                                                    ? 'bg-[#EF4444] text-white'
+                                                    : 'bg-[#18181B] text-[#A1A1AA] hover:text-white'
                                                     }`}
                                             >
                                                 {isSpeaking && speakingEvent === index ? (
@@ -236,8 +241,8 @@ const MobileStoryDisplay = ({
                                             <button
                                                 onClick={() => toggleTranslation(index)}
                                                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${showTranslation[index]
-                                                        ? 'bg-[#6366F1] text-white'
-                                                        : 'bg-[#18181B] text-[#A1A1AA] hover:text-white'
+                                                    ? 'bg-[#6366F1] text-white'
+                                                    : 'bg-[#18181B] text-[#A1A1AA] hover:text-white'
                                                     }`}
                                             >
                                                 <LanguageIcon className="w-4 h-4" />
@@ -248,8 +253,8 @@ const MobileStoryDisplay = ({
                                             <button
                                                 onClick={() => toggleBookmark(index)}
                                                 className={`p-1.5 rounded-lg transition-colors ${bookmarkedEvents[index]
-                                                        ? 'bg-[#F59E0B]/20 text-[#F59E0B]'
-                                                        : 'bg-[#18181B] text-[#A1A1AA] hover:text-white'
+                                                    ? 'bg-[#F59E0B]/20 text-[#F59E0B]'
+                                                    : 'bg-[#18181B] text-[#A1A1AA] hover:text-white'
                                                     }`}
                                             >
                                                 {bookmarkedEvents[index] ? (
@@ -260,13 +265,47 @@ const MobileStoryDisplay = ({
                                             </button>
                                         </div>
 
+                                        {/* Event Image */}
+                                        {event.image_status && (
+                                            <div className="mb-4 rounded-lg overflow-hidden">
+                                                {event.image_status === 'completed' && event.image_base64 ? (
+                                                    <img
+                                                        src={`data:image/png;base64,${event.image_base64}`}
+                                                        alt={event.title || `Chapter ${index + 1}`}
+                                                        className="w-full h-48 object-cover rounded-lg"
+                                                    />
+                                                ) : event.image_status === 'generating' ? (
+                                                    <div className="w-full h-48 bg-gradient-to-r from-[#27272A] to-[#1F1F23] rounded-lg flex items-center justify-center">
+                                                        <div className="text-center">
+                                                            <div className="w-8 h-8 border-2 border-[#8B5CF6] border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                                                            <p className="text-xs text-[#71717A]">Generating image...</p>
+                                                        </div>
+                                                    </div>
+                                                ) : event.image_status === 'pending' ? (
+                                                    <div className="w-full h-48 bg-gradient-to-r from-[#27272A] to-[#1F1F23] rounded-lg flex items-center justify-center">
+                                                        <p className="text-xs text-[#71717A]">🖼️ Image pending...</p>
+                                                    </div>
+                                                ) : event.image_status === 'failed' ? (
+                                                    <div className="w-full h-32 bg-[#1F1F23] rounded-lg flex items-center justify-center">
+                                                        <p className="text-xs text-[#EF4444]">⚠️ Image failed to generate</p>
+                                                    </div>
+                                                ) : null}
+                                            </div>
+                                        )}
+
                                         {/* Content Text */}
                                         <div
                                             className="text-[#E4E4E7] leading-[1.85] tracking-wide"
                                             style={{ fontSize: `${fontSize}px` }}
                                         >
                                             {showTranslation[index] ? (
-                                                <p className="text-[#A1A1AA] italic">
+                                                <p
+                                                    className="italic"
+                                                    style={{
+                                                        ...getTranslationStyle(nativeLanguage),
+                                                        color: '#A1A1AA',
+                                                    }}
+                                                >
                                                     {event.translation || 'Translation not available'}
                                                 </p>
                                             ) : (
