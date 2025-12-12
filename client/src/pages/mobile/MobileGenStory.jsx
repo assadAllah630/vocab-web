@@ -16,27 +16,7 @@ import api from '../../api';
 import { useTranslation } from '../../hooks/useTranslation';
 
 // Helper function to render text with highlighted vocabulary
-const renderStyledText = (text) => {
-    if (!text) return null;
 
-    // Split by **word** pattern to get parts and highlighted words
-    const parts = text.split(/\*\*(.+?)\*\*/g);
-
-    return parts.map((part, index) => {
-        // Odd indices are the highlighted words (inside **)
-        if (index % 2 === 1) {
-            return (
-                <span
-                    key={index}
-                    className="bg-gradient-to-r from-[#6366F1]/20 to-[#8B5CF6]/20 text-[#A78BFA] font-semibold px-1.5 py-0.5 rounded-md border-b-2 border-[#6366F1]/50"
-                >
-                    {part}
-                </span>
-            );
-        }
-        return <span key={index}>{part}</span>;
-    });
-};
 
 
 // Expanded Genres with colors and Lottie icons
@@ -176,11 +156,7 @@ const MobileGenStory = () => {
 
     const selectedGenre = GENRES.find(g => g.id === formData.genre);
 
-    // Get animated icon for a genre
-    const getGenreIcon = (genreId) => {
-        const IconComponent = GenreIcons[genreId];
-        return IconComponent ? <IconComponent size={24} /> : null;
-    };
+
 
     // Step 1: Concept
     const renderStep1 = () => (

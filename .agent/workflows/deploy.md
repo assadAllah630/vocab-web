@@ -3,7 +3,8 @@ description: Deploy VocabMaster to production (Render + Vercel)
 ---
 
 ## Pre-Deploy Checklist
-- [ ] All tests pass locally
+- [ ] All tests pass locally (`py manage.py test`)
+- [ ] Frontend Linting passes (`cd client && npm run lint`)
 - [ ] No console errors in browser  
 - [ ] Environment variables set
 - [ ] Database migrations ready
