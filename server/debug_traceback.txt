@@ -1,0 +1,3 @@
+﻿WARNING: Using development SECRET_KEY. Set DJANGO_SECRET_KEY environment variable for production!
+33 objects imported automatically (use -v 2 for details).
+

@@ -43,7 +43,7 @@ class KeysListCreateView(APIView):
     
     def get(self, request):
         """List user's API keys with their stats."""
-        keys = UserAPIKey.objects.filter(user=request.user)
+        keys = UserAPIKey.objects.filter(user=request.user, is_active=True)
         
         data = []
         for key in keys:

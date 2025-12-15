@@ -66,6 +66,7 @@ const MobileProfile = ({ user, setUser }) => {
         { icon: Globe, label: t('language'), subtitle: t('learningPreferences'), path: '/m/me/language' },
         { icon: Cpu, label: t('aiGateway'), subtitle: t('multiProvider'), path: '/m/ai-gateway' },
         { icon: Key, label: t('apiKeys'), subtitle: t('serviceIntegrations'), path: '/m/me/api-keys' },
+        { icon: Bell, label: t('notifications'), subtitle: t('pushAlerts'), path: '/m/me/notifications' },
         { icon: Shield, label: t('security'), subtitle: t('passwordSettings'), path: '/m/me/security' },
     ];
 

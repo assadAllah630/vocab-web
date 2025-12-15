@@ -37,7 +37,13 @@ async def run_health_check():
             # Test the key
             import time
             start = time.time()
-            is_valid = await adapter.validate_key()
+            is_valid_result = await adapter.validate_key()
+            
+            # Handle tuple return (is_valid, message) or just bool
+            if isinstance(is_valid_result, tuple):
+                is_valid = is_valid_result[0]
+            else:
+                is_valid = bool(is_valid_result)
             latency = int((time.time() - start) * 1000)
             
             # Update key stats

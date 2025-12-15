@@ -13,7 +13,9 @@ import {
     Trophy,
     Target,
     Star,
-    WifiOff
+    WifiOff,
+    Bell,
+    Mic
 } from 'lucide-react';
 import { AnimatedIcon, GlowingZap, BouncingFlame } from '../../components/AnimatedIcons';
 import streakFlame from '../../assets/streak-flame.png';
@@ -172,17 +174,27 @@ function MobileHome({ user }) {
                             {user?.username || 'Learner'}
                         </h1>
                     </div>
-                    <motion.button
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => navigate('/m/me')}
-                        className="w-12 h-12 rounded-full flex items-center justify-center font-semibold text-lg"
-                        style={{
-                            background: 'linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)',
-                            color: '#FAFAFA'
-                        }}
-                    >
-                        {user?.username?.charAt(0).toUpperCase() || 'U'}
-                    </motion.button>
+                    <div className="flex items-center gap-3">
+                        <motion.button
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => navigate('/m/notifications')}
+                            className="w-10 h-10 rounded-full flex items-center justify-center"
+                            style={{ backgroundColor: '#141416', border: '1px solid #27272A' }}
+                        >
+                            <Bell size={20} color="#A1A1AA" />
+                        </motion.button>
+                        <motion.button
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => navigate('/m/me')}
+                            className="w-12 h-12 rounded-full flex items-center justify-center font-semibold text-lg"
+                            style={{
+                                background: 'linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)',
+                                color: '#FAFAFA'
+                            }}
+                        >
+                            {user?.username?.charAt(0).toUpperCase() || 'U'}
+                        </motion.button>
+                    </div>
                 </div >
             </motion.div >
 
@@ -356,6 +368,35 @@ function MobileHome({ user }) {
                     </motion.div>
                 )
             }
+
+            {/* Podcast Banner */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.55 }}
+                className="px-5 mb-5"
+            >
+                <motion.button
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => navigate('/m/podcast-studio')}
+                    className="w-full rounded-xl p-5 relative overflow-hidden flex items-center justify-between"
+                    style={{
+                        background: 'linear-gradient(135deg, #1C1C1F 0%, #27272A 100%)',
+                        border: '1px solid #3F3F46'
+                    }}
+                >
+                    <div className="flex items-center gap-4 z-10">
+                        <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400">
+                            <Mic size={24} />
+                        </div>
+                        <div className="text-left">
+                            <h3 className="font-bold text-lg text-white">Podcast Studio</h3>
+                            <p className="text-sm text-gray-400">Turn topics into audio shows</p>
+                        </div>
+                    </div>
+                    <ChevronRight className="text-gray-500" />
+                </motion.button>
+            </motion.div>
 
             {/* Quick Actions */}
             <motion.div

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Vocabulary, UserProgress, Quiz, Tag, GrammarTopic, Podcast, UserProfile, Exam, ExamAttempt, UserRelationship, SavedText
+from .models import Vocabulary, UserProgress, Quiz, Tag, GrammarTopic, Podcast, PodcastCategory, UserProfile, Exam, ExamAttempt, UserRelationship, SavedText
 
 class SavedTextSerializer(serializers.ModelSerializer):
     class Meta:
@@ -106,13 +106,20 @@ class GrammarTopicSerializer(serializers.ModelSerializer):
         fields = ['id', 'level', 'category', 'title', 'content', 'examples', 'order', 'created_at', 'updated_at']
         read_only_fields = ['created_at', 'updated_at']
 
+class PodcastCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PodcastCategory
+        fields = '__all__'
+        read_only_fields = ['user', 'created_at']
+
 class PodcastSerializer(serializers.ModelSerializer):
     audio_url = serializers.SerializerMethodField()
+    category_name = serializers.CharField(source='category.name', read_only=True)
     
     class Meta:
         model = Podcast
-        fields = ['id', 'user', 'title', 'text_content', 'audio_file', 'audio_url', 'voice_id', 'duration', 'created_at']
-        read_only_fields = ['user', 'created_at', 'duration']
+        fields = ['id', 'user', 'category', 'category_name', 'title', 'text_content', 'audio_file', 'audio_url', 'voice_id', 'duration', 'episode_number', 'created_at', 'processing_status', 'progress', 'current_message', 'estimated_remaining', 'speech_marks']
+        read_only_fields = ['user', 'created_at', 'duration', 'audio_url']
     
     def get_audio_url(self, obj):
         if obj.audio_file:
@@ -126,16 +133,12 @@ class UserProfileSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = UserProfile
-        fields = ['id', 'username', 'native_language', 'target_language', 'google_tts_api_key', 'deepgram_api_key', 'speechify_api_key', 'gemini_api_key', 'openrouter_api_key', 'ocrspace_api_key', 'stable_horde_api_key', 'huggingface_api_token', 'bio', 'avatar', 'location']
+        fields = ['id', 'username', 'native_language', 'target_language', 'deepgram_api_key', 'speechify_api_key', 'ocrspace_api_key', 'stable_horde_api_key', 'bio', 'avatar', 'location']
         extra_kwargs = {
-            'google_tts_api_key': {'write_only': True},
-            'deepgram_api_key': {'write_only': True},
-            'speechify_api_key': {'write_only': True},
-            'gemini_api_key': {'write_only': True},
-            'openrouter_api_key': {'write_only': True},
-            'ocrspace_api_key': {'write_only': True},
-            'stable_horde_api_key': {'write_only': True},
-            'huggingface_api_token': {'write_only': True}
+            'deepgram_api_key': {'required': False},
+            'speechify_api_key': {'required': False},
+            'ocrspace_api_key': {'required': False},
+            'stable_horde_api_key': {'required': False}
         }
 
 

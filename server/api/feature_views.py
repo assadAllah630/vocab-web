@@ -8,7 +8,7 @@ from django_ratelimit.decorators import ratelimit
 from django.utils.decorators import method_decorator
 from django.db.models import Q
 from .gemini_helper import generate_content as gemini_generate
-from .unified_ai import generate_ai_content  # Gateway + legacy fallback
+from .unified_ai import generate_ai_content, get_ai_status
 from .models import GrammarTopic, Podcast, Vocabulary, UserProfile
 from .serializers import GrammarTopicSerializer, PodcastSerializer
 import os
@@ -81,32 +81,21 @@ class GrammarTopicViewSet(viewsets.ModelViewSet):
             if not title:
                 return Response({'error': 'Title is required'}, status=status.HTTP_400_BAD_REQUEST)
                 
-            # 2. Check for API Keys (gateway or legacy)
-            try:
-                has_legacy_key = request.user.profile.gemini_api_key
-            except UserProfile.DoesNotExist:
-                has_legacy_key = False
-            try:
-                from .ai_gateway.models import UserAPIKey
-                has_gateway_keys = UserAPIKey.objects.filter(user=request.user, is_active=True).exists()
-            except:
-                has_gateway_keys = False
-                
-            if not has_legacy_key and not has_gateway_keys:
+            # 2. Check for API Keys (gateway only)
+            ai_status = get_ai_status(request.user)
+            if not ai_status['has_gateway_keys']:
                 return Response({'error': 'No API keys available. Add keys in Settings or AI Gateway.'}, status=status.HTTP_400_BAD_REQUEST)
             
             # 3. Initialize Agent (uses unified AI internally)
             from .grammar_agent import GrammarResearchAgent
             # Get API key for agent (prefer gateway, fallback to legacy)
             agent_key = None
-            if has_gateway_keys:
+            if ai_status['has_gateway_keys']:
                 from .ai_gateway.models import UserAPIKey
                 from .ai_gateway.utils.encryption import decrypt_api_key
                 best_key = UserAPIKey.objects.filter(user=request.user, is_active=True, provider='gemini').first()
                 if best_key:
                     agent_key = decrypt_api_key(best_key.api_key_encrypted)
-            if not agent_key and has_legacy_key:
-                agent_key = request.user.profile.gemini_api_key
             
             if not agent_key:
                 return Response({'error': 'No Gemini key available'}, status=status.HTTP_400_BAD_REQUEST)
@@ -284,18 +273,9 @@ def generate_text(request):
         }
         word_count = word_count_map.get(length, '100-200')
         
-        # Check for API keys (gateway or legacy)
-        try:
-            has_legacy_key = request.user.profile.gemini_api_key
-        except:
-            has_legacy_key = False
-        try:
-            from .ai_gateway.models import UserAPIKey
-            has_gateway_keys = UserAPIKey.objects.filter(user=request.user, is_active=True).exists()
-        except:
-            has_gateway_keys = False
-            
-        if not has_legacy_key and not has_gateway_keys:
+        # Check for API keys (gateway only)
+        ai_status = get_ai_status(request.user)
+        if not ai_status['has_gateway_keys']:
             return Response({
                 'error': 'No API keys available. Add keys in Settings or AI Gateway.'
             }, status=status.HTTP_400_BAD_REQUEST)
@@ -390,17 +370,8 @@ def generate_podcast(request):
                 }, status=status.HTTP_400_BAD_REQUEST)
             
             # Check for API keys
-            try:
-                has_legacy_key = request.user.profile.gemini_api_key
-            except:
-                has_legacy_key = False
-            try:
-                from .ai_gateway.models import UserAPIKey
-                has_gateway_keys = UserAPIKey.objects.filter(user=request.user, is_active=True).exists()
-            except:
-                has_gateway_keys = False
-
-            if not has_legacy_key and not has_gateway_keys:
+            ai_status = get_ai_status(request.user)
+            if not ai_status['has_gateway_keys']:
                 return Response({
                     'error': 'No API keys available. Add keys in Settings or AI Gateway.'
                 }, status=status.HTTP_400_BAD_REQUEST)
@@ -706,17 +677,7 @@ def analyze_text(request):
                 new_words.append(original)
         
         # AI Filtering (if any API key available)
-        has_key = False
-        try:
-            has_key = bool(request.user.profile.gemini_api_key)
-        except:
-            pass
-        try:
-            from .ai_gateway.models import UserAPIKey
-            if UserAPIKey.objects.filter(user=request.user, is_active=True).exists():
-                has_key = True
-        except:
-            pass
+        has_key = get_ai_status(request.user)['has_gateway_keys']
 
         if has_key and new_words:
             try:

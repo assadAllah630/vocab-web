@@ -69,7 +69,7 @@ const MobileLanguageSettings = ({ user, setUser }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-end"
+            className="fixed inset-0 z-[100] flex items-end"
             style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
             onClick={onClose}
         >
@@ -77,7 +77,7 @@ const MobileLanguageSettings = ({ user, setUser }) => {
                 initial={{ y: '100%' }}
                 animate={{ y: 0 }}
                 exit={{ y: '100%' }}
-                className="w-full rounded-t-3xl p-5 pb-10"
+                className="w-full rounded-t-3xl p-5 pb-24"
                 style={{ backgroundColor: '#18181B' }}
                 onClick={(e) => e.stopPropagation()}
             >

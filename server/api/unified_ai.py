@@ -40,7 +40,7 @@ def run_async(coro):
         return asyncio.run(coro)
 
 
-def generate_ai_content(user, prompt: str, max_tokens: int = 2048, temperature: float = 0.7, required_capabilities: list = None, quality_tier: str = None):
+def generate_ai_content(user, prompt: str, max_tokens: int = 2048, temperature: float = 0.7, required_capabilities: list = None, quality_tier: str = None, json_mode: bool = False, tools: list = None):
     """
     Generate AI content using the best available method.
     
@@ -55,6 +55,8 @@ def generate_ai_content(user, prompt: str, max_tokens: int = 2048, temperature: 
         temperature: Creativity setting (0-1)
         required_capabilities: List of required capabilities (e.g. ['json_mode'])
         quality_tier: Minimum quality tier (low, medium, high, premium)
+        json_mode: Whether to enforce JSON output
+        tools: List of tools to pass to the model
         
     Returns:
         Object with .text attribute containing the response
@@ -65,17 +67,62 @@ def generate_ai_content(user, prompt: str, max_tokens: int = 2048, temperature: 
     
     # Try AI Gateway first
     try:
-        gateway_result = _try_gateway(user, prompt, max_tokens, temperature, required_capabilities, quality_tier)
+        # Auto-add json_mode capability if requested
+        if json_mode:
+            if required_capabilities is None:
+                required_capabilities = []
+            if 'json_mode' not in required_capabilities:
+                required_capabilities.append('json_mode')
+
+        gateway_result = _try_gateway(user, prompt, max_tokens, temperature, required_capabilities, quality_tier, json_mode, tools)
         if gateway_result:
             return gateway_result
     except Exception as e:
-        logger.warning(f"[UnifiedAI] Gateway attempt failed: {e}")
+        logger.warning(f"[UnifiedAI] Gateway attempt failed: {str(e)}")
+        # Don't raise yet, try fallback
+        pass
     
-    # Fallback to legacy profile key
-    return _try_legacy_gemini(user, prompt)
+    # Fallback: Legacy Profile Gemini Key
+    try:
+        profile_key = getattr(user.profile, 'gemini_api_key', None)
+        if profile_key:
+            logger.info(f"[UnifiedAI] Falling back to Legacy Profile Key for user {user.username}")
+            from .ai_gateway.adapters.gemini import GeminiAdapter
+            
+            # Use a default model for legacy fallback
+            adapter = GeminiAdapter(api_key=profile_key, model="gemini-1.5-flash")
+            
+            # Run async adapter synchronously
+            import asyncio
+            import concurrent.futures
+             
+            messages = [{"role": "user", "content": prompt}]
+            
+            async def call_legacy():
+                return await adapter.complete(
+                    messages=messages,
+                    max_tokens=max_tokens,
+                    temperature=temperature,
+                    json_mode=json_mode,
+                    tools=tools
+                )
+                
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                future = executor.submit(asyncio.run, call_legacy())
+                response = future.result(timeout=60)
+                
+            if response.success:
+                return GatewayResponse(response.content)
+            else:
+                logger.warning(f"[UnifiedAI] Legacy fallback failed: {response.error}")
+                
+    except Exception as e:
+        logger.error(f"[UnifiedAI] Legacy fallback error: {e}")
+
+    raise Exception("AI Gateway & Fallback failed. Please check your API keys.")
 
 
-def _try_gateway(user, prompt: str, max_tokens: int, temperature: float, required_capabilities: list = None, quality_tier: str = None):
+def _try_gateway(user, prompt: str, max_tokens: int, temperature: float, required_capabilities: list = None, quality_tier: str = None, json_mode: bool = False, tools: list = None):
     """
     Try to generate using AI Gateway with model-centric selection (v2.0).
     
@@ -125,7 +172,7 @@ def _try_gateway(user, prompt: str, max_tokens: int, temperature: float, require
                 decrypted_key = decrypt_api_key(instance.api_key.api_key_encrypted)
                 
                 # Get adapter for this provider
-                adapter = get_adapter(instance.model.provider, decrypted_key)
+                adapter = get_adapter(instance.model.provider, decrypted_key, model=instance.model.model_id)
                 
                 # Prepare messages
                 messages = [{"role": "user", "content": prompt}]
@@ -137,6 +184,8 @@ def _try_gateway(user, prompt: str, max_tokens: int, temperature: float, require
                         max_tokens=max_tokens, 
                         temperature=temperature,
                         model=instance.model.model_id,  # Specify exact model
+                        json_mode=json_mode,
+                        tools=tools
                     )
                 
                 with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -226,6 +275,8 @@ def _try_gateway(user, prompt: str, max_tokens: int, temperature: float, require
                     error_message=error_message[:500],
                 )
                 
+                import traceback
+                logger.error(f"[UnifiedAI v2] Detailed Traceback for {instance.model.model_id}:\n{traceback.format_exc()}")
                 last_error = error_message
                 logger.warning(f"[UnifiedAI v2] Exception: {instance.model.model_id}: {e}")
                 continue
@@ -235,27 +286,9 @@ def _try_gateway(user, prompt: str, max_tokens: int, temperature: float, require
         raise Exception("All AI models failed.")
         
     except Exception as e:
-        logger.warning(f"[UnifiedAI v2] Gateway error: {e}")
-        # If headers/imports fail, try legacy as last resort
-        return _try_legacy_gemini(user, prompt)
+        # If headers/imports fail, raise error
+        raise Exception(f"AI Gateway initialization failed: {e}")
 
-
-def _try_legacy_gemini(user, prompt: str):
-    """Fallback to legacy profile Gemini key."""
-    try:
-        from .models import UserProfile
-        from .gemini_helper import generate_content as gemini_generate
-        
-        api_key = user.profile.gemini_api_key
-        
-        if not api_key:
-            raise Exception("No API key available. Please add a Gemini API key in Settings or configure AI Gateway keys.")
-        
-        logger.info("[UnifiedAI] Using legacy profile Gemini key")
-        return gemini_generate(api_key, prompt)
-        
-    except UserProfile.DoesNotExist:
-        raise Exception("User profile not found. Please set up your profile.")
 
 
 def get_ai_status(user) -> dict:
@@ -282,14 +315,8 @@ def get_ai_status(user) -> dict:
         status['gateway_keys_count'] = keys.count()
         status['has_gateway_keys'] = status['gateway_keys_count'] > 0
         status['providers_available'] = list(keys.values_list('provider', flat=True).distinct())
-    except:
-        pass
-    
-    try:
-        # Check legacy key
-        status['has_legacy_key'] = bool(user.profile.gemini_api_key)
-    except:
-        pass
+    except Exception as e:
+        logger.warning(f"Failed to check gateway status: {e}")
     
     return status
 

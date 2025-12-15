@@ -1,6 +1,7 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import api from './api';
 
 // Eager load critical components (needed immediately)
 import Login from './pages/Login';
@@ -40,9 +41,12 @@ const MobileEditProfile = lazy(() => import('./pages/mobile/MobileEditProfile'))
 const MobileLanguageSettings = lazy(() => import('./pages/mobile/MobileLanguageSettings'));
 const MobileSecuritySettings = lazy(() => import('./pages/mobile/MobileSecuritySettings'));
 const MobileAPISettings = lazy(() => import('./pages/mobile/MobileAPISettings'));
+const MobileNotifications = lazy(() => import('./pages/mobile/MobileNotifications'));
+const MobileNotificationSettings = lazy(() => import('./pages/mobile/MobileNotificationSettings'));
 const MobileHelp = lazy(() => import('./pages/mobile/MobileHelp'));
 const MobileAbout = lazy(() => import('./pages/mobile/MobileAbout'));
 const MobileAIGateway = lazy(() => import('./pages/mobile/MobileAIGateway'));
+const MobilePodcastStudio = lazy(() => import('./pages/mobile/MobilePodcastStudio'));
 
 
 // Lazy load pages (loaded on demand)
@@ -117,6 +121,7 @@ const MobileRedirect = ({ children }) => {
     '/grammar': '/m/grammar',
     '/ai-generator': '/m/ai',
     '/generated-content': '/m/ai/library',
+    '/ai-gateway': '/m/ai-gateway',
   };
 
   // If mobile device and not already on mobile path (and not auth/landing)
@@ -176,16 +181,44 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser && storedUser !== 'undefined' && storedUser !== 'null') {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error('Failed to parse user data:', error);
-        localStorage.removeItem('user');
+    const initUser = async () => {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser && storedUser !== 'undefined' && storedUser !== 'null') {
+        try {
+          const parsedUser = JSON.parse(storedUser);
+          setUser(parsedUser);
+
+          // FAST SYNC: Update profile from server immediately to get latest languages
+          try {
+            const { data: profile } = await api.get('profile/');
+            // Merge server data with local user object
+            const updatedUser = {
+              ...parsedUser,
+              native_language: profile.native_language,
+              target_language: profile.target_language
+            };
+
+            // Only update if changed to avoid unnecessary re-renders
+            if (profile.native_language !== parsedUser.native_language ||
+              profile.target_language !== parsedUser.target_language) {
+              console.log("Syncing language preferences from server:", profile.native_language);
+              setUser(updatedUser);
+              localStorage.setItem('user', JSON.stringify(updatedUser));
+            }
+          } catch (profileError) {
+            // Silent fail on profile sync (offline or token expired), keep local data
+            console.warn("Could not sync profile on load:", profileError);
+          }
+
+        } catch (error) {
+          console.error('Failed to parse user data:', error);
+          localStorage.removeItem('user');
+        }
       }
-    }
-    setLoading(false);
+      setLoading(false);
+    };
+
+    initUser();
   }, []);
 
   const ProtectedRoute = ({ children }) => {
@@ -256,11 +289,16 @@ function App() {
                         <Route path="me" element={<MobileProfile user={user} setUser={setUser} />} />
                         <Route path="me/edit" element={<MobileEditProfile user={user} setUser={setUser} />} />
                         <Route path="me/language" element={<MobileLanguageSettings user={user} setUser={setUser} />} />
+                        <Route path="me/language" element={<MobileLanguageSettings user={user} setUser={setUser} />} />
+                        <Route path="notifications" element={<MobileNotifications />} /> {/* New Notification Center */}
+                        <Route path="me/notifications" element={<MobileNotificationSettings user={user} />} />
                         <Route path="me/api-keys" element={<MobileAPISettings user={user} setUser={setUser} />} />
                         <Route path="me/security" element={<MobileSecuritySettings user={user} />} />
                         <Route path="me/help" element={<MobileHelp />} />
                         <Route path="me/about" element={<MobileAbout />} />
+                        <Route path="me/about" element={<MobileAbout />} />
                         <Route path="ai-gateway" element={<MobileAIGateway />} />
+                        <Route path="podcast-studio" element={<MobilePodcastStudio />} />
                       </Route>
 
                       {/* ===== DESKTOP ROUTES ===== */}

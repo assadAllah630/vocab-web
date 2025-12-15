@@ -160,6 +160,7 @@ After implementation:
 
 - ❌ NEVER call AI providers directly (always use unified_ai)
 - ❌ NEVER skip the `user` parameter (required for logging)
+- ❌ NEVER access `user.profile.gemini_api_key` directly (Removed)
 - ⚠️ Always handle AI failures gracefully
 - ⚠️ Always show loading state during generation
 - ⚠️ Consider rate limiting for expensive operations

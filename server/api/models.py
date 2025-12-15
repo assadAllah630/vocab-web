@@ -18,23 +18,13 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     native_language = models.CharField(max_length=2, choices=LANGUAGES, default='en')
     target_language = models.CharField(max_length=2, choices=LANGUAGES, default='de')
-    # Google Cloud TTS settings
-    google_tts_api_key = models.CharField(max_length=500, blank=True, default='', help_text='Google Cloud API Key for Text-to-Speech')
-    preferred_tts_voice = models.CharField(max_length=100, blank=True, default='de-DE-Wavenet-F', help_text='Preferred Google TTS voice name')
-    preferred_tts_language = models.CharField(max_length=10, blank=True, default='de-DE', help_text='Preferred TTS language code')
-    
     # Deepgram TTS settings
     deepgram_api_key = models.CharField(max_length=500, blank=True, default='', help_text='Deepgram API Key for Text-to-Speech')
-    
-    # Speechify TTS settings
     speechify_api_key = models.CharField(max_length=500, blank=True, default='', help_text='Speechify API Key for Text-to-Speech')
-
+    
     # AI Provider Keys
-    gemini_api_key = models.CharField(max_length=500, blank=True, default='', help_text='Gemini API Key')
-    openrouter_api_key = models.CharField(max_length=500, blank=True, default='', help_text='OpenRouter API Key')
     ocrspace_api_key = models.CharField(max_length=500, blank=True, default='', help_text='OCR.space API Key for image text extraction')
     stable_horde_api_key = models.CharField(max_length=500, blank=True, default='', help_text='Stable Horde API Key')
-    huggingface_api_token = models.CharField(max_length=500, blank=True, default='', help_text='Hugging Face API Token')
 
 
     # OTP & Verification
@@ -46,6 +36,10 @@ class UserProfile(models.Model):
     bio = models.TextField(blank=True, max_length=500)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
     location = models.CharField(max_length=100, blank=True)
+    
+    # Notification Settings
+    fcm_token = models.CharField(max_length=500, blank=True, null=True, help_text='Firebase Cloud Messaging Token')
+    allow_notifications = models.BooleanField(default=True)
 
     def __str__(self):
         return f"{self.user.username}'s Profile"
@@ -177,6 +171,14 @@ class Exam(models.Model):
     questions = models.JSONField(default=list)  # Stores the generated questions
     is_public = models.BooleanField(default=False) # Allow sharing
     
+    # Background Job Status
+    STATUS_CHOICES = [
+        ('processing', 'Processing'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed')
+    ]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='completed')
+    
     # Denormalized fields for quick access
     best_score = models.IntegerField(default=0)
     attempt_count = models.IntegerField(default=0)
@@ -262,13 +264,46 @@ class GrammarTopic(models.Model):
     generated_by_ai = models.BooleanField(default=False)
     generation_metadata = models.JSONField(default=dict, blank=True)
 
+class PodcastCategory(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    style = models.CharField(max_length=100, default='Conversational') # e.g. "Conversational", "News", "Storytelling"
+    tone = models.CharField(max_length=100, default='Casual') # e.g. "Humorous", "Serious", "Excited"
+    target_audience = models.CharField(max_length=100, default="Beginner")
+    series_bible = models.JSONField(default=dict, blank=True, help_text="Stores series history and context")
+    audio_settings = models.JSONField(default=dict, blank=True, help_text="Voice and SFX preferences")
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return self.name
+
 class Podcast(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    category = models.ForeignKey(PodcastCategory, on_delete=models.SET_NULL, null=True, blank=True, related_name='episodes')
     title = models.CharField(max_length=200)
     text_content = models.TextField()
     audio_file = models.FileField(upload_to='podcasts/', blank=True, null=True)
     voice_id = models.CharField(max_length=100, default='default')
     duration = models.IntegerField(null=True, blank=True)  # seconds
+    speech_marks = models.JSONField(default=list, blank=True, help_text="Timestamped lyrics/transcript")
+    
+    # Status Tracking
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('processing', 'Processing'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed')
+    ]
+    processing_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    progress = models.IntegerField(default=0)
+    current_message = models.CharField(max_length=200, default="Initializing...")
+    estimated_remaining = models.IntegerField(default=120)  # seconds
+    
+    # Context Awareness
+    episode_number = models.IntegerField(default=1)
+    summary = models.TextField(blank=True, help_text="Summary for AI context of next episode")
+    
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:

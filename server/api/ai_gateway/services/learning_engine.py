@@ -25,7 +25,7 @@ from datetime import timedelta
 from typing import Optional
 
 from django.utils import timezone
-from django.db import transaction
+from django.db import transaction, models
 from django.db.models import F, Case, When, Value
 
 from api.ai_gateway.models import ModelInstance, FailureLog, UserAPIKey

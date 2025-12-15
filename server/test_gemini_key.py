@@ -1,28 +1,22 @@
-"""
-Test Gemini API Key with Fallback
-"""
+
 import google.generativeai as genai
+import os
 
-API_KEY = "AIzaSyDp5DyhgngRWG7kiykmkzCCvOptWJlyunc"
-MODELS = ['gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-2.5-flash']
+KEY = "AIzaSyD-622cutGVfBlteubK6U_sT2BAg3yYyfo"
 
-for model_name in MODELS:
+def test_key():
+    print(f"Testing Key: {KEY[:10]}...")
+    genai.configure(api_key=KEY)
+    
+    print("Listing available models...")
     try:
-        print(f"Testing {model_name}...")
-        genai.configure(api_key=API_KEY)
-        model = genai.GenerativeModel(model_name)
-        response = model.generate_content('Say hello in German in one word')
-        print(f"✅ SUCCESS with {model_name}!")
-        print("Response:", response.text)
-        break
+        for m in genai.list_models():
+            if 'generateContent' in m.supported_generation_methods:
+                print(f"- {m.name}")
+                
+        # Retry with a known model if found in list (user will see output)
     except Exception as e:
-        error_str = str(e).lower()
-        if '429' in str(e) or 'quota' in error_str:
-            print(f"❌ {model_name}: Quota exceeded, trying next...")
-            continue
-        else:
-            print(f"❌ {model_name} FAILED:", str(e))
-            break
-else:
-    print("❌ All models exhausted quota!")
+        print(f"FAILED to list models: {e}")
 
+if __name__ == "__main__":
+    test_key()

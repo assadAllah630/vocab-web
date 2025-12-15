@@ -33,9 +33,16 @@ git commit -m "deploy: <description>"
 git push origin main
 ```
 
-## Step 3: Verify Deployments
+## Step 3: Deploy Client (Windows)
+> [!TIP]
+> Use the helper script to deploy safely to Vercel production.
+```powershell
+.\deploy-client.ps1
+```
+
+## Step 4: Verify Deployments
 - **Backend (Render)**: Check build logs, verify migrations
-- **Frontend (Vercel)**: Check build, test site
+- **Frontend (Vercel)**: Check build, test site (Script outputs URL)
 - **Admin (Vercel)**: Check admin build
 
 ## Step 4: Post-Deploy Verification

@@ -42,11 +42,8 @@ def get_ai_client(request):
             except:
                 pass
             
-            # Fallback to profile Gemini key
-            if hasattr(user, 'profile') and user.profile.gemini_api_key:
-                return 'GEMINI', user.profile.gemini_api_key
-            else:
-                return None, "No API key available. Please add a Gemini API key in Settings or AI Gateway."
+            # Fallback to invalid if no gateway key found
+            return None, "No API key available. Please add a Gemini API key in Settings or AI Gateway."
     else:
         # Detect if OpenRouter or OpenAI key
         base_url = request.data.get('base_url')

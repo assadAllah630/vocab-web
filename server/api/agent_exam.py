@@ -1,6 +1,10 @@
 import os
 from typing import TypedDict, List, Optional, Dict, Any
 import json
+try:
+    import json_repair
+except ImportError:
+    json_repair = None
 from langgraph.graph import StateGraph, END
 from pydantic import BaseModel, Field
 from .language_service import LanguageService
@@ -96,8 +100,11 @@ def planner_node(state: ExamState, config):
     response_text = call_ai(user, prompt)
     
     try:
-        text = response_text.replace('```json', '').replace('```', '').strip()
-        plan = json.loads(text)
+        if json_repair:
+            plan = json_repair.loads(response_text)
+        else:
+            text = response_text.replace('```json', '').replace('```', '').strip()
+            plan = json.loads(text)
         return {
             "exam_plan": plan, 
             "logs": state.get("logs", []) + ["Blueprint created."]
@@ -221,13 +228,16 @@ def generator_node(state: ExamState, config):
     response_text = call_ai(user, prompt)
     
     try:
-        text = response_text.replace('```json', '').replace('```', '').strip()
-        # Try to find JSON object boundaries
-        start_idx = text.find('{')
-        end_idx = text.rfind('}') + 1
-        if start_idx >= 0 and end_idx > start_idx:
-            text = text[start_idx:end_idx]
-        exam_data = json.loads(text)
+        if json_repair:
+            exam_data = json_repair.loads(response_text)
+        else:
+            text = response_text.replace('```json', '').replace('```', '').strip()
+            # Try to find JSON object boundaries
+            start_idx = text.find('{')
+            end_idx = text.rfind('}') + 1
+            if start_idx >= 0 and end_idx > start_idx:
+                text = text[start_idx:end_idx]
+            exam_data = json.loads(text)
         return {
             "draft_questions": exam_data.get('sections', []),
             "final_exam": exam_data,
@@ -312,8 +322,11 @@ def refiner_node(state: ExamState, config):
     response_text = call_ai(user, prompt)
     
     try:
-        text = response_text.replace('```json', '').replace('```', '').strip()
-        exam_data = json.loads(text)
+        if json_repair:
+            exam_data = json_repair.loads(response_text)
+        else:
+            text = response_text.replace('```json', '').replace('```', '').strip()
+            exam_data = json.loads(text)
         return {
             "final_exam": exam_data,
             "revision_count": state.get("revision_count", 0) + 1,

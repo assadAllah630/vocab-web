@@ -6,24 +6,6 @@ import api from '../../api';
 
 const API_KEYS = [
     {
-        id: 'gemini_api_key',
-        name: 'Gemini API Key',
-        icon: '✨',
-        description: 'For AI formatting & text analysis',
-        placeholder: 'AIza...',
-        helpUrl: 'https://aistudio.google.com/apikey',
-        free: true
-    },
-    {
-        id: 'openrouter_api_key',
-        name: 'OpenRouter API Key',
-        icon: '🔀',
-        description: 'Alternative AI provider',
-        placeholder: 'sk-or-...',
-        helpUrl: 'https://openrouter.ai/',
-        free: true
-    },
-    {
         id: 'ocrspace_api_key',
         name: 'OCR.space API Key',
         icon: '📷',
@@ -33,21 +15,21 @@ const API_KEYS = [
         free: true
     },
     {
-        id: 'google_tts_api_key',
-        name: 'Google TTS API Key',
-        icon: '🔊',
-        description: 'Premium text-to-speech',
-        placeholder: 'AIza...',
-        helpUrl: 'https://console.cloud.google.com/',
-        free: false
-    },
-    {
         id: 'deepgram_api_key',
         name: 'Deepgram API Key',
         icon: '🎙️',
         description: 'Speech recognition',
         placeholder: 'Your Deepgram key',
         helpUrl: 'https://deepgram.com/',
+        free: false
+    },
+    {
+        id: 'speechify_api_key',
+        name: 'Speechify API Key',
+        icon: '🗣️',
+        description: 'Premium AI Text-to-Speech',
+        placeholder: 'Your Speechify key',
+        helpUrl: 'https://speechify.com/',
         free: false
     },
     {
@@ -135,7 +117,7 @@ const MobileAPISettings = ({ user, setUser }) => {
                     <ArrowLeft size={20} style={{ color: '#A1A1AA' }} />
                 </button>
                 <h1 className="text-lg font-semibold" style={{ color: '#FAFAFA' }}>
-                    API Keys
+                    Service Keys
                 </h1>
                 <motion.button
                     whileTap={{ scale: 0.95 }}
@@ -153,18 +135,42 @@ const MobileAPISettings = ({ user, setUser }) => {
             </div>
 
             <div className="px-5 pt-6">
+                {/* AI Gateway Link */}
+                <div
+                    onClick={() => navigate('/m/ai-gateway')}
+                    className="rounded-xl p-4 mb-6 flex items-center justify-between cursor-pointer active:scale-95 transition-transform"
+                    style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)', boxShadow: '0 4px 20px rgba(79, 70, 229, 0.2)' }}
+                >
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                            <Sparkles size={20} className="text-white" />
+                        </div>
+                        <div>
+                            <p className="text-sm font-bold text-white">
+                                AI Gateway
+                            </p>
+                            <p className="text-xs text-blue-100 mt-0.5">
+                                Manage Gemini, OpenRouter & HuggingFace
+                            </p>
+                        </div>
+                    </div>
+                    <div className="px-3 py-1 bg-white/20 rounded-full text-[10px] font-medium text-white backdrop-blur-sm">
+                        Go
+                    </div>
+                </div>
+
                 {/* Info Banner */}
                 <div
                     className="rounded-xl p-4 mb-6 flex items-start gap-3"
-                    style={{ backgroundColor: '#6366F110', border: '1px solid #6366F130' }}
+                    style={{ backgroundColor: '#18181B', border: '1px solid #27272A' }}
                 >
-                    <Sparkles size={20} style={{ color: '#6366F1' }} className="flex-shrink-0 mt-0.5" />
+                    <Key size={20} style={{ color: '#71717A' }} className="flex-shrink-0 mt-0.5" />
                     <div>
                         <p className="text-sm font-medium" style={{ color: '#FAFAFA' }}>
-                            Unlock AI Features
+                            Specialized Services
                         </p>
                         <p className="text-xs mt-1" style={{ color: '#A1A1AA' }}>
-                            Add your API keys to enable AI formatting, translations, and more. Keys marked with 🆓 have free tiers.
+                            Manage legacy or specialized keys for OCR, Deepgram, and Stable Horde here.
                         </p>
                     </div>
                 </div>

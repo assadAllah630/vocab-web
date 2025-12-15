@@ -26,14 +26,10 @@ def update_profile(request):
     
     # API Keys - save any that are provided in the request
     api_key_fields = [
-        'gemini_api_key',
-        'openrouter_api_key',
         'ocrspace_api_key',
-        'google_tts_api_key',
         'deepgram_api_key',
         'speechify_api_key',
         'stable_horde_api_key',
-        'huggingface_api_token',
     ]
     
     for field in api_key_fields:

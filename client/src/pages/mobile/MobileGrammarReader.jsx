@@ -258,9 +258,13 @@ function MobileGrammarReader() {
                                         key={index}
                                         className="p-4 rounded-xl border border-[#27272A] bg-[#141416]"
                                     >
-                                        <p className="font-bold text-[#FAFAFA] text-lg mb-1">{example.german}</p>
+                                        <div className="mb-1">
+                                            <MobileMarkdownRenderer content={example.german} fontSize={18} />
+                                        </div>
                                         {example.english && (
-                                            <p className="text-[#A1A1AA] text-sm">{example.english}</p>
+                                            <div className="text-[#A1A1AA] text-sm">
+                                                <MobileMarkdownRenderer content={example.english} fontSize={14} />
+                                            </div>
                                         )}
                                     </div>
                                 ))}

@@ -17,9 +17,29 @@ from .notification_models import PushSubscription, NotificationPreferences, Noti
 
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
+def register_fcm_token(request):
+    """
+    Register Firebase Cloud Messaging (FCM) token for the user.
+    """
+    token = request.data.get('token')
+    
+    if not token:
+        return Response({'error': 'Token required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+    try:
+        from .models import UserProfile
+        profile = request.user.profile
+        profile.fcm_token = token
+        profile.save()
+        return Response({'message': 'FCM token registered successfully'})
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
 def subscribe_push(request):
     """
-    Subscribe a device to push notifications.
+    Subscribe a device to push notifications (Legacy Web Push).
     
     Request body:
     {
@@ -36,6 +56,8 @@ def subscribe_push(request):
         keys = subscription.get('keys', {})
         
         if not endpoint:
+            # If no endpoint, this might be a mistake or old client. 
+            # But if we have FCM token logic above, maybe this is not needed as much.
             return Response({'error': 'Endpoint required'}, status=status.HTTP_400_BAD_REQUEST)
         
         # Create or update subscription
@@ -169,3 +191,36 @@ def send_test_notification(request):
         'message': 'Test notification queued',
         'devices': subscriptions.count()
     })
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([permissions.IsAuthenticated])
+def list_notifications(request):
+    """
+    Get user's notification history.
+    """
+    if request.method == 'POST':
+        # Mark as read (or clicked)
+        notif_id = request.data.get('id')
+        if notif_id:
+            NotificationLog.objects.filter(id=notif_id, user=request.user).update(clicked=True)
+            return Response({'message': 'Marked as read'})
+        # Mark all as read
+        if request.data.get('mark_all_read'):
+            NotificationLog.objects.filter(user=request.user, clicked=False).update(clicked=True)
+            return Response({'message': 'All marked as read'})
+
+    # GET
+    notifications = NotificationLog.objects.filter(user=request.user).order_by('-sent_at')[:50]
+    
+    data = [{
+        'id': n.id,
+        'type': n.notification_type,
+        'title': n.title,
+        'body': n.body,
+        'sent_at': n.sent_at,
+        'is_read': n.clicked,
+        'error': n.error
+    } for n in notifications]
+    
+    return Response(data)

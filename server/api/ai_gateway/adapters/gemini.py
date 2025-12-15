@@ -88,6 +88,9 @@ class GeminiAdapter(BaseAdapter):
         last_error = None
         start_time = time.time()
         
+        print(f"DEBUG: Gemini complete called. self.model='{self.model}'", flush=True)
+        print(f"DEBUG: Models to try: {models_to_try}", flush=True)
+        
         for model in models_to_try:
             url = f"{self.BASE_URL}/models/{model}:generateContent"
             
@@ -98,6 +101,11 @@ class GeminiAdapter(BaseAdapter):
                     "temperature": temperature,
                 }
             }
+            
+            # Add tools (e.g. google_search_retrieval) if provided
+            if "tools" in kwargs:
+                payload["tools"] = kwargs["tools"]
+
             
             try:
                 async with httpx.AsyncClient(timeout=60) as client:

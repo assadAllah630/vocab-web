@@ -64,20 +64,25 @@ from .notification_views import (
     unsubscribe_push,
     notification_preferences,
     notification_status,
-    send_test_notification
+    send_test_notification,
+    register_fcm_token,
+    list_notifications
 )
+from .views import podcast_views, vocab_views, exam_views # Added based on the provided router config
+from . import feature_views # Added based on the provided router config
 
 router = DefaultRouter()
-router.register(r'vocab', VocabularyViewSet, basename='vocabulary')
+router.register(r'vocab', vocab_views.VocabularyViewSet, basename='vocabulary')
 router.register(r'progress', UserProgressViewSet, basename='progress')
 router.register(r'quiz', QuizViewSet, basename='quiz')
 router.register(r'public-vocab', PublicVocabularyViewSet, basename='public-vocabulary')
 router.register(r'grammar', GrammarTopicViewSet, basename='grammar')
-router.register(r'podcasts', PodcastViewSet, basename='podcast')
-router.register(r'exams', ExamViewSet, basename='exam')
-router.register(r'users', UserProfileViewSet, basename='user-profile')
+router.register(r'exams', exam_views.ExamViewSet, basename='exams')
+router.register(r'podcasts/categories', podcast_views.PodcastCategoryViewSet, basename='podcast-categories')
+router.register(r'podcasts', podcast_views.PodcastViewSet, basename='podcasts')
+router.register(r'users', UserProfileViewSet, basename='users')
 router.register(r'search/users', UserSearchView, basename='user-search')
-router.register(r'saved-texts', SavedTextViewSet, basename='saved-text')
+router.register(r'saved-texts', SavedTextViewSet, basename='saved-texts')
 
 urlpatterns = [
     # Custom vocab endpoints must come BEFORE router.urls to avoid conflicts
@@ -169,11 +174,13 @@ urlpatterns = [
     path('games/matching/', views.get_matching_game_words, name='get_matching_game_words'),
     
     # Push Notifications
+    path('notifications/register-fcm/', register_fcm_token, name='register_fcm_token'),
     path('notifications/subscribe/', subscribe_push, name='subscribe_push'),
     path('notifications/unsubscribe/', unsubscribe_push, name='unsubscribe_push'),
     path('notifications/preferences/', notification_preferences, name='notification_preferences'),
     path('notifications/status/', notification_status, name='notification_status'),
     path('notifications/test/', send_test_notification, name='send_test_notification'),
+    path('notifications/list/', list_notifications, name='list_notifications'),
     
     # Monitoring
     path('health/', health_check, name='health_check'),

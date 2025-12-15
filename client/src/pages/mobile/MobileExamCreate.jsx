@@ -56,6 +56,7 @@ function MobileExamCreate() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [activeStep, setActiveStep] = useState(0);
+    const [generationSuccess, setGenerationSuccess] = useState(false); // New state for success view
 
     const handleTypeToggle = (typeId) => {
         setSelectedTypes(prev =>
@@ -111,6 +112,14 @@ function MobileExamCreate() {
             clearInterval(stepInterval);
             setActiveStep(STEPS.length);
 
+            if (res.status === 202) {
+                // Async generation started
+                // Show success view instead of navigating
+                setGenerationSuccess(true);
+                return;
+            }
+
+            // Fallback for immediate response (legacy or if we switch back)
             // Start the exam with timer
             const totalQuestions = calculateTotalQuestions(res.data);
             startExam(res.data, totalQuestions * 20); // 20 seconds per question
@@ -125,6 +134,64 @@ function MobileExamCreate() {
             setLoading(false);
         }
     };
+
+    // Success View
+    if (generationSuccess) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center" style={{ backgroundColor: '#09090B' }}>
+                <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="w-20 h-20 rounded-full flex items-center justify-center mb-6"
+                    style={{ backgroundColor: 'rgba(34, 197, 94, 0.15)' }}
+                >
+                    <CheckCircle size={40} color="#22C55E" />
+                </motion.div>
+
+                <h2 className="text-2xl font-bold mb-3" style={{ color: '#FAFAFA' }}>
+                    Exam Generation Started!
+                </h2>
+
+                <p className="text-lg mb-6 leading-relaxed" style={{ color: '#A1A1AA' }}>
+                    Your exam is being crafted by our AI. <br />
+                    This usually takes about <span className="text-white font-semibold">3 minutes</span>.
+                </p>
+
+                <div className="p-4 rounded-xl mb-8 w-full max-w-sm" style={{ backgroundColor: '#1C1C1F', border: '1px solid #27272A' }}>
+                    <p className="text-sm" style={{ color: '#A1A1AA' }}>
+                        You can leave this page and keep practicing. We'll send you a <span className="text-indigo-400 font-semibold">notification</span> when it's ready!
+                    </p>
+                </div>
+
+                <div className="w-full max-w-sm space-y-3">
+                    <motion.button
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => navigate('/m/exam')}
+                        className="w-full py-4 rounded-xl font-bold text-base transition-all"
+                        style={{
+                            background: 'linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)',
+                            color: '#FFFFFF',
+                            boxShadow: '0 8px 24px rgba(99, 102, 241, 0.3)'
+                        }}
+                    >
+                        Go to Exam List
+                    </motion.button>
+
+                    <motion.button
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => navigate('/m')}
+                        className="w-full py-4 rounded-xl font-medium text-base transition-all"
+                        style={{
+                            backgroundColor: 'transparent',
+                            color: '#71717A'
+                        }}
+                    >
+                        Home
+                    </motion.button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen pb-24" style={{ backgroundColor: '#09090B' }}>

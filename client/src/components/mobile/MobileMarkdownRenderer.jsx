@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import mermaid from 'mermaid';
@@ -40,7 +41,7 @@ const MermaidDiagram = ({ children }) => {
                         flowchart: {
                             curve: 'basis',
                             htmlLabels: true,
-                            useMaxWidth: true
+                            useMaxWidth: false,
                         },
                         securityLevel: 'loose',
                         suppressErrorRendering: true
@@ -53,7 +54,12 @@ const MermaidDiagram = ({ children }) => {
                     if (code.includes('(') && code.includes('[')) {
                         code = code.replace(/\[([^"\[\]]*?\([^"\[\]]*?\)[^"\[\]]*?)\]/g, '["$1"]');
                         code = code.replace(/\(([^"()]*?\([^"()]*?\)[^"()]*?)\)/g, '("$1")');
+                        code = code.replace(/\[([^"\[\]]*?\([^"\[\]]*?\)[^"\[\]]*?)\]/g, '["$1"]');
+                        code = code.replace(/\(([^"()]*?\([^"()]*?\)[^"()]*?)\)/g, '("$1")');
                     }
+
+                    // Remove backticks to prevent code styling in nodes
+                    code = code.replace(/`/g, '');
 
                     const { svg } = await mermaid.render(id, code);
                     setSvg(svg);
@@ -71,10 +77,23 @@ const MermaidDiagram = ({ children }) => {
     }, [children]);
 
     return (
-        <div
-            className="my-6 p-4 bg-[#141416] rounded-xl border border-[#27272A] overflow-x-auto flex justify-center"
-            dangerouslySetInnerHTML={{ __html: svg }}
-        />
+        <div className="my-6 overflow-x-auto flex justify-center custom-mermaid-container">
+            <style>{`
+                .custom-mermaid-container .node foreignObject {
+                    overflow: visible !important;
+                }
+                .custom-mermaid-container .node foreignObject div {
+                    white-space: normal !important;
+                    overflow: visible !important;
+                    text-align: center !important;
+                    line-height: 1.4 !important;
+                }
+            `}</style>
+            <div
+                className="p-4 bg-[#141416] rounded-xl border border-[#27272A] min-w-min inline-block"
+                dangerouslySetInnerHTML={{ __html: svg }}
+            />
+        </div>
     );
 };
 
@@ -92,42 +111,71 @@ const CodeBlock = ({ node, inline, className, children, ...props }) => {
         return <MermaidDiagram>{String(children).replace(/\n$/, '')}</MermaidDiagram>;
     }
 
-    return !inline && match ? (
-        <div className="relative group my-6 rounded-xl overflow-hidden border border-[#27272A] bg-[#141416]">
-            <div className="flex items-center justify-between px-4 py-2 bg-[#1C1C1F] border-b border-[#27272A]">
-                <div className="flex items-center gap-2">
-                    <Terminal size={14} color="#71717A" />
-                    <span className="text-xs font-mono text-[#71717A]">{match[1]}</span>
+    if (!inline && match) {
+        return (
+            <div className="relative group my-6 rounded-xl overflow-hidden border border-[#27272A] bg-[#141416]">
+                <div className="flex items-center justify-between px-4 py-2 bg-[#1C1C1F] border-b border-[#27272A]">
+                    <div className="flex items-center gap-2">
+                        <Terminal size={14} color="#71717A" />
+                        <span className="text-xs font-mono text-[#71717A]">{match[1]}</span>
+                    </div>
+                    <button
+                        onClick={handleCopy}
+                        className="p-1.5 hover:bg-[#27272A] rounded-lg transition-colors"
+                    >
+                        {copied ? <Check size={14} color="#22C55E" /> : <Copy size={14} color="#71717A" />}
+                    </button>
                 </div>
-                <button
-                    onClick={handleCopy}
-                    className="p-1.5 hover:bg-[#27272A] rounded-lg transition-colors"
+                <SyntaxHighlighter
+                    style={vscDarkPlus}
+                    language={match[1]}
+                    PreTag="div"
+                    customStyle={{
+                        margin: 0,
+                        padding: '1rem',
+                        backgroundColor: '#141416',
+                        fontSize: '0.85rem',
+                        lineHeight: '1.6',
+                    }}
+                    {...props}
                 >
-                    {copied ? <Check size={14} color="#22C55E" /> : <Copy size={14} color="#71717A" />}
-                </button>
+                    {String(children).replace(/\n$/, '')}
+                </SyntaxHighlighter>
             </div>
-            <SyntaxHighlighter
-                style={vscDarkPlus}
-                language={match[1]}
-                PreTag="div"
-                customStyle={{
-                    margin: 0,
-                    padding: '1rem',
-                    backgroundColor: '#141416',
-                    fontSize: '0.85rem',
-                    lineHeight: '1.6',
-                }}
-                {...props}
-            >
-                {String(children).replace(/\n$/, '')}
-            </SyntaxHighlighter>
-        </div>
-    ) : (
-        <code className={`${inline
-            ? 'bg-[#27272A] text-[#FAFAFA] px-1.5 py-0.5 rounded text-sm font-mono'
-            : 'block bg-[#141416] p-4 rounded-xl text-sm font-mono overflow-x-auto my-4 text-[#FAFAFA] border border-[#27272A]'
-            }`} {...props}>
-            {children}
+        );
+    }
+
+    const content = String(children);
+    const isShortBlock = !inline && !match && !content.includes('\n') && content.length < 50;
+
+    // Choose styling based on block type
+    let wrapperClass = '';
+
+    if (inline) {
+        wrapperClass = 'bg-[#27272A] text-[#FAFAFA] px-1.5 py-0.5 rounded text-sm font-mono';
+    } else if (isShortBlock) {
+        // "Chip" style for short blocks (like words in grammar examples)
+        wrapperClass = 'inline-block bg-[#141416] px-3 py-1 rounded-lg text-sm font-mono align-middle mx-1 border border-[#27272A] text-[#FAFAFA]';
+    } else {
+        // Full block styling
+        wrapperClass = 'block bg-[#141416] p-4 rounded-xl text-sm font-mono overflow-x-auto my-4 text-[#FAFAFA] border border-[#27272A]';
+    }
+
+    return (
+        <code className={wrapperClass} {...props}>
+            {/* If it's a block code (not inline), try to render markdown inside it */}
+            {!inline ? (
+                <ReactMarkdown
+                    components={{
+                        p: ({ node, ...props }) => <span {...props} />, // Render paragraphs as spans to avoid extra margins
+                        strong: ({ node, ...props }) => <strong className="font-bold text-[#FAFAFA]" {...props} />
+                    }}
+                >
+                    {String(children)}
+                </ReactMarkdown>
+            ) : (
+                children
+            )}
         </code>
     );
 };
@@ -161,6 +209,9 @@ const MobileMarkdownRenderer = ({ content, fontSize = 16 }) => {
                 style={{ fontSize: `${fontSize}px` }}
                 {...props}
             />
+        ),
+        strong: ({ node, ...props }) => (
+            <strong className="font-bold text-[#FAFAFA] text-shadow-sm" {...props} />
         ),
         ul: ({ node, ...props }) => (
             <ul
@@ -199,7 +250,7 @@ const MobileMarkdownRenderer = ({ content, fontSize = 16 }) => {
         ),
         td: ({ node, ...props }) => (
             <td
-                className="px-4 py-3 whitespace-nowrap text-sm text-[#FAFAFA] border-b border-[#27272A] last:border-0"
+                className="px-4 py-3 text-sm text-[#FAFAFA] border-b border-[#27272A] last:border-0 align-top leading-relaxed"
                 {...props}
             />
         ),
@@ -211,12 +262,16 @@ const MobileMarkdownRenderer = ({ content, fontSize = 16 }) => {
         ),
     };
 
+    // Pre-process content to handle escaped newlines often returned by AI
+    const processedContent = content ? content.replace(/\\n/g, '\n') : '';
+
     return (
         <ReactMarkdown
             remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeRaw]}
             components={components}
         >
-            {content}
+            {processedContent}
         </ReactMarkdown>
     );
 };

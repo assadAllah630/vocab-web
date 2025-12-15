@@ -1,28 +1,25 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../api';
 
+import usePushNotifications from '../hooks/usePushNotifications';
+
 function Settings() {
+    const { requestPermission, token } = usePushNotifications();
     const [apiKey, setApiKey] = useState('');
     const [nativeLang, setNativeLang] = useState('en');
     const [targetLang, setTargetLang] = useState('de');
     const [saved, setSaved] = useState(false);
     const [langSaved, setLangSaved] = useState(false);
 
-    // Google TTS states
-    const [googleTTSKey, setGoogleTTSKey] = useState('');
-    const [googleTTSFileName, setGoogleTTSFileName] = useState('');
-    const [googleTTSSaved, setGoogleTTSSaved] = useState(false);
-    const [googleTTSValidating, setGoogleTTSValidating] = useState(false);
-    const [googleTTSError, setGoogleTTSError] = useState('');
+
 
     // Deepgram TTS states
     const [deepgramKey, setDeepgramKey] = useState('');
     const [deepgramSaved, setDeepgramSaved] = useState(false);
     const [deepgramValidating, setDeepgramValidating] = useState(false);
 
-    // Speechify TTS states
-    const [speechifyKey, setSpeechifyKey] = useState('');
-    const [speechifySaved, setSpeechifySaved] = useState(false);
+
 
     // OpenRouter states
     const [openrouterKey, setOpenrouterKey] = useState('');
@@ -31,7 +28,7 @@ function Settings() {
 
     // Image Generation states
     const [hordeKey, setHordeKey] = useState('');
-    const [hfToken, setHfToken] = useState('');
+
     const [imageGenSaved, setImageGenSaved] = useState(false);
 
     useEffect(() => {
@@ -229,8 +226,7 @@ function Settings() {
         e.preventDefault();
         try {
             await api.put('profile/', {
-                stable_horde_api_key: hordeKey,
-                huggingface_api_token: hfToken
+                stable_horde_api_key: hordeKey
             });
             setImageGenSaved(true);
             setTimeout(() => setImageGenSaved(false), 3000);
@@ -240,94 +236,31 @@ function Settings() {
         }
     };
 
+
     return (
         <div className="p-6 max-w-4xl mx-auto">
             <h1 className="text-3xl font-bold text-slate-800 mb-8">Settings</h1>
 
             <div className="space-y-8">
-                {/* Gemini API Key Settings */}
-                <section className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                {/* AI Gateway Banner */}
+                <section className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-lg border border-transparent p-6 text-white">
                     <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-xl font-semibold text-slate-800">Gemini AI Configuration</h2>
-                        <span className="inline-flex items-center rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-medium text-indigo-800">Required</span>
+                        <h2 className="text-xl font-bold">AI Gateway</h2>
+                        <span className="inline-flex items-center rounded-full bg-white/20 px-3 py-1 text-xs font-medium text-white">New</span>
                     </div>
-                    <div className="mt-2 max-w-xl text-sm text-slate-500">
-                        <p>Enter your Google Gemini API Key to enable AI features like exam generation and chat.</p>
-                    </div>
-                    <form onSubmit={handleSave} className="mt-5 space-y-4">
-                        <div>
-                            <label htmlFor="apiKey" className="block text-sm font-medium text-slate-700">
-                                Gemini API Key
-                            </label>
-                            <div className="mt-1">
-                                <input
-                                    type="password"
-                                    id="apiKey"
-                                    value={apiKey}
-                                    onChange={(e) => setApiKey(e.target.value)}
-                                    className="block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                    placeholder="Enter your Gemini API Key"
-                                />
-                            </div>
-                            <p className="mt-2 text-xs text-slate-500">
-                                Don't have a key? <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" className="text-indigo-600 hover:text-indigo-500">Get one here</a>.
-                            </p>
-                        </div>
-                        <button
-                            type="submit"
-                            className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                        >
-                            {saved ? 'Saved!' : 'Save API Key'}
-                        </button>
-                    </form>
+                    <p className="text-blue-100 mb-6 max-w-2xl">
+                        Manage your AI providers (Gemini, OpenRouter, HuggingFace) in one place with advanced health tracking, quota management, and failover protection.
+                    </p>
+                    <Link
+                        to="/ai-gateway"
+                        className="inline-flex items-center justify-center rounded-lg bg-white text-blue-700 px-5 py-2.5 text-sm font-semibold hover:bg-blue-50 transition-colors"
+                    >
+                        Manage AI Keys
+                        <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                    </Link>
                 </section>
 
-                {/* OpenRouter API Key Settings */}
-                <section className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-xl font-semibold text-slate-800">OpenRouter Configuration</h2>
-                        <span className="inline-flex items-center rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-800">Semantic Search</span>
-                    </div>
-                    <div className="mt-2 max-w-xl text-sm text-slate-500">
-                        <p>Enter your OpenRouter API Key to enable semantic search for vocabulary.</p>
-                    </div>
-                    <form onSubmit={handleOpenRouterSave} className="mt-5 space-y-4">
-                        <div>
-                            <label htmlFor="openrouterKey" className="block text-sm font-medium text-slate-700">
-                                OpenRouter API Key
-                            </label>
-                            <div className="mt-1">
-                                <input
-                                    type="password"
-                                    id="openrouterKey"
-                                    value={openrouterKey}
-                                    onChange={(e) => setOpenrouterKey(e.target.value)}
-                                    className="block w-full rounded-md border-slate-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm"
-                                    placeholder="sk-or-v1-..."
-                                />
-                            </div>
-                            <p className="mt-2 text-xs text-slate-500">
-                                Don't have a key? <a href="https://openrouter.ai/keys" target="_blank" rel="noreferrer" className="text-purple-600 hover:text-purple-500">Get one here</a>.
-                            </p>
-                        </div>
-                        <div className="flex gap-2">
-                            <button
-                                type="submit"
-                                className="inline-flex justify-center rounded-md border border-transparent bg-purple-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-                            >
-                                {openrouterSaved ? 'Saved!' : 'Save API Key'}
-                            </button>
-                            <button
-                                type="button"
-                                onClick={handleTestOpenRouter}
-                                disabled={openrouterValidating}
-                                className="inline-flex justify-center rounded-md border border-slate-300 bg-white py-2 px-4 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50"
-                            >
-                                {openrouterValidating ? 'Testing...' : 'Test Key'}
-                            </button>
-                        </div>
-                    </form>
-                </section>
+
 
                 {/* Image Generation Settings */}
                 <section className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
@@ -360,25 +293,7 @@ function Settings() {
                             </p>
                         </div>
 
-                        {/* Hugging Face */}
-                        <div>
-                            <label htmlFor="hfToken" className="block text-sm font-medium text-slate-700">
-                                Hugging Face API Token
-                            </label>
-                            <div className="mt-1">
-                                <input
-                                    type="password"
-                                    id="hfToken"
-                                    value={hfToken}
-                                    onChange={(e) => setHfToken(e.target.value)}
-                                    className="block w-full rounded-md border-slate-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 sm:text-sm"
-                                    placeholder="hf_..."
-                                />
-                            </div>
-                            <p className="mt-2 text-xs text-slate-500">
-                                Get a token at <a href="https://huggingface.co/settings/tokens" target="_blank" rel="noreferrer" className="text-pink-600 hover:text-pink-500">huggingface.co</a> (Read permission required).
-                            </p>
-                        </div>
+
 
                         <button
                             type="submit"
@@ -387,6 +302,39 @@ function Settings() {
                             {imageGenSaved ? 'Saved!' : 'Save Image Keys'}
                         </button>
                     </form>
+                </section>
+
+                {/* Notification Settings */}
+                <section className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-xl font-semibold text-slate-800">Notifications</h2>
+                        <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">Recommended</span>
+                    </div>
+                    <div className="mt-2 max-w-xl text-sm text-slate-500">
+                        <p>Enable push notifications to get alerted when your exam generation is complete or to receive daily reminders.</p>
+                    </div>
+                    <div className="mt-5">
+                        <button
+                            onClick={requestPermission}
+                            className={`inline-flex items-center justify-center rounded-lg px-5 py-2.5 text-sm font-semibold transition-colors ${token
+                                ? 'bg-green-100 text-green-700 cursor-default'
+                                : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                                }`}
+                            disabled={!!token}
+                        >
+                            {token ? (
+                                <>
+                                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                    Notifications Enabled
+                                </>
+                            ) : (
+                                <>
+                                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                                    Enable Notifications
+                                </>
+                            )}
+                        </button>
+                    </div>
                 </section>
 
                 {/* Language Settings */}
@@ -489,111 +437,7 @@ function Settings() {
                     </form>
                 </section>
 
-                {/* Google Cloud TTS Settings */}
-                <section className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 opacity-75 hover:opacity-100 transition-opacity">
-                    <h2 className="text-xl font-semibold text-slate-800 mb-4">Google Cloud TTS (Legacy)</h2>
-                    <div className="mt-2 max-w-xl text-sm text-slate-500">
-                        <p>Upload your Google Cloud Service Account JSON key.</p>
-                    </div>
 
-                    <form onSubmit={handleGoogleTTSSave} className="mt-5 space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700">
-                                Service Account Key (JSON)
-                            </label>
-                            <div className="mt-1 flex justify-center rounded-md border-2 border-dashed border-slate-300 px-6 pt-5 pb-6">
-                                <div className="space-y-1 text-center">
-                                    <svg
-                                        className="mx-auto h-12 w-12 text-slate-400"
-                                        stroke="currentColor"
-                                        fill="none"
-                                        viewBox="0 0 48 48"
-                                        aria-hidden="true"
-                                    >
-                                        <path
-                                            d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                                            strokeWidth={2}
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                        />
-                                    </svg>
-                                    <div className="flex text-sm text-slate-600">
-                                        <label
-                                            htmlFor="file-upload"
-                                            className="relative cursor-pointer rounded-md bg-white font-medium text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 hover:text-indigo-500"
-                                        >
-                                            <span>Upload a file</span>
-                                            <input id="file-upload" name="file-upload" type="file" className="sr-only" accept=".json" onChange={handleFileChange} />
-                                        </label>
-                                        <p className="pl-1">or drag and drop</p>
-                                    </div>
-                                    <p className="text-xs text-slate-500">JSON up to 10KB</p>
-                                </div>
-                            </div>
-                            {googleTTSFileName && (
-                                <p className="mt-2 text-sm text-green-600">
-                                    Selected: {googleTTSFileName}
-                                </p>
-                            )}
-                            {googleTTSError && (
-                                <p className="mt-2 text-sm text-red-600">
-                                    {googleTTSError}
-                                </p>
-                            )}
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                            <button
-                                type="button"
-                                onClick={handleTestGoogleTTS}
-                                disabled={googleTTSValidating || !googleTTSKey}
-                                className="inline-flex justify-center rounded-md border border-slate-300 bg-white py-2 px-4 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
-                            >
-                                {googleTTSValidating ? 'Validating...' : 'Test Key'}
-                            </button>
-                            <button
-                                type="submit"
-                                className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                            >
-                                {googleTTSSaved ? 'Saved!' : 'Save Google Key'}
-                            </button>
-                        </div>
-                    </form>
-                </section>
-
-                {/* Speechify TTS Settings */}
-                <section className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                    <h2 className="text-xl font-semibold text-slate-800 mb-4">Speechify TTS</h2>
-                    <div className="mt-2 max-w-xl text-sm text-slate-500">
-                        <p>Enter your Speechify API Key to enable high-quality German voices.</p>
-                    </div>
-                    <form onSubmit={handleSpeechifySave} className="mt-5">
-                        <div>
-                            <label htmlFor="speechifyKey" className="block text-sm font-medium text-slate-700">
-                                API Key
-                            </label>
-                            <div className="mt-1 flex rounded-md shadow-sm">
-                                <input
-                                    type="password"
-                                    name="speechifyKey"
-                                    id="speechifyKey"
-                                    value={speechifyKey}
-                                    onChange={(e) => setSpeechifyKey(e.target.value)}
-                                    className="block w-full flex-1 rounded-md border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                    placeholder="Enter your Speechify API Key"
-                                />
-                            </div>
-                        </div>
-                        <div className="mt-4">
-                            <button
-                                type="submit"
-                                className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                            >
-                                {speechifySaved ? 'Saved!' : 'Save Key'}
-                            </button>
-                        </div>
-                    </form>
-                </section>
 
                 {/* Data Management Section */}
                 <div className="bg-white shadow sm:rounded-lg border border-slate-200">

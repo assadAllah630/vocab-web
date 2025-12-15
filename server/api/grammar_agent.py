@@ -74,6 +74,7 @@ Your principles:
 - CLARITY over complexity (simple language)
 - VISUAL over text-heavy (use diagrams)
 - AUTHORITATIVE over speculative (cite sources)
+- STYLING: You CAN use HTML tags for color and emphasis. E.g., `<span style="color:#ef4444">IMPORTANT</span>`. Use this sparingly for key concepts.
 """
 
         user_prompt = f"""

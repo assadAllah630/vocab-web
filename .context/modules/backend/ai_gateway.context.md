@@ -174,4 +174,13 @@ UserAPIKey.objects.filter(is_active=True).update(requests_today=0, tokens_used_t
 
 ---
 
-*Version: 2.1 | Updated: 2025-12-11*
+
+---
+
+## Interaction with Legacy System
+
+*   **Strict Gateway Enforcement**: The legacy fallback via `user.profile.gemini_api_key` has been **removed**. All AI generation must occur through the Gateway.
+*   **Dual-Use**: When `generate_ai_content` is called, it exclusively attempts to use the AI Gateway. If no valid gateway keys are found or generation fails, it raises an exception.
+*   **Gradual Migration**: The `UserProfile` model still retains specialized keys (Deepgram, OCR, Stable Horde) but generic LLM keys (Gemini, OpenRouter, HuggingFace) have been migrated to the Gateway.
+
+*Version: 2.2 | Updated: 2025-12-14*

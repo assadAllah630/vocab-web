@@ -17,12 +17,12 @@ class GroqAdapter(BaseAdapter):
     """
     
     PROVIDER_NAME = "groq"
-    DEFAULT_MODEL = "llama-3.1-70b-versatile"
+    DEFAULT_MODEL = "llama-3.3-70b-versatile"
     BASE_URL = "https://api.groq.com/openai/v1"
     
     # Fallback chain - ordered by capability
     FALLBACK_MODELS = [
-        "llama-3.1-70b-versatile",  # Best quality
+        "llama-3.3-70b-versatile",  # Best quality
         "llama-3.1-8b-instant",     # Fastest
         "mixtral-8x7b-32768",       # Good balance
         "gemma2-9b-it",             # Google's model
@@ -93,7 +93,7 @@ class GroqAdapter(BaseAdapter):
             error=f"All models failed. Last error: {last_error}"
         )
     
-    async def validate_key(self) -> bool:
+    async def validate_key(self) -> tuple[bool, str]:
         """Validate Groq API key (200 OK or 429 Quota Exceeded = Valid)."""
         try:
             async with httpx.AsyncClient(timeout=10) as client:
@@ -102,6 +102,13 @@ class GroqAdapter(BaseAdapter):
                     headers=self._get_headers(),
                     json={"model": self.DEFAULT_MODEL, "messages": [{"role": "user", "content": "hi"}], "max_tokens": 5}
                 )
-                return response.status_code in (200, 429)
-        except:
-            return False
+                
+                if response.status_code == 200:
+                    return True, "Valid"
+                elif response.status_code == 429:
+                    return True, "Valid (Quota Exceeded)"
+                else:
+                    return False, f"HTTP {response.status_code}: {response.text[:200]}"
+                    
+        except Exception as e:
+            return False, str(e)

@@ -104,7 +104,7 @@ class OpenRouterAdapter(BaseAdapter):
             error=f"All models failed. Last error: {last_error}"
         )
     
-    async def validate_key(self) -> bool:
+    async def validate_key(self) -> tuple[bool, str]:
         """Validate key (200 OK or 429 Exceeded = Valid)"""
         try:
             async with httpx.AsyncClient(timeout=15) as client:
@@ -113,6 +113,9 @@ class OpenRouterAdapter(BaseAdapter):
                     headers=self._get_headers(),
                     json={"model": self.DEFAULT_MODEL, "messages": [{"role": "user", "content": "hi"}], "max_tokens": 5}
                 )
-                return response.status_code in (200, 429)
-        except:
-            return False
+                
+                if response.status_code in (200, 429):
+                    return True, "Valid"
+                return False, f"Status {response.status_code}"
+        except Exception as e:
+            return False, str(e)
