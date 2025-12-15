@@ -4,8 +4,11 @@ from django.conf import settings
 from django.conf.urls.static import static
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 
+from api.views.seed_views import seed_ai_models_view
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('admin/seed-ai/', seed_ai_models_view, name='seed_ai_models'),
     path('api/', include('api.urls')),
     
     # API Documentation (Swagger/OpenAPI)

@@ -9,8 +9,9 @@ from api.models import Podcast
 class ProducerAgent:
     def __init__(self, user):
         self.user = user
-        # Get Deepgram key from user profile or settings
-        self.api_key = getattr(user.profile, 'deepgram_api_key', '') or settings.DEEPGRAM_API_KEY
+        # Get Deepgram key from user profile or settings (Safely)
+        # Note: We are using this field for Speechify Key as well in the transition
+        self.api_key = getattr(user.profile, 'deepgram_api_key', '') or getattr(settings, 'DEEPGRAM_API_KEY', None)
 
     def run(self, script_data: dict, podcast_instance: Podcast, audio_speed: float = 1.0):
         """

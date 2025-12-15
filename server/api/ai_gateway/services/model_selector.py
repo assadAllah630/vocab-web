@@ -246,6 +246,7 @@ class ModelSelector:
         """Get all model instances that could handle this request."""
         
         # Base query: user's active keys, not blocked
+        # Step 1: Specific User Keys
         queryset = ModelInstance.objects.select_related('api_key', 'model').filter(
             api_key__user=user,
             api_key__is_active=True,
@@ -253,6 +254,17 @@ class ModelSelector:
         ).filter(
             Q(is_blocked=False) | Q(block_until__lt=timezone.now())
         )
+        
+        # Step 2: System/Admin Keys Fallback
+        # If the user has no personal keys, we allow using keys owned by Superusers (System Keys)
+        if not queryset.exists():
+            queryset = ModelInstance.objects.select_related('api_key', 'model').filter(
+                api_key__user__is_superuser=True,
+                api_key__is_active=True,
+                model__is_active=True,
+            ).filter(
+                Q(is_blocked=False) | Q(block_until__lt=timezone.now())
+            )
         
         # Filter by request type
         if request_type == 'text':
