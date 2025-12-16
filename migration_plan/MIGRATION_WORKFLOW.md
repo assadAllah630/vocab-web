@@ -5,11 +5,12 @@ This checklist tracks the porting of every component from `client/src` to the ne
 
 > **CRITICAL INSTRUCTION:**
 > Before starting any item, **READ** the [MIGRATION_COMPONENTS_DEEP.csv](MIGRATION_COMPONENTS_DEEP.csv) row for that component to understand its complexity, hooks, and dependencies.
+> **SMART MATCHING:** Check [FLUTTER_RESOURCES.md](FLUTTER_RESOURCES.md) to find pre-built packages before writing custom code!
 > **AFTER** completing an item, **UPDATE** the CSV by marking `Is Migrated` and `Is Tested` with `TRUE`.
 
 ## Phase 1: Foundation (Setup)
 - [ ] **Project Init:** logic already installed.
-- [ ] **Dependencies:** Add `dio`, `go_router`, `flutter_riverpod`, `google_fonts`, `lucide_icons`.
+- [ ] **Dependencies:** Add `dio`, `go_router`, `flutter_riverpod`, `google_fonts`, `lucide_icons`, `getwidget`.
 - [ ] **Special Libs:** Add `flutter_markdown`, `confetti`, `lottie`, `webview_flutter`, `flutter_animate`.
 - [ ] **Theming:** Create `lib/core/theme/app_theme.dart` matching `index.css`/Tailwind colors.
 - [ ] **Navigation:** Setup `lib/core/router/router.dart` with `GoRouter`.

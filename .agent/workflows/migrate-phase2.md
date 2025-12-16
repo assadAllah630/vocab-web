@@ -5,6 +5,7 @@ description: Flutter Migration Phase 2 - Core Layouts (MainLayout, Navbar, Wizar
 # Phase 2: Core Layouts (High Dependency)
 
 > These layouts MUST be built first as they wrap all other pages.
+> **SMART MATCHING:** Check `migration_plan/FLUTTER_RESOURCES.md` for pre-built navigation and layout widgets!
 
 ## Prerequisites
 - Phase 1 completed (`/migrate-phase1`)

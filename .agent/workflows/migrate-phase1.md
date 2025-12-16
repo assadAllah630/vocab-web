@@ -4,7 +4,9 @@ description: Flutter Migration Phase 1 - Foundation Setup (Dependencies, Theme, 
 
 # Phase 1: Foundation Setup
 
-> **BEFORE STARTING:** Read `migration_plan/MIGRATION_CONTEXT.md` and `migration_plan/MIGRATION_RULES.md`.
+> **BEFORE STARTING:** 
+> - Read `migration_plan/MIGRATION_CONTEXT.md` and `migration_plan/MIGRATION_RULES.md`
+> - **SMART MATCHING:** Check `migration_plan/FLUTTER_RESOURCES.md` for pre-built packages!
 
 ## Prerequisites
 - Flutter SDK installed at `E:\flutter_windows_3.38.3-stable\flutter`
@@ -27,16 +29,24 @@ description: Flutter Migration Phase 1 - Foundation Setup (Dependencies, Theme, 
      flutter_riverpod: ^2.4.0
      google_fonts: ^6.1.0
      lucide_icons: ^0.257.0
+     getwidget: ^4.0.0          # 1000+ pre-built components!
    ```
 
-3. **Add Special Libraries** to `pubspec.yaml`
+3. **Add Animation & Content Libraries** to `pubspec.yaml`
    ```yaml
    dependencies:
+     # Animations (Pro-level!)
+     flutter_animate: ^4.3.0    # Replaces framer-motion
+     animations: ^2.0.0         # Material transitions
+     lottie: ^3.0.0             # After Effects animations
+     shimmer: ^3.0.0            # Loading skeletons
+     confetti: ^0.7.0           # Celebrations
+     
+     # Content
      flutter_markdown: ^0.6.18
-     confetti: ^0.7.0
-     lottie: ^3.0.0
-     webview_flutter: ^4.4.0
-     flutter_animate: ^4.3.0
+     webview_flutter: ^4.4.0    # For Mermaid diagrams
+     
+     # Utils
      flutter_secure_storage: ^9.0.0
      flutter_dotenv: ^5.1.0
    ```

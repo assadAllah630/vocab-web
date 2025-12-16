@@ -12,6 +12,7 @@ eggs/
 .eggs/
 lib/
 lib64/
+!flutter_app/lib/
 parts/
 sdist/
 var/
@@ -40,6 +41,7 @@ db.sqlite3-journal
 
 # Sensitive files
 .env
+!flutter_app/assets/.env
 *.pem
 *.key
 *.json.secret

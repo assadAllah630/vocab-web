@@ -5,6 +5,7 @@ description: Flutter Migration Phase 3 - Shared UI Components (Markdown, Buttons
 # Phase 3: Shared UI Components
 
 > Port reusable widgets before building feature screens.
+> **SMART MATCHING:** Check `migration_plan/FLUTTER_RESOURCES.md` - GetWidget has 1000+ pre-built components!
 
 ## Prerequisites
 - Phase 2 completed (`/migrate-phase2`)

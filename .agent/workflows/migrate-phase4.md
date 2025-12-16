@@ -5,6 +5,8 @@ description: Flutter Migration Phase 4 - Feature Screens & Integration (All page
 # Phase 4: Feature Migration & Integration
 
 > Migrate all feature screens page-by-page, then wire up real API.
+> **SMART MATCHING:** Check `migration_plan/FLUTTER_RESOURCES.md` for every component before writing custom code!
+> **CSV TRACKING:** Update `MIGRATION_COMPONENTS_DEEP.csv` after each file.
 
 ## Prerequisites
 - Phase 3 completed (`/migrate-phase3`)

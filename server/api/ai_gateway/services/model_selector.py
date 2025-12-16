@@ -245,6 +245,15 @@ class ModelSelector:
     ) -> List[ModelInstance]:
         """Get all model instances that could handle this request."""
         
+        # CRITICAL CLEANUP: Deactivate known decommissioned models FIRST
+        # This runs on every request to ensure bad models don't get selected
+        decommissioned = [
+            'llama3-70b-8192', 'llama3-8b-8192', 'mixtral-8x7b-32768',
+            'google/gemini-flash-1.5', 'anthropic/claude-3.5-sonnet',
+            'anthropic/claude-3-sonnet', 'google/gemini-1.5-flash',
+        ]
+        ModelDefinition.objects.filter(model_id__in=decommissioned).update(is_active=False)
+        
         # Base query: user's active keys, not blocked
         # Step 1: Specific User Keys
         queryset = ModelInstance.objects.select_related('api_key', 'model').filter(
