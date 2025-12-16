@@ -258,13 +258,35 @@ class ModelSelector:
         # Step 2: System/Admin Keys Fallback
         # If the user has no personal keys, we allow using keys owned by Superusers (System Keys)
         if not queryset.exists():
-            queryset = ModelInstance.objects.select_related('api_key', 'model').filter(
+            admin_queryset = ModelInstance.objects.select_related('api_key', 'model').filter(
                 api_key__user__is_superuser=True,
                 api_key__is_active=True,
                 model__is_active=True,
             ).filter(
                 Q(is_blocked=False) | Q(block_until__lt=timezone.now())
             )
+            
+            # If Admin keys exist but NO ModelInstances exist (because Admin never used the app),
+            # we need to auto-create them for the admin user(s).
+            if not admin_queryset.exists():
+                from django.contrib.auth import get_user_model
+                User = get_user_model()
+                # Find the main admin (e.g. first superuser)
+                admin_user = User.objects.filter(is_superuser=True).first()
+                if admin_user:
+                    self._ensure_model_instances(admin_user)
+                    # Re-query after creating instances
+                    queryset = ModelInstance.objects.select_related('api_key', 'model').filter(
+                        api_key__user__is_superuser=True,
+                        api_key__is_active=True,
+                        model__is_active=True,
+                    ).filter(
+                        Q(is_blocked=False) | Q(block_until__lt=timezone.now())
+                    )
+                else:
+                    queryset = admin_queryset # Empty
+            else:
+                 queryset = admin_queryset
         
         # Filter by request type
         if request_type == 'text':
