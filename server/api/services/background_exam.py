@@ -28,42 +28,56 @@ try:
     
     # Policy:
     # 1. Look for serviceAccountKey.json (Local Dev)
-    # 2. Look for FIREBASE_CREDENTIALS_JSON env var (Production/Render) -> Parse as dict
-    # 3. Fallback to ADC (Application Default Credentials)
+    # 2. Look for FIREBASE_CREDENTIALS_JSON env var (Production/Render) -> Write to temp file & use ADC
+    # 3. Fallback to existing ADC (Env var already set)
+    
+    import json
+    import tempfile
     
     base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     key_path = os.path.join(base_dir, 'serviceAccountKey.json')
     
-    cred = None
     if os.path.exists(key_path):
         logger.info(f"Loading Firebase credentials from file: {key_path}")
         cred = credentials.Certificate(key_path)
+        initialize_app(cred, {'projectId': project_id} if project_id else None)
     elif os.environ.get('FIREBASE_CREDENTIALS_JSON'):
         logger.info("Loading Firebase credentials from FIREBASE_CREDENTIALS_JSON env var")
-        import json
-        cred_dict = json.loads(os.environ.get('FIREBASE_CREDENTIALS_JSON'))
+        # Initialize via ADC by writing to temp file
+        json_content = os.environ.get('FIREBASE_CREDENTIALS_JSON')
         
-        if cred_dict.get('type') == 'authorized_user':
-            # Handle SDK/CLI generated credentials
-            logger.info("Detected 'authorized_user' credentials (GCloud SDK)")
-            cred = credentials.RefreshToken(
-                refresh_token=cred_dict.get('refresh_token'),
-                client_id=cred_dict.get('client_id'),
-                client_secret=cred_dict.get('client_secret'),
-                quota_project_id=cred_dict.get('quota_project_id')
-            )
-        else:
-            # Handle standard Service Account Key
-            logger.info("Detected Service Account credentials")
-            cred = credentials.Certificate(cred_dict)
+        # Parse to check project_id if missing
+        try:
+             import json
+             cred_dict = json.loads(json_content)
+             if not project_id and 'quota_project_id' in cred_dict:
+                 project_id = cred_dict['quota_project_id']
+             elif not project_id and 'project_id' in cred_dict:
+                 project_id = cred_dict['project_id']
+        except:
+            pass
 
-    options = {'projectId': project_id} if project_id else None
-    
-    if cred:
-        initialize_app(cred, options)
+        # Create temp file
+        # We use a fixed name in /tmp to avoid spamming files on reloads, 
+        # but safely scoped to process if possible. 
+        # For simplicity, we just overwrite 'render_firebase_creds.json' in current dir or tmp
+        fd, temp_path = tempfile.mkstemp(suffix='.json', prefix='firebase_creds_', text=True)
+        with os.fdopen(fd, 'w') as f:
+            f.write(json_content)
+            
+        logger.info(f"Wrote credentials to temp file: {temp_path}")
+        os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = temp_path
+        
+        # Now initialize_app() will pick it up automatically via ADC
+        initialize_app(options={'projectId': project_id} if project_id else None)
+        
     else:
-        # ADC fallback
-        initialize_app(options=options)
+        # Fallback to implicit ADC (if GOOGLE_APPLICATION_CREDENTIALS is set externally)
+        initialize_app(options={'projectId': project_id} if project_id else None)
+        
+except ValueError:
+    # Already initialized
+    pass
 except ValueError:
     # Already initialized
     pass
