@@ -254,7 +254,19 @@ class ModelSelector:
         ).filter(
             Q(is_blocked=False) | Q(block_until__lt=timezone.now())
         )
-        
+        # Auto-Repair: If user has keys but no instances (Orphaned Keys), fix them.
+        if not queryset.exists():
+            from ..models import UserAPIKey
+            if UserAPIKey.objects.filter(user=user, is_active=True).exists():
+                self._ensure_model_instances(user)
+                # Re-query
+                queryset = ModelInstance.objects.select_related('api_key', 'model').filter(
+                    api_key__user=user,
+                    api_key__is_active=True,
+                    model__is_active=True,
+                ).filter(
+                    Q(is_blocked=False) | Q(block_until__lt=timezone.now())
+                )
         # Step 2: System/Admin Keys Fallback
         # If the user has no personal keys, we allow using keys owned by Superusers (System Keys)
         if not queryset.exists():
