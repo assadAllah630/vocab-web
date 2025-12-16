@@ -338,6 +338,8 @@ class ModelSelector:
         When a user adds a new API key, we need to create ModelInstance
         records for each model that provider supports.
         
+        AUTO-SEEDS ModelDefinition if missing.
+        
         Returns:
             Number of instances created
         """
@@ -352,6 +354,15 @@ class ModelSelector:
                 provider=key.provider,
                 is_active=True
             )
+            
+            # AUTO-SEED: If no ModelDefinitions exist for this provider, create them.
+            if not models.exists():
+                logger.info(f"Auto-seeding ModelDefinitions for provider: {key.provider}")
+                self._seed_provider_models(key.provider)
+                models = ModelDefinition.objects.filter(
+                    provider=key.provider,
+                    is_active=True
+                )
             
             for model in models:
                 instance, created = ModelInstance.objects.get_or_create(
@@ -371,6 +382,32 @@ class ModelSelector:
                     logger.info(f"Created ModelInstance: {key.provider}/{model.model_id} for user {user.id}")
         
         return created_count
+    
+    def _seed_provider_models(self, provider: str):
+        """Seed ModelDefinition entries for a given provider if missing."""
+        provider_models = {
+            'gemini': [
+                {'model_id': 'gemini-1.5-flash', 'display_name': 'Gemini 1.5 Flash', 'is_text': True, 'context_window': 1000000, 'quality_tier': 'medium', 'is_active': True},
+                {'model_id': 'gemini-1.5-pro', 'display_name': 'Gemini 1.5 Pro', 'is_text': True, 'is_image': True, 'context_window': 2000000, 'quality_tier': 'high', 'is_active': True},
+            ],
+            'groq': [
+                {'model_id': 'llama3-70b-8192', 'display_name': 'Llama 3 70B (Groq)', 'is_text': True, 'context_window': 8192, 'quality_tier': 'high', 'is_active': True},
+                {'model_id': 'mixtral-8x7b-32768', 'display_name': 'Mixtral 8x7B (Groq)', 'is_text': True, 'context_window': 32768, 'quality_tier': 'high', 'is_active': True},
+            ],
+            'openrouter': [
+                {'model_id': 'google/gemini-flash-1.5', 'display_name': 'Gemini Flash (OpenRouter)', 'is_text': True, 'context_window': 1000000, 'quality_tier': 'medium', 'is_active': True},
+                {'model_id': 'anthropic/claude-3.5-sonnet', 'display_name': 'Claude 3.5 Sonnet (OpenRouter)', 'is_text': True, 'context_window': 200000, 'quality_tier': 'high', 'is_active': True},
+            ],
+        }
+        
+        if provider in provider_models:
+            for model_data in provider_models[provider]:
+                ModelDefinition.objects.update_or_create(
+                    provider=provider,
+                    model_id=model_data['model_id'],
+                    defaults=model_data
+                )
+            logger.info(f"Seeded {len(provider_models[provider])} models for provider: {provider}")
 
 
 # Singleton instance
