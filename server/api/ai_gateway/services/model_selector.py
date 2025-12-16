@@ -384,19 +384,24 @@ class ModelSelector:
         return created_count
     
     def _seed_provider_models(self, provider: str):
-        """Seed ModelDefinition entries for a given provider if missing."""
+        """Seed ModelDefinition entries for a given provider if missing. ONLY FREE MODELS."""
         provider_models = {
             'gemini': [
-                {'model_id': 'gemini-1.5-flash', 'display_name': 'Gemini 1.5 Flash', 'is_text': True, 'context_window': 1000000, 'quality_tier': 'medium', 'is_active': True},
-                {'model_id': 'gemini-1.5-pro', 'display_name': 'Gemini 1.5 Pro', 'is_text': True, 'is_image': True, 'context_window': 2000000, 'quality_tier': 'high', 'is_active': True},
+                # Gemini API is free tier
+                {'model_id': 'gemini-1.5-flash', 'display_name': 'Gemini 1.5 Flash', 'is_text': True, 'context_window': 1000000, 'quality_tier': 'medium', 'is_active': True, 'is_free': True},
+                {'model_id': 'gemini-1.5-pro', 'display_name': 'Gemini 1.5 Pro', 'is_text': True, 'is_image': True, 'context_window': 2000000, 'quality_tier': 'high', 'is_active': True, 'is_free': True},
             ],
             'groq': [
-                {'model_id': 'llama3-70b-8192', 'display_name': 'Llama 3 70B (Groq)', 'is_text': True, 'context_window': 8192, 'quality_tier': 'high', 'is_active': True},
-                {'model_id': 'mixtral-8x7b-32768', 'display_name': 'Mixtral 8x7B (Groq)', 'is_text': True, 'context_window': 32768, 'quality_tier': 'high', 'is_active': True},
+                # Groq is FREE
+                {'model_id': 'llama-3.3-70b-versatile', 'display_name': 'Llama 3.3 70B (Groq)', 'is_text': True, 'context_window': 128000, 'quality_tier': 'high', 'is_active': True, 'is_free': True},
+                {'model_id': 'llama-3.1-8b-instant', 'display_name': 'Llama 3.1 8B Instant (Groq)', 'is_text': True, 'context_window': 128000, 'quality_tier': 'medium', 'is_active': True, 'is_free': True},
+                {'model_id': 'gemma2-9b-it', 'display_name': 'Gemma 2 9B (Groq)', 'is_text': True, 'context_window': 8192, 'quality_tier': 'medium', 'is_active': True, 'is_free': True},
             ],
             'openrouter': [
-                {'model_id': 'google/gemini-flash-1.5', 'display_name': 'Gemini Flash (OpenRouter)', 'is_text': True, 'context_window': 1000000, 'quality_tier': 'medium', 'is_active': True},
-                {'model_id': 'anthropic/claude-3.5-sonnet', 'display_name': 'Claude 3.5 Sonnet (OpenRouter)', 'is_text': True, 'context_window': 200000, 'quality_tier': 'high', 'is_active': True},
+                # OpenRouter FREE models only (marked with :free suffix)
+                {'model_id': 'google/gemini-2.0-flash-exp:free', 'display_name': 'Gemini 2.0 Flash (Free)', 'is_text': True, 'context_window': 1000000, 'quality_tier': 'high', 'is_active': True, 'is_free': True},
+                {'model_id': 'google/gemini-exp-1206:free', 'display_name': 'Gemini Exp 1206 (Free)', 'is_text': True, 'context_window': 1000000, 'quality_tier': 'high', 'is_active': True, 'is_free': True},
+                {'model_id': 'meta-llama/llama-3.2-3b-instruct:free', 'display_name': 'Llama 3.2 3B (Free)', 'is_text': True, 'context_window': 128000, 'quality_tier': 'medium', 'is_active': True, 'is_free': True},
             ],
         }
         
