@@ -123,21 +123,23 @@ def signup(request):
                 print(f"[SIGNUP] Attempting to send OTP email to {email}")
                 email_sent = send_otp_email(email, otp)
                 if not email_sent:
-                    print(f"[SIGNUP] ⚠️ Failed to send email to {email}")
+                    print(f"[SIGNUP] ⚠️ Failed to send email to {email} (Emergency Bypass)")
                     print(f"[SIGNUP] DEBUG OTP: {otp}")
-                    return Response(
-                        {'error': 'Failed to send verification email. Please try again or contact support.'},
-                        status=status.HTTP_500_INTERNAL_SERVER_ERROR
-                    )
+                    # EMERGENCY PATCH: Proceed even if email fails
+                    # return Response(
+                    #     {'error': 'Failed to send verification email. Please try again or contact support.'},
+                    #     status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                    # )
                 else:
                     print(f"[SIGNUP] ✅ Email sent successfully to {email}")
             except Exception as e:
-                print(f"[SIGNUP] ❌ Error sending email: {e}")
+                print(f"[SIGNUP] ❌ Error sending email: {e} (Emergency Bypass)")
                 print(f"[SIGNUP] DEBUG OTP: {otp}")
-                return Response(
-                    {'error': f'Error sending email: {str(e)}'},
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
-                )
+                # EMERGENCY PATCH: Proceed even if email fails
+                # return Response(
+                #     {'error': f'Error sending email: {str(e)}'},
+                #     status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                # )
 
             print(f"[SIGNUP] Signup completed successfully for {email}")
             return Response({
@@ -250,11 +252,12 @@ def signin(request):
                 # Trigger OTP flow if not verified
                 # For now, we'll just block login and ask to verify
                 # Ideally, we should trigger resend_otp here if needed
-                return Response({
-                    'error': 'Email not verified', 
-                    'email': user.email,
-                    'requires_verification': True
-                }, status=status.HTTP_403_FORBIDDEN)
+                pass
+                # return Response({
+                #     'error': 'Email not verified', 
+                #     'email': user.email,
+                #     'requires_verification': True
+                # }, status=status.HTTP_403_FORBIDDEN)
                 
             login(request, user)
             return Response(UserSerializer(user).data)
