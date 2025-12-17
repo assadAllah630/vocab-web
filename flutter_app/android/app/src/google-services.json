@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "53918063752",
+    "project_id": "vocabmaster-6a729",
+    "storage_bucket": "vocabmaster-6a729.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:53918063752:android:96873c463551bd2d15d33d",
+        "android_client_info": {
+          "package_name": "com.vocabmaster.flutter_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAzWlL6rbgmfoaKAbHqC9L9u4vmnrDjaPA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

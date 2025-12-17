@@ -68,6 +68,7 @@ from .notification_views import (
     register_fcm_token,
     list_notifications
 )
+from .firebase_token_auth import firebase_auth
 from .views import podcast_views, vocab_views, exam_views # Added based on the provided router config
 from . import feature_views # Added based on the provided router config
 
@@ -105,6 +106,7 @@ urlpatterns = [
     
     # Google OAuth
     path('auth/google/', google_oauth_login, name='google_oauth_login'),
+    path('auth/firebase/', firebase_auth, name='firebase_auth'),  # Firebase ID token verification
     path('auth/send-otp/', send_otp, name='send_otp'),
     path('auth/verify-otp/', verify_otp, name='verify_otp'),
     

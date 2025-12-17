@@ -60,10 +60,49 @@ class ApiClient {
     await _storage.delete(key: 'auth_token');
   }
 
-  /// Check if user has stored token
   Future<bool> hasToken() async {
     final token = await _storage.read(key: 'auth_token');
     return token != null;
+  }
+
+  // Wrappers for Dio methods
+  Future<Response> get(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+  }) async {
+    return dio.get(path, queryParameters: queryParameters);
+  }
+
+  Future<Response> post(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+  }) async {
+    return dio.post(path, data: data, queryParameters: queryParameters);
+  }
+
+  Future<Response> put(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+  }) async {
+    return dio.put(path, data: data, queryParameters: queryParameters);
+  }
+
+  Future<Response> delete(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+  }) async {
+    return dio.delete(path, data: data, queryParameters: queryParameters);
+  }
+
+  Future<Response> patch(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+  }) async {
+    return dio.patch(path, data: data, queryParameters: queryParameters);
   }
 }
 

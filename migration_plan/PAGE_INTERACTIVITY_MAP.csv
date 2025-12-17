@@ -1,0 +1,102 @@
+Component Name,Flutter File,Button/Interaction,Type,Action,Potential API
+MobileReader,reader/screens/reader_screen.dart,"Icon: chevronLeft",IconButton,"Navigate -> /home",None
+MobileReader,reader/screens/reader_screen.dart,"Unknown Button",Gesture,"Navigate -> /library",None
+MobileReader,reader/screens/reader_screen.dart,"Unknown Button",Gesture,"_showInputSheet(context, ref, 'url')",None
+MobileReader,reader/screens/reader_screen.dart,"Unknown Button",Gesture,"_showInputSheet(context, ref, 'youtube')",None
+MobileReader,reader/screens/reader_screen.dart,"Unknown Button",Gesture,"// Trigger file picker simulation immediately ref.read(readerProvider.notifier).importFile().then((_) {",State/API Call
+MobileReader,reader/screens/reader_screen.dart,"Unknown Button",Gesture,"_showInputSheet(context, ref, 'text')",None
+MobileReader,reader/screens/reader_screen.dart,"Unknown Button",Gesture,"",None
+MobileReader,reader/screens/reader_screen.dart,"Unknown Button",Gesture,"",None
+MobilePodcastStudio,podcast/screens/podcast_screen.dart,"Icon: chevronLeft",IconButton,"Back",None
+MobilePodcastStudio,podcast/screens/podcast_screen.dart,"Icon: listMusic",IconButton,"_showPlaylist(context, manager)",None
+MobilePodcastStudio,podcast/screens/podcast_screen.dart,"Unknown Button",Gesture,"",None
+MobilePodcastStudio,podcast/screens/podcast_screen.dart,"Unknown Button",Gesture,"",None
+MobilePodcastStudio,podcast/screens/podcast_screen.dart,"Unknown Button",Gesture,"",None
+MobilePodcastStudio,podcast/screens/podcast_screen.dart,"Unknown Button",Gesture,"",None
+MobilePodcastStudio,podcast/screens/podcast_screen.dart,"Unknown Button",Gesture,"manager.playEpisode(index); Navigator.pop(context);",None
+MobileFlashcard,vocab/screens/flashcards_screen.dart,"Unknown Button",ElevatedButton,"Navigator.pop(context)",None
+MobileFlashcard,vocab/screens/flashcards_screen.dart,"Unknown Button",Gesture,"",None
+MobileFlashcard,vocab/screens/flashcards_screen.dart,"Unknown Button",Gesture,"_controller.undo()",None
+MobileFlashcard,vocab/screens/flashcards_screen.dart,"Unknown Button",Gesture,"",None
+MobileFlashcard,vocab/screens/flashcards_screen.dart,"Unknown Button",Gesture,"setState(()",None
+MobileFlashcard,vocab/screens/flashcards_screen.dart,"Unknown Button",Gesture,"",None
+MobileAIGateway,ai/screens/ai_gateway_screen.dart,"Unknown Button",IconButton,"Back",None
+MobileAIGateway,ai/screens/ai_gateway_screen.dart,"Unknown Button",Gesture,"ref.read(aiGatewayProvider.notifier).loadData()",State/API Call
+MobileAIGateway,ai/screens/ai_gateway_screen.dart,"Unknown Button",ElevatedButton,"ref.read(aiGatewayProvider.notifier).loadData()",State/API Call
+MobileAIGateway,ai/screens/ai_gateway_screen.dart,"Unknown Button",Gesture,"setState(() { _showAddForm = !_showAddForm;",None
+MobileAIGateway,ai/screens/ai_gateway_screen.dart,"Unknown Button",ElevatedButton,"if (_selectedProvider != null && _keyController.text.isNotEmpty) {",State/API Call
+MobileAIGateway,ai/screens/ai_gateway_screen.dart,"Unknown Button",Gesture,"onTest(keyItem.id)",None
+MobileAIGateway,ai/screens/ai_gateway_screen.dart,"Unknown Button",IconButton,"onDelete(keyItem.id)",None
+MobileExamCreate,exams/screens/exam_create_screen.dart,"Icon: chevronLeft",IconButton,"Back",None
+MobileExamCreate,exams/screens/exam_create_screen.dart,"Unknown Button",Gesture,"",None
+MobileExamPlay,exams/screens/exam_play_screen.dart,"Icon: x",IconButton,"_confirmExit(context)",None
+MobileExamPlay,exams/screens/exam_play_screen.dart,"Unknown Button",Gesture,"ref",None
+MobileExamPlay,exams/screens/exam_play_screen.dart,"Unknown Button",TextButton,"",None
+MobileExamPlay,exams/screens/exam_play_screen.dart,"Unknown Button",ElevatedButton,"",None
+MobileExamPlay,exams/screens/exam_play_screen.dart,"Unknown Button",ElevatedButton,"_submitExam(context, ref)",None
+MobileExamPlay,exams/screens/exam_play_screen.dart,"Unknown Button",TextButton,"Navigator.pop(ctx)",None
+MobileExamPlay,exams/screens/exam_play_screen.dart,"Cancel",TextButton,"Back",None
+MobileExamPlay,exams/screens/exam_play_screen.dart,"Unknown Button",TextButton,"Back",None
+MobileWordBuilder,vocab/screens/word_builder_screen.dart,"Unknown Button",Gesture,"",None
+MobileExam,exams/screens/exam_dashboard_screen.dart,"Icon: plus",IconButton,"Navigate -> /exams/create",None
+MobileExam,exams/screens/exam_dashboard_screen.dart,"Unknown Button",FAB,"Navigate -> /exams/create",None
+MobileExam,exams/screens/exam_dashboard_screen.dart,"Unknown Button",ElevatedButton,"Navigate -> /exams/play/${exam.id}",None
+MobileGenStory,ai/screens/gen_story_screen.dart,"Unknown Button",Gesture,"setState(()",None
+MobileGenStory,ai/screens/gen_story_screen.dart,"Unknown Button",Gesture,"setState(()",None
+MobileGenStory,ai/screens/gen_story_screen.dart,"Unknown Button",TextButton,"setState(()",None
+MobileGenStory,ai/screens/gen_story_screen.dart,"Cancel",ElevatedButton,"if (_charNameController.text.isNotEmpty) { setState(() {",None
+MobileGenStory,ai/screens/gen_story_screen.dart,"Add",Gesture,"setState(()",None
+MobileGenStory,ai/screens/gen_story_screen.dart,"Unknown Button",Gesture,"setState(()",None
+MobileHome,home/screens/home_screen.dart,"Unknown Button",Gesture,"Navigate -> /me",None
+MobileHome,home/screens/home_screen.dart,"Unknown Button",Gesture,"",None
+MobileHome,home/screens/home_screen.dart,"Unknown Button",Gesture,"Navigate -> /games/flashcards",None
+MobileHome,home/screens/home_screen.dart,"Unknown Button",Gesture,"Navigate -> /podcast",None
+MobileHome,home/screens/home_screen.dart,"Unknown Button",Gesture,"",None
+MobileAddWord,vocab/screens/add_word_screen.dart,"Icon: chevronLeft",IconButton,"Back",None
+MobileAddWord,vocab/screens/add_word_screen.dart,"Unknown Button",ElevatedButton,"",None
+MobileGenDialogue,ai/screens/gen_dialogue_screen.dart,"Unknown Button",Gesture,"setState(()",None
+MobileMemoryMatch,vocab/screens/memory_match_screen.dart,"Unknown Button",TextButton,"Navigator.pop(ctx); _startNewGame();",None
+MobileMemoryMatch,vocab/screens/memory_match_screen.dart,"Play Again",TextButton,"Back",None
+MobileMemoryMatch,vocab/screens/memory_match_screen.dart,"Icon: chevronLeft",IconButton,"Back",None
+MobileMemoryMatch,vocab/screens/memory_match_screen.dart,"Unknown Button",Gesture,"_handleCardTap(card)",None
+MobileLanguageSettings,profile/screens/language_settings_screen.dart,"Icon: chevronLeft",IconButton,"Back",None
+MobileEditProfile,profile/screens/edit_profile_screen.dart,"Icon: chevronLeft",IconButton,"Back",None
+MobileEditProfile,profile/screens/edit_profile_screen.dart,"Unknown Button",Gesture,"",None
+MobileContentLibrary,library/screens/library_screen.dart,"Unknown Button",IconButton,"ref.read(libraryProvider.notifier).fetchLibrary(); },",State/API Call
+MobileContentLibrary,library/screens/library_screen.dart,"Unknown Button",Gesture,"// Navigate based on type switch (item.type) {",None
+MobileGrammarGenerate,reader/screens/grammar_generator_screen.dart,"Icon: chevronLeft",IconButton,"Back",None
+MobileGrammarGenerate,reader/screens/grammar_generator_screen.dart,"Unknown Button",Gesture,"setState(()",None
+MobileGrammarGenerate,reader/screens/grammar_generator_screen.dart,"Unknown Button",ElevatedButton,"",None
+MobileAPISettings,profile/screens/api_settings_screen.dart,"Icon: chevronLeft",IconButton,"Back",None
+MobileAPISettings,profile/screens/api_settings_screen.dart,"Unknown Button",Gesture,"",None
+MobileProfile,profile/screens/profile_screen.dart,"Unknown Button",Gesture,"Navigate -> /profile/edit",None
+MobileProfile,profile/screens/profile_screen.dart,"Unknown Button",Gesture,"Navigate -> /profile/settings",None
+MobileProfile,profile/screens/profile_screen.dart,"Unknown Button",Gesture,"), ],",None
+MobileProfile,profile/screens/profile_screen.dart,"Unknown Button",Gesture,"), _MenuItem(",None
+MobileProfile,profile/screens/profile_screen.dart,"Unknown Button",Gesture,"Navigate -> /",None
+MobileProfile,profile/screens/profile_screen.dart,"Unknown Button",Gesture,"",None
+MobileGenArticle,ai/screens/gen_article_screen.dart,"Unknown Button",Gesture,"setState(()",None
+MobileTimeChallenge,vocab/screens/time_challenge_screen.dart,"Unknown Button",TextButton,"Navigator.pop(ctx); setState(() {",None
+MobileTimeChallenge,vocab/screens/time_challenge_screen.dart,"Play Again",TextButton,"Back",None
+MobileTimeChallenge,vocab/screens/time_challenge_screen.dart,"Icon: chevronLeft",IconButton,"Back",None
+MobileTimeChallenge,vocab/screens/time_challenge_screen.dart,"Unknown Button",ElevatedButton,"_handleAnswer(false)",None
+MobileTimeChallenge,vocab/screens/time_challenge_screen.dart,"Unknown Button",ElevatedButton,"_handleAnswer(true)",None
+MobileGames,vocab/screens/vocab_dashboard_screen.dart,"Icon: plus",IconButton,"Navigate -> /words/add",None
+MobileGames,vocab/screens/vocab_dashboard_screen.dart,"Unknown Button",Gesture,"Navigate -> /games/flashcards",None
+MobileGames,vocab/screens/vocab_dashboard_screen.dart,"Unknown Button",Gesture,"Navigate -> /games/builder",None
+MobileGames,vocab/screens/vocab_dashboard_screen.dart,"Unknown Button",Gesture,"Navigate -> /games/memory",None
+MobileGames,vocab/screens/vocab_dashboard_screen.dart,"Unknown Button",Gesture,"Navigate -> /games/challenge",None
+MobileGames,vocab/screens/vocab_dashboard_screen.dart,"Unknown Button",Gesture,"",None
+MobileNotifications,notifications/screens/notifications_screen.dart,"Icon: chevronLeft",IconButton,"Back",None
+MobileNotifications,notifications/screens/notifications_screen.dart,"Icon: checkCheck",IconButton,"), ],",None
+HeroSection,auth/screens/onboarding_screen.dart,"Unknown Button",ElevatedButton,"if (_page < _pages.length - 1) { _controller.nextPage(",None
+MobileAIGenerator,ai/screens/ai_generator_screen.dart,"Icon: chevronLeft",IconButton,"Back",None
+MobileAIGenerator,ai/screens/ai_generator_screen.dart,"Unknown Button",Gesture,"Navigate -> /ai/story",None
+MobileAIGenerator,ai/screens/ai_generator_screen.dart,"Unknown Button",Gesture,"",None
+MobileAIGenerator,ai/screens/ai_generator_screen.dart,"Unknown Button",Gesture,"Navigate -> /ai/article",None
+MobileAIGenerator,ai/screens/ai_generator_screen.dart,"Unknown Button",Gesture,"",None
+MobileAbout,settings/screens/about_screen.dart,"Icon: chevronLeft",IconButton,"Back",None
+MobileHelp,settings/screens/help_screen.dart,"Icon: chevronLeft",IconButton,"Back",None
+MobileHelp,settings/screens/help_screen.dart,"Unknown Button",Gesture,"), );",None
+PricingSection,profile/screens/subscription_screen.dart,"Icon: x",IconButton,"Back",None
+PricingSection,profile/screens/subscription_screen.dart,"Unknown Button",ElevatedButton,"style: ElevatedButton.styleFrom( backgroundColor: isPopular",None

@@ -40,6 +40,10 @@ class UserProfile(models.Model):
     # Notification Settings
     fcm_token = models.CharField(max_length=500, blank=True, null=True, help_text='Firebase Cloud Messaging Token')
     allow_notifications = models.BooleanField(default=True)
+    
+    # Firebase Auth
+    firebase_uid = models.CharField(max_length=128, blank=True, null=True, unique=True, help_text='Firebase User ID')
+    avatar_url = models.URLField(max_length=500, blank=True, null=True, help_text='Profile picture URL from social providers')
 
     def __str__(self):
         return f"{self.user.username}'s Profile"

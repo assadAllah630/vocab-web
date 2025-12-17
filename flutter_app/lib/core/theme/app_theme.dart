@@ -30,6 +30,11 @@ class AppTheme {
   static const Color primary900 = Color(0xFF312E81);
   static const Color primary950 = Color(0xFF1E1B4B);
 
+  static const Color primaryColor = primary600;
+
+  static String? get fontFamily => GoogleFonts.inter().fontFamily;
+  static const Color scaffoldBackgroundColor = slate950;
+
   // ===== LIGHT THEME =====
   static ThemeData get lightTheme {
     return ThemeData(
