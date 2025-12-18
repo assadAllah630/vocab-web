@@ -374,13 +374,8 @@ class ModelSelector:
                     is_active=True
                 )
             
-            # CLEANUP: Deactivate known decommissioned models
-            decommissioned = [
-                'llama3-70b-8192', 'llama3-8b-8192', 'mixtral-8x7b-32768',
-                'google/gemini-flash-1.5', 'anthropic/claude-3.5-sonnet',
-                'anthropic/claude-3-sonnet', 'google/gemini-1.5-flash',
-            ]
-            ModelDefinition.objects.filter(model_id__in=decommissioned).update(is_active=False)
+            # REMOVED: Bad cleanup logic that was killing valid models
+            # decommissioned = [...] -> Deleted to prevents accidental deactivation
             
             for model in models:
                 instance, created = ModelInstance.objects.get_or_create(
