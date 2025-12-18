@@ -311,13 +311,17 @@ class LearningEngine:
     
     def _handle_model_not_found(self, instance: ModelInstance) -> None:
         """Handle model not available error."""
+        # Block for 24 hours instead of permanently - model might come back
         instance.is_blocked = True
-        instance.block_reason = 'Model not available on this provider'
-        # No time limit - needs manual unblock
+        instance.block_until = timezone.now() + timedelta(hours=24)
+        instance.block_reason = 'Model not available (24h cooldown)'
+        
+        # Also mark the ModelDefinition as potentially inactive
+        instance.model.is_active = False
+        instance.model.save(update_fields=['is_active'])
         
         logger.warning(
-            f"Blocked {instance.model.model_id} permanently (model not found)"
-        )
+            f"Blocked {instance.model.model_id} for 24h (model not found)")
     
     def _handle_timeout(self, instance: ModelInstance, latency_ms: int) -> None:
         """Handle request timeout error."""
@@ -415,22 +419,45 @@ class LearningEngine:
         Unblock instances whose block period has expired.
         Should be called every 10-30 seconds.
         
+        Also unblocks instances that were blocked without a time limit
+        (legacy behavior fix - nothing should be permanently blocked).
+        
         Returns:
             Number of instances unblocked
         """
-        unblocked = ModelInstance.objects.filter(
+        now = timezone.now()
+        
+        # Unblock instances with expired block_until
+        unblocked_expired = ModelInstance.objects.filter(
             is_blocked=True,
-            block_until__lt=timezone.now()
+            block_until__lt=now
         ).update(
             is_blocked=False,
             block_until=None,
             block_reason='',
         )
         
-        if unblocked > 0:
-            logger.info(f"Unblocked {unblocked} model instances (block expired)")
+        # CRITICAL FIX: Also unblock instances that are blocked but have no block_until
+        # This catches "permanently" blocked instances from old code or MODEL_NOT_FOUND
+        # Give them a chance after 24 hours since last failure
+        twenty_four_hours_ago = now - timedelta(hours=24)
+        unblocked_permanent = ModelInstance.objects.filter(
+            is_blocked=True,
+            block_until__isnull=True,
+            last_failure_at__lt=twenty_four_hours_ago
+        ).update(
+            is_blocked=False,
+            block_until=None,
+            block_reason='',
+            health_score=50,  # Give them a chance but not full health
+        )
         
-        return unblocked
+        total_unblocked = unblocked_expired + unblocked_permanent
+        
+        if total_unblocked > 0:
+            logger.info(f"Unblocked {total_unblocked} instances (expired={unblocked_expired}, stale={unblocked_permanent})")
+        
+        return total_unblocked
     
     def reset_minute_quotas(self) -> int:
         """

@@ -97,6 +97,16 @@ class ModelSelector:
         required_capabilities = required_capabilities or []
         exclude_providers = exclude_providers or []
         
+        # SELF-HEALING: Refresh blocked instances on every selection
+        # This ensures expired blocks are cleared even without Celery Beat
+        try:
+            from .learning_engine import learning_engine
+            unblocked = learning_engine.refresh_blocked_instances()
+            if unblocked > 0:
+                logger.info(f"Self-healed: unblocked {unblocked} expired instances")
+        except Exception as e:
+            logger.warning(f"Failed to refresh blocked instances: {e}")
+        
         # Step 1: Get eligible model instances
         eligible = self._get_eligible_instances(
             user=user,
