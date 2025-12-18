@@ -158,11 +158,44 @@ def _try_gateway(user, prompt: str, max_tokens: int, temperature: float, require
             return None
         
         # Try selected model + alternatives if needed
-        models_to_try = [selection_result.model] + selection_result.alternatives[:2]
+        # CRITICAL: Ensure cross-provider failover by grouping alternatives by provider
+        
+        # Collect all models to try, prioritizing diversity across providers
+        primary_models = [selection_result.model]
+        alternatives = selection_result.alternatives[:4]  # Get more alternatives
+        
+        # Group alternatives by provider for cross-provider failover
+        seen_providers = {selection_result.model.model.provider} if selection_result.model else set()
+        cross_provider_fallbacks = []
+        same_provider_fallbacks = []
+        
+        for alt in alternatives:
+            if alt is None:
+                continue
+            if alt.model.provider in seen_providers:
+                same_provider_fallbacks.append(alt)
+            else:
+                cross_provider_fallbacks.append(alt)
+                seen_providers.add(alt.model.provider)
+        
+        # Order: primary → cross-provider fallbacks → same-provider fallbacks
+        models_to_try = primary_models + cross_provider_fallbacks + same_provider_fallbacks[:1]
+        
+        logger.debug(f"[UnifiedAI v2] Failover order: {[m.model.provider + '/' + m.model.model_id for m in models_to_try if m]}")
+        
         last_error = None
+        failed_providers = set()  # Track providers that failed completely
+        quota_blocked_providers = set()  # Track providers with quota issues
         
         for instance in models_to_try:
             if instance is None:
+                continue
+            
+            provider = instance.model.provider
+            
+            # SMART SKIP: If this provider has quota issues, skip all its models
+            if provider in quota_blocked_providers:
+                logger.debug(f"[UnifiedAI v2] Skipping {instance.model.model_id} - provider {provider} has quota issues")
                 continue
                 
             start_time = time.time()
@@ -250,6 +283,15 @@ def _try_gateway(user, prompt: str, max_tokens: int, temperature: float, require
                     )
                     
                     last_error = response.error
+                    error_message = str(response.error)
+                    
+                    # SMART TRACKING: Check if this was a quota error
+                    if '429' in error_message or 'Quota' in error_message or 'quota' in error_message:
+                        logger.warning(f"[UnifiedAI v2] Provider {instance.model.provider} has quota issues. Skipping remaining models.")
+                        quota_blocked_providers.add(instance.model.provider)
+                    
+                    failed_providers.add(instance.model.provider)
+                    
                     logger.warning(
                         f"[UnifiedAI v2] FAILED: {instance.model.model_id}: {error_message[:100]}"
                     )
@@ -265,6 +307,11 @@ def _try_gateway(user, prompt: str, max_tokens: int, temperature: float, require
                     latency_ms=latency_ms,
                     request_type='text',
                 )
+                
+                # SMART TRACKING for Exceptions
+                if '429' in error_message or 'Quota' in error_message:
+                     quota_blocked_providers.add(instance.model.provider)
+                failed_providers.add(instance.model.provider)
                 
                 UsageLog.objects.create(
                     user=user,
