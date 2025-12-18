@@ -19,4 +19,7 @@ python manage.py collectstatic --no-input
 echo "Running database migrations..."
 python manage.py migrate
 
+echo "Seeding AI model definitions..."
+python manage.py seed_models
+
 echo "Build completed successfully!"

@@ -114,12 +114,21 @@ def generate_exam(request):
     topic = request.data.get('topic')
     level = request.data.get('level', 'B1')
     question_types = request.data.get('question_types', ['cloze', 'multiple_choice'])
-    vocab_list = request.data.get('vocab_list')
-    grammar_list = request.data.get('grammar_list')
-    notes = request.data.get('notes')
+    vocab_list = request.data.get('vocab_list') or request.data.get('vocab_focus')
+    grammar_list = request.data.get('grammar_list') or request.data.get('grammar_focus')
+    notes = request.data.get('notes') or request.data.get('additional_notes')
     
     if not topic:
         return Response({'error': 'Topic is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # CRITICAL: Check if user has API keys BEFORE starting background generation
+    ai_status = get_ai_status(request.user)
+    if not ai_status['has_gateway_keys']:
+        return Response({
+            'error': 'No API keys configured. Please add your AI API keys (Gemini, Groq, or OpenRouter) in Settings before generating exams.',
+            'code': 'NO_API_KEYS',
+            'action': 'settings'  # Frontend can use this to redirect to settings
+        }, status=status.HTTP_400_BAD_REQUEST)
 
     try:
         # Get user's target language

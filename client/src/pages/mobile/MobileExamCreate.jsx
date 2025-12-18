@@ -129,6 +129,15 @@ function MobileExamCreate() {
         } catch (err) {
             clearInterval(stepInterval);
             console.error("Generation failed:", err);
+
+            // Check for NO_API_KEYS error - redirect to settings
+            if (err.response?.data?.code === 'NO_API_KEYS') {
+                setError('Please add your API keys first');
+                // Navigate to settings after a short delay
+                setTimeout(() => navigate('/m/settings'), 1500);
+                return;
+            }
+
             setError(err.response?.data?.error || t('error'));
         } finally {
             setLoading(false);
