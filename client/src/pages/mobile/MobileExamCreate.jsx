@@ -72,9 +72,7 @@ function MobileExamCreate() {
                         clearInterval(pollInterval);
                         // Brief success delay then redirect
                         setTimeout(() => {
-                            const totalQuestions = calculateTotalQuestions(res.data);
-                            startExam(res.data, totalQuestions * 20);
-                            navigate('/m/exam/play');
+                            navigate(`/m/exam/take/${generatedExamId}`);
                         }, 1500);
                     }
                 } catch (err) {
@@ -152,9 +150,7 @@ function MobileExamCreate() {
             }
 
             // Fallback for immediate response (if backend changes)
-            const totalQuestions = calculateTotalQuestions(res.data);
-            startExam(res.data, totalQuestions * 20);
-            navigate('/m/exam/play');
+            navigate(`/m/exam/take/${res.data.id}`);
 
         } catch (err) {
             clearInterval(stepInterval);
