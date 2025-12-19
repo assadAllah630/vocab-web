@@ -196,8 +196,23 @@ class ExamGenerator(threading.Thread):
                 delivered=False,
                 error=error_msg
             )
+        except messaging.UnregisteredError:
+            # Token is invalid/expired - clear it
+            logger.warning(f"FCM token expired/invalid for user {self.user_id}. Clearing token.")
+            profile.fcm_token = None
+            profile.save()
         except Exception as e:
-            logger.error(f"Failed to send failure notification: {e}")
+            error_str = str(e)
+            if "not found" in error_str.lower() or "unregistered" in error_str.lower():
+                logger.warning(f"FCM token invalid for user {self.user_id}: {e}. Clearing token.")
+                try:
+                    profile = UserProfile.objects.get(user_id=self.user_id)
+                    profile.fcm_token = None
+                    profile.save()
+                except:
+                    pass
+            else:
+                logger.error(f"Failed to send failure notification: {e}")
 
     def send_notification(self, exam):
         try:
@@ -244,8 +259,25 @@ class ExamGenerator(threading.Thread):
                 delivered=True
             )
 
+        except messaging.UnregisteredError:
+            # Token is invalid/expired - clear it from database
+            logger.warning(f"FCM token expired/invalid for user {self.user_id}. Clearing token.")
+            profile.fcm_token = None
+            profile.save()
+            
         except Exception as e:
-            logger.error(f"Failed to send notification: {e}")
+            error_str = str(e)
+            # Check for "entity was not found" - this means the FCM token is invalid
+            if "not found" in error_str.lower() or "unregistered" in error_str.lower():
+                logger.warning(f"FCM token invalid for user {self.user_id}: {e}. Clearing token.")
+                try:
+                    profile = UserProfile.objects.get(user_id=self.user_id)
+                    profile.fcm_token = None
+                    profile.save()
+                except:
+                    pass
+            else:
+                logger.error(f"Failed to send notification: {e}")
 
 def start_exam_generation(exam_id, user, prompt_data):
     """
