@@ -87,12 +87,12 @@ def generate_podcast_job(podcast_id: int, custom_topic: str = None, target_level
         # 5. Production Phase (Speechify)
         logger.info("Running Producer (Speechify)...")
         if not producer.api_key:
-             raise Exception("Speechify API Key missing.")
+             raise Exception("Speechify API Key missing. Please update your profile settings.")
              
         success = producer.run(final_script, podcast, audio_speed=audio_speed)
         
         if not success:
-            raise Exception("Audio generation failed.")
+            raise Exception("Audio generation failed. Check your Speechify API Key or credits.")
 
         # 6. Finalize Context
         # Manually update bible here or expose helper in agent_podcast
