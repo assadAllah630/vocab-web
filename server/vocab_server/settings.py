@@ -288,8 +288,6 @@ else:
             "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
         },
     }
-else:
-    print("📁 Local Storage Enabled (Warning: Ephemeral on Render)")
 
 
 
