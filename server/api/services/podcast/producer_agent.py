@@ -9,9 +9,16 @@ from api.models import Podcast
 
 
 class ProducerAgent:
-    def __init__(self, user):
+    def __init__(self, user, api_keys=None):
         self.user = user
-        self.api_key = getattr(user.profile, 'speechify_api_key', '')
+        # Prefer provided list, fallback to profile single key
+        if api_keys and len(api_keys) > 0:
+            self.api_keys = api_keys
+        else:
+            key = getattr(user.profile, 'speechify_api_key', '')
+            self.api_keys = [key] if key else []
+            
+        self.current_key_index = 0
 
     def run(self, script_data: dict, podcast_instance: Podcast, audio_speed: float = 1.0):
         """
@@ -29,9 +36,9 @@ class ProducerAgent:
         voice_map = self._get_voices_speechify(lang)
         print(f"DEBUG: Producer Language='{lang}'. Voice Map: {voice_map}")
         
-        # Check API Key
-        if not self.api_key:
-             print("Producer Error: No Speechify Key found in user profile.")
+        # Check API Keys
+        if not self.api_keys:
+             print("Producer Error: No Speechify Keys found.")
              return False
 
         for segment in script:
@@ -72,9 +79,13 @@ class ProducerAgent:
                     chunk_duration_ms = len(audio_chunk) / 16.0 
                 
                 current_time_offset_ms += chunk_duration_ms
+            else:
+                # If a segment fails completely after all retries, whole podcast fails
+                print("Producer Error: Segment generation failed.")
+                return False
                 
         if not combined_audio:
-            print("Producer Error: No audio generated. Check Speechify key or script content.")
+            print("Producer Error: No audio generated.")
             return False
 
         # Save to file
@@ -88,46 +99,67 @@ class ProducerAgent:
 
     def _generate_tts_speechify(self, text, voice_id):
         url = "https://api.sws.speechify.com/v1/audio/speech"
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
-        }
         
-        data = {
-            "input": text,
-            "voice_id": voice_id,
-            "audio_format": "mp3",
-            "model": "simba-multilingual",
-            "options": {"speech_marks": True}
-        }
+        # Try keys starting from current index
+        attempts = 0
+        total_keys = len(self.api_keys)
         
-        try:
-            response = requests.post(url, headers=headers, json=data, timeout=30)
-            if response.status_code == 200:
-                response_data = response.json()
-                audio_data = None
-                marks = []
+        while attempts < total_keys:
+            # Get current key
+            current_key = self.api_keys[self.current_key_index]
+            
+            headers = {
+                "Authorization": f"Bearer {current_key}",
+                "Content-Type": "application/json"
+            }
+            
+            data = {
+                "input": text,
+                "voice_id": voice_id,
+                "audio_format": "mp3",
+                "model": "simba-multilingual",
+                "options": {"speech_marks": True}
+            }
+            
+            try:
+                response = requests.post(url, headers=headers, json=data, timeout=30)
                 
-                if 'audio_data' in response_data:
-                    audio_data = base64.b64decode(response_data['audio_data'])
+                if response.status_code == 200:
+                    # Success! Keep using this key
+                    response_data = response.json()
+                    audio_data = None
+                    marks = []
+                    
+                    if 'audio_data' in response_data:
+                        audio_data = base64.b64decode(response_data['audio_data'])
+                    
+                    if 'speech_marks' in response_data:
+                        raw_marks = response_data['speech_marks']
+                        if isinstance(raw_marks, dict) and 'chunks' in raw_marks:
+                            marks = raw_marks['chunks']
+                        elif isinstance(raw_marks, list):
+                            marks = raw_marks
+                            
+                    return audio_data, marks
                 
-                if 'speech_marks' in response_data:
-                    raw_marks = response_data['speech_marks']
-                    if isinstance(raw_marks, dict) and 'chunks' in raw_marks:
-                        marks = raw_marks['chunks']
-                    elif isinstance(raw_marks, list):
-                        marks = raw_marks
-                        
-                return audio_data, marks
-            else:
-                if response.status_code == 401:
-                    print(f"Speechify Error: 401 Unauthorized. Check API key. Response: {response.text}")
+                elif response.status_code in [401, 402, 429]:
+                    # Auth error, Payment required, or Quota exceeded -> Try next key
+                    print(f"Speechify Key {self.current_key_index} failed ({response.status_code}). Trying next...")
+                    self.current_key_index = (self.current_key_index + 1) % total_keys
+                    attempts += 1
                 else:
+                    # Other error (e.g. 400 Bad Request, 500) -> Likely not key related, abort
                     print(f"Speechify Error: {response.status_code} - {response.text}")
-                return None, None 
-        except Exception as e:
-            print(f"TTS Exception (Speechify): {e}")
-            return None, None
+                    return None, None
+                    
+            except Exception as e:
+                print(f"TTS Exception (Speechify): {e}")
+                # Network error? Maybe try next key if it's a connection issue specific to key? Unlikely but safe to retry
+                attempts += 1
+                self.current_key_index = (self.current_key_index + 1) % total_keys
+        
+        print("All Speechify keys failed.")
+        return None, None
 
     def _get_voices_speechify(self, lang_code: str):
         """Returns Host A/B voice IDs for Speechify"""

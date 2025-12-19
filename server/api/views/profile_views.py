@@ -29,6 +29,9 @@ def update_profile(request):
         'ocrspace_api_key',
         'deepgram_api_key',
         'speechify_api_key',
+        'speechify_api_key_2',
+        'speechify_api_key_3',
+        'speechify_api_key_4',
         'stable_horde_api_key',
     ]
     

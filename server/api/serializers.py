@@ -133,10 +133,13 @@ class UserProfileSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = UserProfile
-        fields = ['id', 'username', 'native_language', 'target_language', 'deepgram_api_key', 'speechify_api_key', 'ocrspace_api_key', 'stable_horde_api_key', 'bio', 'avatar', 'location']
+        fields = ['id', 'username', 'native_language', 'target_language', 'deepgram_api_key', 'speechify_api_key', 'speechify_api_key_2', 'speechify_api_key_3', 'speechify_api_key_4', 'ocrspace_api_key', 'stable_horde_api_key', 'bio', 'avatar', 'location']
         extra_kwargs = {
             'deepgram_api_key': {'required': False},
             'speechify_api_key': {'required': False},
+            'speechify_api_key_2': {'required': False},
+            'speechify_api_key_3': {'required': False},
+            'speechify_api_key_4': {'required': False},
             'ocrspace_api_key': {'required': False},
             'stable_horde_api_key': {'required': False}
         }

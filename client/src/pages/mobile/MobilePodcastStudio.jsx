@@ -37,35 +37,33 @@ const MobilePodcastStudio = () => {
     const navigate = useNavigate();
     const [categories, setCategories] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState(null);
-    const [episodes, setEpisodes] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [generating, setGenerating] = useState(false);
-    const [showCreateModal, setShowCreateModal] = useState(false);
-
-    const [statusData, setStatusData] = useState(null);
-    const [statusInterval, setStatusInterval] = useState(null);
-
-    // Generation Options
-    const [showGenerateModal, setShowGenerateModal] = useState(false);
-    const [genOptions, setGenOptions] = useState({
-        topic: '',
-        level: 'B1',
-        speed: 1.0
-    });
-
-    // Audio Player State
-    // Audio Player State
-    const [currentAudio, setCurrentAudio] = useState(null);
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [audioProgress, setAudioProgress] = useState(0);
-    const [currentTranscript, setCurrentTranscript] = useState([]);
-    const [activeWordIndex, setActiveWordIndex] = useState(-1);
-    const [showFullPlayer, setShowFullPlayer] = useState(false);
-    const [currentEpisode, setCurrentEpisode] = useState(null);
+    // Key Check State
+    const [hasSpeechifyKey, setHasSpeechifyKey] = useState(true); // Default true to avoid flash, verified on mount
+    const [showKeyMissingModal, setShowKeyMissingModal] = useState(false);
 
     useEffect(() => {
         fetchCategories();
+        checkProfile();
     }, []);
+
+    const checkProfile = async () => {
+        try {
+            const res = await api.get('profile/me/');
+            if (res.data) {
+                const hasKey = !!(
+                    res.data.speechify_api_key ||
+                    res.data.speechify_api_key_2 ||
+                    res.data.speechify_api_key_3 ||
+                    res.data.speechify_api_key_4
+                );
+                setHasSpeechifyKey(hasKey);
+            }
+        } catch (err) {
+            console.error("Failed to check profile for keys:", err);
+            // Fallback: assume true or handle error? For now assume true to not block if offline
+            // But for generation this is critical. Let's start permissive or retrying.
+        }
+    };
 
     useEffect(() => {
         if (selectedCategory) {
@@ -100,6 +98,13 @@ const MobilePodcastStudio = () => {
     };
 
     const handleGenerate = async () => {
+        // Enforce API Key Check
+        if (!hasSpeechifyKey) {
+            setShowGenerateModal(false);
+            setShowKeyMissingModal(true);
+            return;
+        }
+
         if (!selectedCategory) return;
         setGenerating(true);
         setShowGenerateModal(false); // Close modal
@@ -138,7 +143,14 @@ const MobilePodcastStudio = () => {
                         setStatusData(null);
                         // Remove temp podcast
                         setEpisodes(prev => prev.filter(p => p.id !== podcastId));
-                        alert(`Generation Failed: ${data.current_message}`);
+                        // alert(`Generation Failed: ${data.current_message}`);
+                        // Handle user friendly status for auth fail
+                        if (data.current_message && data.current_message.includes("API Key")) {
+                            setHasSpeechifyKey(false);
+                            setShowKeyMissingModal(true);
+                        } else {
+                            alert(`Generation Failed: ${data.current_message}`);
+                        }
                     }
                 } catch (e) {
                     console.error("Polling error", e);
@@ -153,6 +165,19 @@ const MobilePodcastStudio = () => {
             alert("Failed to start generation.");
         }
     };
+
+    // ... (keep existing cleanup useEffect and other handlers)
+
+    // ... (keep existing JSX until the end of the file where modlas are) ...
+    // Inserting the KeyMissingModal JSX before the return statement closure or in list of modals
+
+    // To ensure I place it correctly without replacing the whole file, I will just edit up to handleGenerate 
+    // AND then add the modal markup in a separate replacement chunk if needed, or if I can find a block to insert it.
+    // Wait, replace_file_content is better for contiguous blocks. I am replacing the top setup chunk (lines 40-155).
+    // I also need to render the modal. I'll do this in two steps or find a way to verify where to put the modal JSX.
+    // The previous view showed line ~840. The modals are at the end.
+    // I will replace the logic first.
+
 
     // Cleanup interval on unmount
     useEffect(() => {
@@ -621,6 +646,50 @@ const MobilePodcastStudio = () => {
                                     <button type="submit" className="flex-1 py-3 rounded-xl bg-purple-600 text-white font-medium">Create Show</button>
                                 </div>
                             </form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* API Key Missing Modal */}
+            <AnimatePresence>
+                {showKeyMissingModal && (
+                    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="bg-gray-800 rounded-2xl w-full max-w-md p-6 border border-red-500/30 shadow-2xl shadow-red-500/10"
+                        >
+                            <div className="flex flex-col items-center text-center mb-6">
+                                <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-4">
+                                    <AlertCircle className="w-8 h-8 text-red-400" />
+                                </div>
+                                <h2 className="text-xl font-bold mb-2">Speechify Key Required</h2>
+                                <p className="text-gray-400 text-sm">
+                                    To generate high-quality AI podcast audio, you need to connect your Speechify account.
+                                </p>
+                            </div>
+
+                            <div className="bg-gray-700/50 rounded-lg p-4 mb-6 text-xs text-left text-gray-400 border border-gray-700">
+                                <p className="mb-2"><strong className="text-gray-300">Why do I need this?</strong></p>
+                                <p>We use Speechify to generate realistic podcast hosts (Sarah & Viktor). Without a key, we cannot produce the audio.</p>
+                            </div>
+
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setShowKeyMissingModal(false)}
+                                    className="flex-1 py-3 rounded-xl bg-gray-700 text-white font-medium hover:bg-gray-600 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={() => navigate('/m/me/api-keys')}
+                                    className="flex-1 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 text-white font-bold shadow-lg"
+                                >
+                                    Add Key Now
+                                </button>
+                            </div>
                         </motion.div>
                     </div>
                 )}

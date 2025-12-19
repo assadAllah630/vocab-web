@@ -21,6 +21,9 @@ class UserProfile(models.Model):
     # Deepgram TTS settings
     deepgram_api_key = models.CharField(max_length=500, blank=True, default='', help_text='Deepgram API Key for Text-to-Speech')
     speechify_api_key = models.CharField(max_length=500, blank=True, default='', help_text='Speechify API Key for Text-to-Speech')
+    speechify_api_key_2 = models.CharField(max_length=500, blank=True, default='', help_text='Secondary Speechify API Key')
+    speechify_api_key_3 = models.CharField(max_length=500, blank=True, default='', help_text='Tertiary Speechify API Key')
+    speechify_api_key_4 = models.CharField(max_length=500, blank=True, default='', help_text='Quaternary Speechify API Key')
     
     # AI Provider Keys
     ocrspace_api_key = models.CharField(max_length=500, blank=True, default='', help_text='OCR.space API Key for image text extraction')

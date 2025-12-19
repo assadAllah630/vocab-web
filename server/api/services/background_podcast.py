@@ -83,10 +83,22 @@ def generate_podcast_job(podcast_id: int, custom_topic: str = None, target_level
         podcast.summary = final_script.get('summary', str(final_script)[:200])
         podcast.text_content = json.dumps(final_script, default=str)
         podcast.save(update_fields=['title', 'summary', 'text_content'])
+
+        profile = user.profile
+        speechify_keys = [
+            profile.speechify_api_key,
+            profile.speechify_api_key_2,
+            profile.speechify_api_key_3,
+            profile.speechify_api_key_4
+        ]
+        # Filter out empty strings
+        speechify_keys = [k for k in speechify_keys if k and k.strip()]
+
+        producer = ProducerAgent(user=user, api_keys=speechify_keys)
         
         # 5. Production Phase (Speechify)
         logger.info("Running Producer (Speechify)...")
-        if not producer.api_key:
+        if not speechify_keys:
              raise Exception("Speechify API Key missing. Please update your profile settings.")
              
         success = producer.run(final_script, podcast, audio_speed=audio_speed)

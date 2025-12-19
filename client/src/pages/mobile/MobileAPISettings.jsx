@@ -25,10 +25,37 @@ const API_KEYS = [
     },
     {
         id: 'speechify_api_key',
-        name: 'Speechify API Key',
+        name: 'Speechify Key 1 (Primary)',
         icon: '🗣️',
         description: 'Premium AI Text-to-Speech',
-        placeholder: 'Your Speechify key',
+        placeholder: 'Primary Speechify key',
+        helpUrl: 'https://speechify.com/',
+        free: false
+    },
+    {
+        id: 'speechify_api_key_2',
+        name: 'Speechify Key 2 (Backup)',
+        icon: '🔄',
+        description: 'Backup key for load balancing',
+        placeholder: 'Optional backup key',
+        helpUrl: 'https://speechify.com/',
+        free: false
+    },
+    {
+        id: 'speechify_api_key_3',
+        name: 'Speechify Key 3 (Backup)',
+        icon: '🔄',
+        description: 'Extra backup key',
+        placeholder: 'Optional backup key',
+        helpUrl: 'https://speechify.com/',
+        free: false
+    },
+    {
+        id: 'speechify_api_key_4',
+        name: 'Speechify Key 4 (Backup)',
+        icon: '🔄',
+        description: 'Last resort key',
+        placeholder: 'Optional backup key',
         helpUrl: 'https://speechify.com/',
         free: false
     },
