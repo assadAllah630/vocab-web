@@ -123,9 +123,8 @@ class PodcastSerializer(serializers.ModelSerializer):
     
     def get_audio_url(self, obj):
         if obj.audio_file:
-            request = self.context.get('request')
-            if request:
-                return request.build_absolute_uri(obj.audio_file.url)
+            # For S3, obj.audio_file.url is already an absolute URL (optionally signed)
+            return obj.audio_file.url
         return None
 
 class UserProfileSerializer(serializers.ModelSerializer):

@@ -259,7 +259,8 @@ if os.environ.get('AWS_ACCESS_KEY_ID'):
     AWS_S3_REGION_NAME = os.environ.get('AWS_S3_REGION_NAME', 'eu-central-1')
     
     # Public URLs configuration
-    AWS_QUERYSTRING_AUTH = False
+    AWS_QUERYSTRING_AUTH = True  # Enable signed URLs to bypass 403 Forbidden
+    AWS_S3_SIGNATURE_VERSION = 's3v4'  # Required for modern S3/Supabase
     AWS_S3_FILE_OVERWRITE = False
     AWS_DEFAULT_ACL = None
     
