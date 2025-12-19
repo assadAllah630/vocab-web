@@ -1,0 +1,14 @@
+============================================================
+ACTIVE MODELS IN REMOTE DATABASE
+============================================================
+Total: 8
+------------------------------------------------------------
+gemini       | medium   | gemini-2.0-flash-lite
+gemini       | high     | gemini-2.0-flash
+gemini       | high     | gemini-2.5-flash
+groq         | medium   | llama-3.1-8b-instant
+groq         | high     | llama-3.3-70b-versatile
+openrouter   | premium  | deepseek/deepseek-r1-0528:free
+openrouter   | medium   | mistralai/mistral-7b-instruct:free
+openrouter   | high     | meta-llama/llama-3.3-70b-instruct:free
+============================================================

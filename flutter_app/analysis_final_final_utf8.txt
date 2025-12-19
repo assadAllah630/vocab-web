@@ -1,0 +1,18 @@
+﻿Analyzing flutter_app...                                        
+
+   info - The private field _plotType could be 'final' - lib\features\ai\screens\gen_story_screen.dart:24:10 - prefer_final_fields
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\auth\screens\onboarding_screen.dart:183:51 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\auth\widgets\login_screen.dart:476:65 - deprecated_member_use
+warning - Duplicate import - lib\features\stories\providers\story_provider.dart:5:8 - duplicate_import
+
+flutter : 4 issues found. (ran in 7.7s)
+At line:1 char:1
++ flutter analyze --no-pub > 
+analysis_final_final.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~
+    + CategoryInfo          : NotSpecified: (4 is 
+   sues found. (ran in 7.7s):String) [], RemoteE  
+  xception
+    + FullyQualifiedErrorId : NativeCommandError
+ 

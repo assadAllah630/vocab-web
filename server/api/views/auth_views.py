@@ -250,12 +250,11 @@ def signin(request):
                 # Trigger OTP flow if not verified
                 # For now, we'll just block login and ask to verify
                 # Ideally, we should trigger resend_otp here if needed
-                pass
-                # return Response({
-                #     'error': 'Email not verified', 
-                #     'email': user.email,
-                #     'requires_verification': True
-                # }, status=status.HTTP_403_FORBIDDEN)
+                return Response({
+                    'error': 'Email not verified', 
+                    'email': user.email,
+                    'requires_verification': True
+                }, status=status.HTTP_403_FORBIDDEN)
                 
             login(request, user)
             return Response(UserSerializer(user).data)

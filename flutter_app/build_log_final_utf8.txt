@@ -1,0 +1,55 @@
+﻿Running Gradle task 'assembleRelease'...                        
+flutter : Failed to load input font C:\Users\?????
+\AppData\Local\Pub\Cache\hosted\pub.dev\lucide_ico
+ns-0.257.0\assets\lucide.ttf; aborting. This 
+error indicates that the font is invalid or the 
+current version of Harfbuzz is unable to process 
+it.
+At line:1 char:1
++ flutter build apk --release > 
+build_log_final.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~
+    + CategoryInfo          : NotSpecified: 
+(Failed     to load ... to process it.:String) 
+[], RemoteE    xception
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+Failed to load input font C:\Users\?????\AppData\L
+ocal\Pub\Cache\hosted\pub.dev\cupertino_icons-1.0.
+8\assets\CupertinoIcons.ttf; aborting. This error 
+indicates that the font is invalid or the current 
+version of Harfbuzz is unable to process it.
+
+Font asset "MaterialIcons-Regular.otf" was tree-shaken, reducing it from 1645184 to 1868 bytes (99.9% reduction). Tree-shaking can be disabled by providing the --no-tree-shake-icons flag when building your app.
+Target aot_android_asset_bundle failed: 
+IconTreeShakerException: Font subsetting failed 
+with exit code -1.
+
+To disable icon tree shaking, pass 
+--no-tree-shake-icons to the requested flutter 
+build command
+
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task 
+':app:compileFlutterBuildRelease'.
+> Process 'command 'E:\flutter_windows_3.38.3-stab
+le\flutter\bin\flutter.bat'' finished with 
+non-zero exit value 1
+
+* Try:
+> Run with --stacktrace option to get the stack 
+trace.
+> Run with --info or --debug option to get more 
+log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 1m 30s
+Running Gradle task 'assembleRelease'...                           91.4s
+Gradle task assembleRelease failed with exit code 
+1

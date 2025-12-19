@@ -1,0 +1,28 @@
+﻿Analyzing flutter_app...                                        
+
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\exams\screens\exam_dashboard_screen.dart:222:47 - deprecated_member_use
+   info - Function literals shouldn't be passed to 'forEach' - lib\features\grammar\screens\grammar_dashboard_screen.dart:46:28 - avoid_function_literals_in_foreach_calls
+  error - There's no constant named 'between' in 'MainAxisAlignment' - lib\features\grammar\screens\grammar_dashboard_screen.dart:118:46 - undefined_enum_constant
+  error - There's no constant named 'between' in 'MainAxisAlignment' - lib\features\grammar\screens\grammar_dashboard_screen.dart:319:58 - undefined_enum_constant
+  error - There's no constant named 'between' in 'MainAxisAlignment' - lib\features\grammar\screens\grammar_dashboard_screen.dart:386:48 - undefined_enum_constant
+  error - The method 'pulse' isn't defined for the type 'Animate' - lib\features\grammar\screens\grammar_generate_screen.dart:338:50 - undefined_method
+  error - The named parameter 'uppercase' isn't defined - lib\features\grammar\screens\grammar_generate_screen.dart:411:25 - undefined_named_parameter
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\grammar\screens\grammar_generate_screen.dart:517:27 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\grammar\screens\grammar_generate_screen.dart:519:46 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\grammar\screens\grammar_generate_screen.dart:547:34 - deprecated_member_use
+  error - There's no constant named 'between' in 'MainAxisAlignment' - lib\features\grammar\screens\grammar_reader_screen.dart:113:46 - undefined_enum_constant
+  error - The method 'expandVertical' isn't defined for the type 'Animate' - lib\features\grammar\screens\grammar_reader_screen.dart:208:17 - undefined_method
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\grammar\screens\grammar_reader_screen.dart:283:48 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\grammar\screens\grammar_reader_screen.dart:386:48 - deprecated_member_use
+   info - Unnecessary use of 'toList' in a spread - lib\features\grammar\screens\grammar_reader_screen.dart:407:72 - unnecessary_to_list_in_spreads
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\grammar\screens\grammar_reader_screen.dart:492:28 - use_build_context_synchronously
+   info - Statements in an if should be enclosed in a block - lib\features\profile\screens\api_settings_screen.dart:136:11 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\features\profile\screens\api_settings_screen.dart:138:11 - curly_braces_in_flow_control_structures
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\profile\screens\api_settings_screen.dart:273:50 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\profile\screens\api_settings_screen.dart:323:46 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\profile\screens\api_settings_screen.dart:334:37 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\profile\screens\api_settings_screen.dart:441:56 - deprecated_member_use
+warning - The value of the local variable 'authState' isn't used - lib\features\profile\screens\profile_screen.dart:14:11 - unused_local_variable
+  error - Undefined name 'authProvider' - lib\features\profile\screens\profile_screen.dart:14:33 - undefined_identifier
+  error - Undefined name 'authProvider' - lib\features\profile\screens\profile_screen.dart:310:32 - undefined_identifier
+
