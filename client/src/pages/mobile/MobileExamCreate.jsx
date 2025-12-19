@@ -56,25 +56,57 @@ function MobileExamCreate() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [activeStep, setActiveStep] = useState(0);
-    const [generationSuccess, setGenerationSuccess] = useState(false); // New state for success view
+    const [generationSuccess, setGenerationSuccess] = useState(false);
+    const [generatedExamId, setGeneratedExamId] = useState(null); // Track ID for polling
+
+    // Polling Effect
+    React.useEffect(() => {
+        let pollInterval;
+
+        if (generationSuccess && generatedExamId) {
+            pollInterval = setInterval(async () => {
+                try {
+                    const res = await api.get(`exams/${generatedExamId}/`);
+                    // Check if questions are populated (exam done)
+                    if (res.data.questions && res.data.questions.length > 0) {
+                        clearInterval(pollInterval);
+                        // Brief success delay then redirect
+                        setTimeout(() => {
+                            const totalQuestions = calculateTotalQuestions(res.data);
+                            startExam(res.data, totalQuestions * 20);
+                            navigate('/m/exam/play');
+                        }, 1500);
+                    }
+                } catch (err) {
+                    console.error("Polling error:", err);
+                    // Don't error out UI, just keep trying or let user navigate away manually
+                }
+            }, 3000); // Poll every 3 seconds
+        }
+
+        return () => {
+            if (pollInterval) clearInterval(pollInterval);
+        };
+    }, [generationSuccess, generatedExamId, navigate, startExam]);
 
     const handleTypeToggle = (typeId) => {
-        setSelectedTypes(prev =>
-            prev.includes(typeId)
-                ? prev.filter(t => t !== typeId)
-                : [...prev, typeId]
-        );
+        setSelectedTypes(prev => {
+            if (prev.includes(typeId)) {
+                return prev.filter(t => t !== typeId);
+            } else {
+                return [...prev, typeId];
+            }
+        });
     };
 
     const calculateTotalQuestions = (examData) => {
-        let total = 0;
-        const sections = examData.sections || examData.questions || [];
-        sections.forEach(section => {
-            if (section.questions) total += section.questions.length;
-            else if (section.blanks) total += section.blanks.length;
-            else if (section.pairs) total += section.pairs.length;
-        });
-        return total;
+        let count = 0;
+        if (examData.questions) {
+            examData.questions.forEach(qGroup => {
+                if (qGroup.items) count += qGroup.items.length;
+            });
+        }
+        return count || 10; // Default fallback
     };
 
     const handleGenerate = async () => {
@@ -91,7 +123,7 @@ function MobileExamCreate() {
         setError('');
         setActiveStep(0);
 
-        // Simulate steps for UI effect
+        // Simulate steps for UI effect (initial loading phase)
         const stepInterval = setInterval(() => {
             setActiveStep(prev => {
                 if (prev < STEPS.length - 1) return prev + 1;
@@ -114,26 +146,22 @@ function MobileExamCreate() {
 
             if (res.status === 202) {
                 // Async generation started
-                // Show success view instead of navigating
+                setGeneratedExamId(res.data.id); // Save ID for polling
                 setGenerationSuccess(true);
                 return;
             }
 
-            // Fallback for immediate response (legacy or if we switch back)
-            // Start the exam with timer
+            // Fallback for immediate response (if backend changes)
             const totalQuestions = calculateTotalQuestions(res.data);
-            startExam(res.data, totalQuestions * 20); // 20 seconds per question
-
-            // Navigate to play page
+            startExam(res.data, totalQuestions * 20);
             navigate('/m/exam/play');
+
         } catch (err) {
             clearInterval(stepInterval);
             console.error("Generation failed:", err);
 
-            // Check for NO_API_KEYS error - redirect to settings
             if (err.response?.data?.code === 'NO_API_KEYS') {
                 setError('Please add your API keys first');
-                // Navigate to settings after a short delay
                 setTimeout(() => navigate('/m/settings'), 1500);
                 return;
             }
@@ -144,59 +172,78 @@ function MobileExamCreate() {
         }
     };
 
-    // Success View
+    // Success / Waiting View
     if (generationSuccess) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center" style={{ backgroundColor: '#09090B' }}>
                 <motion.div
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    className="w-20 h-20 rounded-full flex items-center justify-center mb-6"
-                    style={{ backgroundColor: 'rgba(34, 197, 94, 0.15)' }}
+                    animate={{
+                        rotate: 360,
+                        scale: [1, 1.1, 1]
+                    }}
+                    transition={{
+                        rotate: { duration: 3, repeat: Infinity, ease: "linear" },
+                        scale: { duration: 2, repeat: Infinity }
+                    }}
+                    className="w-24 h-24 rounded-full flex items-center justify-center mb-8 relative"
                 >
-                    <CheckCircle size={40} color="#22C55E" />
+                    <div className="absolute inset-0 rounded-full border-4 border-indigo-500/20"></div>
+                    <div className="absolute inset-0 rounded-full border-4 border-t-indigo-500 border-r-transparent border-b-transparent border-l-transparent animate-spin"></div>
+                    <Zap size={40} className="text-indigo-400" />
                 </motion.div>
 
                 <h2 className="text-2xl font-bold mb-3" style={{ color: '#FAFAFA' }}>
-                    Exam Generation Started!
+                    Generating Exam...
                 </h2>
 
-                <p className="text-lg mb-6 leading-relaxed" style={{ color: '#A1A1AA' }}>
-                    Your exam is being crafted by our AI. <br />
-                    This usually takes about <span className="text-white font-semibold">3 minutes</span>.
+                <p className="text-lg mb-8 leading-relaxed max-w-sm mx-auto" style={{ color: '#A1A1AA' }}>
+                    Our AI is crafting your <span className="text-white font-medium">{topic}</span> exam.
+                    <br />
+                    <span className="text-sm mt-2 block opacity-70">Estimated time: ~2 minutes</span>
                 </p>
 
-                <div className="p-4 rounded-xl mb-8 w-full max-w-sm" style={{ backgroundColor: '#1C1C1F', border: '1px solid #27272A' }}>
-                    <p className="text-sm" style={{ color: '#A1A1AA' }}>
-                        You can leave this page and keep practicing. We'll send you a <span className="text-indigo-400 font-semibold">notification</span> when it's ready!
-                    </p>
-                </div>
+                <div className="w-full max-w-sm space-y-4">
+                    {/* Info Box */}
+                    <div className="p-4 rounded-xl text-left flex gap-3" style={{ backgroundColor: '#1C1C1F', border: '1px solid #27272A' }}>
+                        <div className="mt-1">
+                            <CheckCircle size={18} className="text-green-500" />
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium text-white mb-1">You can leave this page</p>
+                            <p className="text-xs text-gray-400">
+                                The exam will continue generating in the background. We'll verify it works and send you a notification when ready!
+                            </p>
+                        </div>
+                    </div>
 
-                <div className="w-full max-w-sm space-y-3">
-                    <motion.button
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => navigate('/m/exam')}
-                        className="w-full py-4 rounded-xl font-bold text-base transition-all"
-                        style={{
-                            background: 'linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)',
-                            color: '#FFFFFF',
-                            boxShadow: '0 8px 24px rgba(99, 102, 241, 0.3)'
-                        }}
-                    >
-                        Go to Exam List
-                    </motion.button>
+                    <div className="pt-4 space-y-3">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="text-xs text-indigo-400 font-medium tracking-wide uppercase mb-2"
+                        >
+                            Auto-redirecting when ready...
+                        </motion.div>
 
-                    <motion.button
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => navigate('/m')}
-                        className="w-full py-4 rounded-xl font-medium text-base transition-all"
-                        style={{
-                            backgroundColor: 'transparent',
-                            color: '#71717A'
-                        }}
-                    >
-                        Home
-                    </motion.button>
+                        <motion.button
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => navigate('/m/exam')}
+                            className="w-full py-4 rounded-xl font-bold text-base transition-all border border-zinc-800"
+                            style={{
+                                backgroundColor: 'rgba(255,255,255,0.05)',
+                                color: '#A1A1AA',
+                            }}
+                        >
+                            Go to Exam List
+                        </motion.button>
+
+                        <button
+                            onClick={() => navigate('/m')}
+                            className="text-sm text-zinc-500 py-2"
+                        >
+                            Back to Home
+                        </button>
+                    </div>
                 </div>
             </div>
         );
