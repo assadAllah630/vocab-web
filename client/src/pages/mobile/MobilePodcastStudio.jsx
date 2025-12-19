@@ -41,6 +41,24 @@ const MobilePodcastStudio = () => {
     const [hasSpeechifyKey, setHasSpeechifyKey] = useState(true); // Default true to avoid flash, verified on mount
     const [showKeyMissingModal, setShowKeyMissingModal] = useState(false);
 
+    const [loading, setLoading] = useState(true);
+    const [episodes, setEpisodes] = useState([]);
+    const [generating, setGenerating] = useState(false);
+    const [statusData, setStatusData] = useState(null);
+    const [statusInterval, setStatusInterval] = useState(null);
+    const [genOptions, setGenOptions] = useState({ topic: '', level: 'B1', speed: 1.0 });
+
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [showGenerateModal, setShowGenerateModal] = useState(false);
+
+    // Player State
+    const [currentAudio, setCurrentAudio] = useState(null);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [currentEpisode, setCurrentEpisode] = useState(null);
+    const [currentTranscript, setCurrentTranscript] = useState([]);
+    const [showFullPlayer, setShowFullPlayer] = useState(false);
+    const [audioProgress, setAudioProgress] = useState(0);
+    const [activeWordIndex, setActiveWordIndex] = useState(-1);
     useEffect(() => {
         fetchCategories();
         checkProfile();
@@ -48,7 +66,7 @@ const MobilePodcastStudio = () => {
 
     const checkProfile = async () => {
         try {
-            const res = await api.get('profile/me/');
+            const res = await api.get('profile/');
             if (res.data) {
                 const hasKey = !!(
                     res.data.speechify_api_key ||

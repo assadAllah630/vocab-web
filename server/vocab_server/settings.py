@@ -248,6 +248,26 @@ SESSION_COOKIE_SAMESITE = 'Lax'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+# Cloudinary Storage (Persistence for Render)
+# Only enable if CLOUDINARY_URL is present
+if os.environ.get('CLOUDINARY_URL'):
+    INSTALLED_APPS += [
+        'cloudinary_storage',
+        'cloudinary',
+    ]
+    # Set Cloudinary as the default storage for media
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+    
+    # Optional: Configure authentication here if not using CLOUDINARY_URL
+    # CLOUDINARY_STORAGE = {
+    #     'CLOUD_NAME': '...',
+    #     'API_KEY': '...',
+    #     'API_SECRET': '...'
+    # }
+    print("☁️ Cloudinary Storage Enabled")
+else:
+    print("📁 Local Storage Enabled (Warning: Ephemeral on Render)")
+
 
 
 # Rate Limiting
