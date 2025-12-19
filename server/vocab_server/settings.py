@@ -248,23 +248,27 @@ SESSION_COOKIE_SAMESITE = 'Lax'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Cloudinary Storage (Persistence for Render)
-# Only enable if CLOUDINARY_URL is present
-if os.environ.get('CLOUDINARY_URL'):
-    INSTALLED_APPS += [
-        'cloudinary_storage',
-        'cloudinary',
-    ]
-    # Set Cloudinary as the default storage for media
-    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+# S3 Storage (For Supabase/AWS persistence on Render)
+if os.environ.get('AWS_ACCESS_KEY_ID'):
+    INSTALLED_APPS += ['storages']
     
-    # Optional: Configure authentication here if not using CLOUDINARY_URL
-    # CLOUDINARY_STORAGE = {
-    #     'CLOUD_NAME': '...',
-    #     'API_KEY': '...',
-    #     'API_SECRET': '...'
-    # }
-    print("☁️ Cloudinary Storage Enabled")
+    AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
+    AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME', 'media')
+    AWS_S3_ENDPOINT_URL = os.environ.get('AWS_S3_ENDPOINT_URL') # Essential for Supabase
+    AWS_S3_REGION_NAME = os.environ.get('AWS_S3_REGION_NAME', 'eu-central-1')
+    
+    AWS_S3_OBJECT_PARAMETERS = {
+        'CacheControl': 'max-age=86400',
+    }
+    
+    # Static files (remain on WhiteNoise for now, usually better for performance)
+    # STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    
+    # Media files (Podcasts, Avatars)
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    
+    print(f"☁️ S3 Storage Enabled (Bucket: {AWS_STORAGE_BUCKET_NAME})")
 else:
     print("📁 Local Storage Enabled (Warning: Ephemeral on Render)")
 
