@@ -5,6 +5,7 @@ from ..models import Exam, ExamAttempt, UserProfile, UserRelationship, User
 from ..serializers import ExamSerializer
 from django.db.models import Q
 import json
+from ..services.learning_events import log_exam_attempt
 
 class ExamViewSet(viewsets.ModelViewSet):
     serializer_class = ExamSerializer
@@ -88,13 +89,21 @@ class ExamViewSet(viewsets.ModelViewSet):
         
         # Try to find existing exam with same topic, difficulty, language pair, and questions
         
-        existing_exam = Exam.objects.filter(
-            user=request.user,
-            language=target_lang,
-            native_language=native_lang,
-            topic=topic,
-            difficulty=difficulty
-        ).first()
+        # Check if creating a template
+        is_template = request.data.get('is_template', False)
+        
+        # Try to find existing exam with same topic, difficulty, language pair, and questions
+        # ONLY if not a template (templates should be unique versions)
+        
+        existing_exam = None
+        if not is_template:
+            existing_exam = Exam.objects.filter(
+                user=request.user,
+                language=target_lang,
+                native_language=native_lang,
+                topic=topic,
+                difficulty=difficulty
+            ).first()
         
         # Check if questions match (simple comparison)
         if existing_exam and json.dumps(existing_exam.questions, sort_keys=True) == json.dumps(questions, sort_keys=True):
@@ -113,9 +122,14 @@ class ExamViewSet(viewsets.ModelViewSet):
             existing_exam.save()
             
             serializer = self.get_serializer(existing_exam)
+            
+            # Log Learning Event
+            log_exam_attempt(request.user, existing_exam.id, score)
+
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             # New exam - create exam and first attempt with language pair
+            # For templates, we don't create an attempt
             exam = Exam.objects.create(
                 user=request.user,
                 language=target_lang,
@@ -123,16 +137,28 @@ class ExamViewSet(viewsets.ModelViewSet):
                 topic=topic,
                 difficulty=difficulty,
                 questions=questions,
-                best_score=score,
-                attempt_count=1
+                best_score=score if not is_template else 0,
+                attempt_count=1 if not is_template else 0,
+                is_template=is_template
             )
             
-            ExamAttempt.objects.create(
-                exam=exam,
-                user_answers=user_answers,
-                feedback=feedback,
-                score=score
-            )
+            if not is_template:
+                ExamAttempt.objects.create(
+                    exam=exam,
+                    user_answers=user_answers,
+                    feedback=feedback,
+                    score=score
+                )
+                # Log Learning Event only for real attempts
+                log_exam_attempt(request.user, exam.id, score)
             
             serializer = self.get_serializer(exam)
+            
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['get'])
+    def get_template(self, request, pk=None):
+        """Fetch a template exam's structure without creating an attempt."""
+        exam = self.get_object()
+        serializer = self.get_serializer(exam)
+        return Response(serializer.data)

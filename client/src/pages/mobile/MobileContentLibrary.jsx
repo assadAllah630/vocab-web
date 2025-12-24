@@ -9,7 +9,8 @@ import {
     PlusIcon,
     SparklesIcon,
     ChevronRightIcon,
-    WifiIcon
+    WifiIcon,
+    CheckIcon
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid, HeartIcon } from '@heroicons/react/24/solid';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
@@ -41,14 +42,17 @@ const getTypeIcon = (type) => {
     }
 };
 
-const ContentCard = ({ item, onDelete, onFavorite, onClick }) => (
+const ContentCard = ({ item, onDelete, onFavorite, onClick, onEdit, isSelected, selectionMode, teacherMode }) => (
     <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, x: -100 }}
         whileTap={{ scale: 0.98 }}
         onClick={onClick}
-        className="bg-[#18181B] rounded-2xl border border-[#27272A] overflow-hidden active:bg-[#27272A]/50 transition-colors"
+        className={`bg-[#18181B] rounded-2xl border overflow-hidden active:bg-[#27272A]/50 transition-colors ${isSelected
+            ? 'border-indigo-500 bg-indigo-500/10 ring-2 ring-indigo-500/50'
+            : 'border-[#27272A]'
+            }`}
     >
         <div className="p-4">
             {/* Header */}
@@ -60,12 +64,20 @@ const ContentCard = ({ item, onDelete, onFavorite, onClick }) => (
                     <h3 className="font-bold text-white text-base line-clamp-1">{item.title}</h3>
                     <p className="text-xs text-[#71717A] capitalize">{item.content_type}</p>
                 </div>
-                <button
-                    onClick={(e) => { e.stopPropagation(); onFavorite(item.id); }}
-                    className="p-2 -m-2"
-                >
-                    <HeartIcon className={`w-5 h-5 ${item.is_favorite ? 'text-[#F43F5E]' : 'text-[#3F3F46]'}`} />
-                </button>
+
+                {selectionMode ? (
+                    <div className={`w-6 h-6 rounded-full border flex items-center justify-center ${isSelected ? 'bg-indigo-500 border-indigo-500' : 'border-[#3F3F46]'
+                        }`}>
+                        {isSelected && <CheckIcon className="w-4 h-4 text-white" />}
+                    </div>
+                ) : (
+                    <button
+                        onClick={(e) => { e.stopPropagation(); onFavorite(item.id); }}
+                        className="p-2 -m-2"
+                    >
+                        <HeartIcon className={`w-5 h-5 ${item.is_favorite ? 'text-[#F43F5E]' : 'text-[#3F3F46]'}`} />
+                    </button>
+                )}
             </div>
 
             {/* Topic/Description */}
@@ -87,28 +99,45 @@ const ContentCard = ({ item, onDelete, onFavorite, onClick }) => (
             </div>
         </div>
 
-        {/* Bottom Actions */}
-        <div className="flex items-center justify-between px-4 py-3 border-t border-[#27272A] bg-[#0D0D0F]">
-            <span className="text-xs text-[#6366F1] font-medium">Tap to read</span>
-            <div className="flex items-center gap-2">
-                <button
-                    onClick={(e) => { e.stopPropagation(); onDelete(item.id); }}
-                    className="p-2 text-[#52525B] hover:text-red-500 transition-colors"
-                >
-                    <TrashIcon className="w-4 h-4" />
-                </button>
-                <ChevronRightIcon className="w-4 h-4 text-[#52525B]" />
+        {/* Bottom Actions - Hide in Selection Mode */}
+        {!selectionMode && (
+            <div className="flex items-center justify-between px-4 py-3 border-t border-[#27272A] bg-[#0D0D0F]">
+                <div className="flex items-center gap-3">
+                    <span className="text-xs text-[#6366F1] font-medium">Tap to read</span>
+                    {teacherMode && (
+                        <button
+                            onClick={(e) => { e.stopPropagation(); onEdit(item); }}
+                            className="bg-indigo-500/10 text-indigo-400 text-[10px] px-2 py-0.5 rounded font-black border border-indigo-500/20"
+                        >
+                            EDIT
+                        </button>
+                    )}
+                </div>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={(e) => { e.stopPropagation(); onDelete(item.id); }}
+                        className="p-2 text-[#52525B] hover:text-red-500 transition-colors"
+                    >
+                        <TrashIcon className="w-4 h-4" />
+                    </button>
+                    <ChevronRightIcon className="w-4 h-4 text-[#52525B]" />
+                </div>
             </div>
-        </div>
+        )}
     </motion.div>
 );
 
-const MobileContentLibrary = () => {
+const MobileContentLibrary = ({ selectionMode = false, onSelect, selectedId, filterType, teacherMode = false }) => {
     const navigate = useNavigate();
     const [content, setContent] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [filter, setFilter] = useState('all');
+    const [filter, setFilter] = useState(filterType || 'all');
     const isOnline = useOnlineStatus();
+
+    // Force filter if provided
+    useEffect(() => {
+        if (filterType) setFilter(filterType);
+    }, [filterType]);
 
     useEffect(() => {
         fetchContent();
@@ -173,8 +202,21 @@ const MobileContentLibrary = () => {
     };
 
     const handleCardClick = (item) => {
-        // Navigate to viewer page (we'll create simple mobile viewers later)
-        navigate(`/m/ai/${item.content_type}/${item.id}`);
+        if (selectionMode && onSelect) {
+            onSelect(item);
+        } else {
+            // Navigate to viewer page (we'll create simple mobile viewers later)
+            navigate(`/m/ai/${item.content_type}/${item.id}`);
+        }
+    };
+
+    const handleEdit = (item) => {
+        if (item.content_type === 'exam') {
+            navigate(`/m/teacher/exam/${item.id}/edit`);
+        } else {
+            // Universal editor for story, article, dialogue
+            navigate(`/m/teacher/edit/${item.id}`);
+        }
     };
 
     const filteredContent = content.filter(item => {
@@ -255,6 +297,10 @@ const MobileContentLibrary = () => {
                                 onDelete={handleDelete}
                                 onFavorite={toggleFavorite}
                                 onClick={() => handleCardClick(item)}
+                                onEdit={() => handleEdit(item)}
+                                isSelected={selectedId === item.id}
+                                selectionMode={selectionMode}
+                                teacherMode={teacherMode}
                             />
                         ))
                     ) : (

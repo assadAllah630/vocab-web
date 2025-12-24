@@ -19,7 +19,7 @@ const MobileAIGateway = () => {
     const navigate = useNavigate();
     const [dashboard, setDashboard] = useState(null);
     const [providers, setProviders] = useState([]);
-    const [keys, setKeys] = useState([]);
+    const [apiKeys, setApiKeys] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -41,9 +41,9 @@ const MobileAIGateway = () => {
                 api.get('/ai-gateway/providers/'),
                 api.get('/ai-gateway/keys/')
             ]);
-            setDashboard(dashRes.data);
-            setProviders(provRes.data.providers);
-            setKeys(keysRes.data.keys);
+            setDashboard(dashRes.data || null);
+            setProviders(provRes.data?.providers || []);
+            setApiKeys(Array.isArray(keysRes.data?.keys) ? keysRes.data.keys : []);
         } catch (err) {
             console.error('AI Gateway error:', err);
             if (!isBackground) {
@@ -211,7 +211,7 @@ const MobileAIGateway = () => {
                 {activeTab === 'keys' && (
                     <KeysTab
                         key="keys"
-                        keys={keys}
+                        apiKeysList={apiKeys}
                         providers={providers}
                         showAddKey={showAddKey}
                         setShowAddKey={setShowAddKey}
@@ -457,7 +457,7 @@ const ModelsTab = ({ dashboard }) => {
 // =============================================================================
 // KEYS TAB - API key management (advanced users)
 // =============================================================================
-const KeysTab = ({ keys, providers, showAddKey, setShowAddKey, newKey, setNewKey, addKey, testKey, deleteKey, testingKey, getHealthColor }) => {
+const KeysTab = ({ apiKeysList, providers, showAddKey, setShowAddKey, newKey, setNewKey, addKey, testKey, deleteKey, testingKey, getHealthColor }) => {
     return (
         <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -527,14 +527,14 @@ const KeysTab = ({ keys, providers, showAddKey, setShowAddKey, newKey, setNewKey
 
             {/* Keys List */}
             <div className="rounded-xl overflow-hidden" style={{ backgroundColor: '#141416', border: '1px solid #1F1F23' }}>
-                {keys.length === 0 ? (
+                {apiKeysList.length === 0 ? (
                     <div className="p-8 text-center">
                         <Key size={32} className="mx-auto mb-3" style={{ color: '#3F3F46' }} />
                         <p className="text-sm" style={{ color: '#71717A' }}>No API keys configured</p>
                     </div>
                 ) : (
-                    keys.map((key, i) => (
-                        <div key={key.id} className="p-4" style={{ borderBottom: i < keys.length - 1 ? '1px solid #1F1F23' : 'none' }}>
+                    apiKeysList.map((key, i) => (
+                        <div key={key.id} className="p-4" style={{ borderBottom: i < apiKeysList.length - 1 ? '1px solid #1F1F23' : 'none' }}>
                             <div className="flex items-center justify-between mb-2">
                                 <div>
                                     <div className="flex items-center gap-2">

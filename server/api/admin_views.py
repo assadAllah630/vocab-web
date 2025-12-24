@@ -11,7 +11,7 @@ from django.contrib.auth.models import User
 from .pagination import StandardResultsSetPagination
 
 class AdminUserSerializer(serializers.ModelSerializer):
-    role = serializers.CharField(source='admin_role.role', read_only=True)
+    role = serializers.SerializerMethodField()
     vocab_count = serializers.IntegerField(read_only=True)
     content_count = serializers.IntegerField(read_only=True)
     is_online = serializers.SerializerMethodField()
@@ -19,6 +19,12 @@ class AdminUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'is_active', 'date_joined', 'last_login', 'role', 'vocab_count', 'content_count', 'is_online']
+
+    def get_role(self, obj):
+        try:
+            return obj.admin_role.role if hasattr(obj, 'admin_role') and obj.admin_role else 'user'
+        except:
+            return 'user'
 
     def get_is_online(self, obj):
         if not obj.last_login:

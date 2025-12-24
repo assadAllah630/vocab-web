@@ -1,10 +1,12 @@
 import React from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
 import MobileNav from './MobileNav';
 import MobileFloatingExamTimer from './MobileFloatingExamTimer';
 import InstallPrompt from '../InstallPrompt';
 
 function MobileLayout() {
+    const location = useLocation();
     return (
         <div
             className="min-h-screen flex flex-col relative overflow-hidden"
@@ -31,8 +33,10 @@ function MobileLayout() {
             </div>
 
             {/* Main content */}
-            <main className="flex-1 overflow-y-auto pb-24 relative z-10">
-                <Outlet />
+            <main className="flex-1 overflow-y-auto pb-24 relative z-10 no-scrollbar">
+                <AnimatePresence mode="wait">
+                    <Outlet />
+                </AnimatePresence>
             </main>
 
             {/* Floating Exam Timer - shows when exam is active but user is on another page */}
@@ -41,7 +45,7 @@ function MobileLayout() {
             {/* PWA Install Prompt */}
             <InstallPrompt />
 
-            <MobileNav />
+            {!location.pathname.includes('/session/') && <MobileNav />}
         </div>
     );
 }

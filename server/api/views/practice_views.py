@@ -8,6 +8,7 @@ from ..hlr import HLRScheduler
 from datetime import timedelta
 from django.utils import timezone
 from django.db import transaction
+from ..services.learning_events import log_word_practice
 
 class UserProgressViewSet(viewsets.ModelViewSet):
     serializer_class = UserProgressSerializer
@@ -286,6 +287,15 @@ def record_practice_result(request):
             
             # Log activity for Heatmap (create Quiz entry)
             Quiz.objects.create(user=request.user, vocab=word, score=score)
+
+            # Log granular Learning Event
+            is_correct = False
+            if difficulty:
+                is_correct = difficulty in ['hard', 'good', 'easy']
+            elif was_correct is not None:
+                is_correct = bool(was_correct)
+            
+            log_word_practice(request.user, word.id, is_correct)
             
     except Vocabulary.DoesNotExist:
         return Response({'error': 'Word not found'}, status=status.HTTP_404_NOT_FOUND)

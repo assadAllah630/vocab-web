@@ -1,215 +1,215 @@
-# VocabMaster - AI-Powered Language Learning Platform
+<p align="center">
+  <img src="docs/hero_banner.png" alt="VocabMaster Banner" width="100%">
+</p>
 
-A comprehensive web application for learning German (and other languages) with AI-powered features including vocabulary management, spaced repetition, story generation, grammar lessons, and more.
+<h1 align="center">🧠 VocabMaster</h1>
 
-## 🌟 Features
+<p align="center">
+  <strong>AI-Powered Language Learning Platform</strong><br>
+  Learn any language with AI-generated content, spaced repetition, podcasts, live classes, and gamified practice.
+</p>
 
-### Core Vocabulary Management
-- **Smart Vocabulary Bank**: Add, organize, and manage vocabulary with tags and categories
-- **Spaced Repetition (SRS)**: Multiple algorithms including SuperMemo 2 and Half-Life Regression (HLR)
-- **Interactive Quizzes**: Practice with various quiz modes and difficulty levels
-- **Progress Tracking**: Detailed statistics and activity heatmaps
+<p align="center">
+  <img src="https://img.shields.io/badge/Django-4.x-green?logo=django" alt="Django">
+  <img src="https://img.shields.io/badge/React-18-blue?logo=react" alt="React">
+  <img src="https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter" alt="Flutter">
+  <img src="https://img.shields.io/badge/AI_Providers-10+-purple" alt="AI">
+  <img src="https://img.shields.io/badge/License-MIT-yellow" alt="License">
+</p>
 
-### AI-Powered Content Generation
-- **Story Generator**: Create personalized stories at different CEFR levels (A1-C2)
-- **Article Generator**: Generate educational articles on any topic
-- **Dialogue Generator**: Practice conversations with AI-generated dialogues
-- **Image Generation**: Automatic illustration of stories using Stable Horde and Hugging Face
-- **Grammar Lessons**: AI-generated grammar explanations with examples and Mermaid diagrams
+---
 
-### Advanced Features
-- **Semantic Search**: Find vocabulary using natural language queries (powered by OpenRouter)
-- **Text-to-Speech**: Multiple TTS providers (Google Cloud, Deepgram, Speechify)
-- **Podcast Creator**: Convert text to audio podcasts
-- **Exam Generator**: Create custom language exams with AI evaluation
-- **Social Features**: Follow users, share vocabulary, public profiles
+## ✨ Features
 
-## 🛠️ Tech Stack
+### 🧠 AI Content Generation
+| Feature | Description |
+|---------|-------------|
+| **Stories** | AI-generated stories with images |
+| **Articles** | Educational articles on any topic |
+| **Dialogues** | Realistic conversation practice |
+| **Grammar** | Auto-generated grammar exercises |
 
-### Backend
-- **Framework**: Django 4.x + Django REST Framework
-- **Database**: PostgreSQL
-- **AI Integration**: 
-  - Google Gemini API (content generation)
-  - OpenRouter API (semantic search)
-  - Stable Horde & Hugging Face (image generation)
-- **Authentication**: Token-based + Google OAuth
+### 📚 Vocabulary & SRS
+| Feature | Description |
+|---------|-------------|
+| **Spaced Repetition** | SM-2 algorithm for optimal review |
+| **Flashcards** | Interactive learning cards |
+| **Quiz Modes** | Multiple quiz types |
+| **Semantic Search** | Find related words by meaning |
 
-### Frontend
-- **Framework**: React 18 + Vite
-- **Routing**: React Router v6
-- **Styling**: Tailwind CSS
-- **UI Components**: Heroicons, Framer Motion
-- **Markdown**: ReactMarkdown with Mermaid diagram support
+### 🎙️ Podcasts
+| Feature | Description |
+|---------|-------------|
+| **AI Podcasts** | Generate learning podcasts |
+| **External RSS** | Import your favorite shows |
+| **Podcast Exams** | Learn from episodes |
 
-## 📦 Installation
+### 👨‍🏫 Classroom & Live Sessions
+| Feature | Description |
+|---------|-------------|
+| **Classrooms** | Teachers manage student groups |
+| **Assignments** | Create and track assignments |
+| **Live Video** | LiveKit-powered video classes |
+| **Whiteboard** | Real-time collaboration |
+| **Learning Paths** | Structured curriculum |
+
+### 🎮 Games & Practice
+| Feature | Description |
+|---------|-------------|
+| **Game Arena** | Multiplayer vocabulary games |
+| **Time Challenges** | Speed practice |
+| **Memory Match** | Memory-based learning |
+
+### 📖 Smart Reader
+| Feature | Description |
+|---------|-------------|
+| **URL Import** | Extract content from any URL |
+| **YouTube** | Get transcripts from videos |
+| **PDF/DOCX** | Parse documents |
+| **OCR** | Extract text from images |
+
+---
+
+## 🏗️ Architecture
+
+<p align="center">
+  <img src="docs/architecture.png" alt="System Architecture" width="100%">
+</p>
+
+### Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| **Backend** | Django 4.x, Django REST Framework, LangGraph |
+| **Desktop Frontend** | React 18, Vite, TailwindCSS |
+| **Mobile** | React PWA + Flutter |
+| **Admin Panel** | React 18 |
+| **Database** | PostgreSQL, Redis |
+| **Real-time** | LiveKit WebRTC |
+| **AI Providers** | Gemini, OpenRouter, Groq, HuggingFace, Cohere, DeepInfra |
+| **Image AI** | Pollinations (unlimited), Gemini |
+
+### Data Flow
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      Client Apps                             │
+│  [React Desktop] [React PWA] [Flutter] [Admin]              │
+└──────────────────────┬──────────────────────────────────────┘
+                       │
+          ┌───────────┴───────────┐
+          ▼                       ▼
+   ┌──────────────┐       ┌──────────────┐
+   │  Django API  │◄─────►│   LiveKit    │
+   └──────┬───────┘       └──────────────┘
+          │
+    ┌─────┴─────┐
+    ▼           ▼
+┌────────┐  ┌────────────┐
+│ Direct │  │ AI-Powered │
+│Services│  │  Services  │
+├────────┤  ├────────────┤
+│• Auth  │  │• Story Gen │
+│• Vocab │  │• Exam Gen  │
+│• Class │  │• Reader    │
+│• Paths │  │• Podcasts  │
+└────┬───┘  └─────┬──────┘
+     │            │
+     │            ▼
+     │     ┌──────────────┐
+     │     │  AI Gateway  │
+     │     │ with Fallback│
+     │     └──────┬───────┘
+     │            │
+     │     ┌──────┴──────────────────────┐
+     │     ▼      ▼       ▼       ▼      │
+     │  [Gemini][OpenRouter][Groq][+7]   │
+     │                                    │
+     └───────────────┬────────────────────┘
+                     ▼
+         ┌──────────────────────┐
+         │     Data Layer       │
+         │ [PostgreSQL] [Redis] │
+         └──────────────────────┘
+```
+
+---
+
+## 📸 Screenshots
+
+<!-- Add your screenshots here -->
+| Dashboard | Mobile Home | Story Generator |
+|-----------|-------------|-----------------|
+| ![Dashboard](docs/screenshots/dashboard.png) | ![Mobile](docs/screenshots/mobile.png) | ![Story](docs/screenshots/story.png) |
+
+| Podcast Player | Live Classroom |
+|----------------|----------------|
+| ![Podcast](docs/screenshots/podcast.png) | ![Classroom](docs/screenshots/classroom.png) |
+
+---
+
+## 🚀 Quick Start
 
 ### Prerequisites
 - Python 3.10+
 - Node.js 18+
-- PostgreSQL 14+
+- PostgreSQL (or SQLite for dev)
+- Redis
 
-### Backend Setup
-
-1. Navigate to server directory:
+### Backend
 ```bash
 cd server
-```
-
-2. Create virtual environment:
-```bash
-python -m venv .venv
-.venv\Scripts\activate  # Windows
-source .venv/bin/activate  # Linux/Mac
-```
-
-3. Install dependencies:
-```bash
 pip install -r requirements.txt
-```
-
-4. Configure environment variables (create `.env` file):
-```env
-# Database
-DB_NAME=vocab_db
-DB_USER=postgres
-DB_PASSWORD=your_password
-DB_HOST=localhost
-DB_PORT=5432
-
-# Google OAuth
-GOOGLE_OAUTH_CLIENT_ID=your_client_id
-GOOGLE_OAUTH_CLIENT_SECRET=your_client_secret
-
-# Email (Gmail)
-GMAIL_USER=your_email@gmail.com
-GMAIL_APP_PASSWORD=your_app_password
-```
-
-5. Run migrations:
-```bash
 python manage.py migrate
-```
-
-6. Create superuser:
-```bash
-python manage.py createsuperuser
-```
-
-7. Start development server:
-```bash
 python manage.py runserver
 ```
 
-## 🚀 Deployment
-
-VocabMaster can be deployed to production using **100% FREE services** (no credit card required):
-
-- **Backend**: Render (Free tier)
-- **Database**: Render PostgreSQL (Free tier)
-- **Frontend**: Vercel (Hobby tier)
-- **CI/CD**: GitHub Actions (Free)
-
-📖 **[Read the Complete Deployment Guide](DEPLOYMENT.md)**
-
-### Quick Deploy
-
-1. Push code to GitHub
-2. Deploy backend to Render
-3. Deploy frontend to Vercel
-4. Configure CI/CD with GitHub Actions
-
-**Estimated Time**: ~2 hours
-
-### Production URLs
-
-- **Live Demo**: [Coming Soon]
-- **Backend API**: [Your Render URL]
-- **Status**: ![Backend](https://img.shields.io/badge/backend-online-success) ![Frontend](https://img.shields.io/badge/frontend-online-success)
-
-### Frontend Setup
-
-1. Navigate to client directory:
+### Frontend
 ```bash
 cd client
-```
-
-2. Install dependencies:
-```bash
 npm install
-```
-
-3. Start development server:
-```bash
 npm run dev
 ```
 
-The app will be available at `http://localhost:5173`
-
-## 🔑 API Keys Configuration
-
-Users need to configure their API keys in the Settings page:
-
-### Required
-- **Gemini API Key**: For AI content generation
-  - Get it at: https://aistudio.google.com/app/apikey
-
-### Optional (Enhanced Features)
-- **OpenRouter API Key**: For semantic search
-  - Get it at: https://openrouter.ai/keys
-- **Stable Horde API Key**: For faster image generation
-  - Get it at: https://stablehorde.net/register
-- **Hugging Face Token**: For image generation
-  - Get it at: https://huggingface.co/settings/tokens
-- **Deepgram API Key**: For high-quality TTS
-  - Get it at: https://console.deepgram.com/
-
-## 📚 Usage
-
-1. **Sign up** or log in with Google OAuth
-2. **Configure API keys** in Settings
-3. **Add vocabulary** manually or import from CSV
-4. **Practice** with quizzes using spaced repetition
-5. **Generate content** (stories, articles, dialogues) at your level
-6. **Track progress** with statistics and heatmaps
-
-## 🏗️ Project Structure
-
-```
-vocab_web/
-├── client/                 # React frontend
-│   ├── src/
-│   │   ├── components/    # Reusable UI components
-│   │   ├── pages/         # Page components
-│   │   ├── context/       # React context providers
-│   │   └── api.js         # API client
-│   └── public/
-├── server/                # Django backend
-│   ├── api/              # Main API app
-│   │   ├── models.py     # Database models
-│   │   ├── views.py      # API endpoints
-│   │   ├── serializers.py
-│   │   └── urls.py
-│   ├── vocab_server/     # Django project settings
-│   └── manage.py
-└── docs/                 # Documentation
+### Admin Panel
+```bash
+cd admin-client
+npm install
+npm run dev
 ```
 
-## 🤝 Contributing
+---
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+## 📊 Project Stats
 
-## 📝 License
+| Metric | Count |
+|--------|-------|
+| Backend Python Files | 159 |
+| Desktop Pages | 32 |
+| Desktop Components | 48 |
+| Mobile React Pages | 81 |
+| Flutter Dart Files | 73 |
+| Admin Pages | 28 |
+| **Total Files** | **470+** |
 
-MIT License - see LICENSE file for details
+---
 
-## 👤 Author
+## 🗺️ Roadmap
 
-**Assad Allah Alebrahim**
-- GitHub: [@assadAllah630](https://github.com/assadAllah630)
+- [ ] iOS Native App
+- [ ] Offline Mode
+- [ ] Voice Recognition
+- [ ] AI Conversation Practice
+- [ ] Community Features
 
-## 🙏 Acknowledgments
+---
 
-- Google Gemini for AI content generation
-- Stable Horde community for free image generation
-- All open-source libraries used in this project
+## 📄 License
+
+MIT License - see [LICENSE](LICENSE) for details.
+
+---
+
+<p align="center">
+  Made with ❤️ for language learners
+</p>

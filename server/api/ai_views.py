@@ -102,6 +102,21 @@ def ai_assistant(request):
              return Response({'error': 'AI Quota Exceeded. Please try again later.'}, status=status.HTTP_429_TOO_MANY_REQUESTS)
         return Response({'error': error_msg}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def ai_gateway_status(request):
+    """
+    Check if the current user has valid AI Gateway keys.
+    Returns status and available providers.
+    """
+    ai_status = get_ai_status(request.user)
+    return Response({
+        'has_keys': ai_status['has_gateway_keys'],
+        'key_count': ai_status['gateway_keys_count'],
+        'providers': ai_status['providers_available'],
+        'has_legacy_key': ai_status.get('has_legacy_key', False),
+    })
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @ratelimit(key='user', rate='5/m', block=True)
@@ -295,3 +310,237 @@ def bulk_translate(request):
         if "Quota exceeded" in error_msg or "429" in error_msg:
              return Response({'error': 'AI Quota Exceeded. Please try again later.'}, status=status.HTTP_429_TOO_MANY_REQUESTS)
         return Response({'error': error_msg}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@ratelimit(key='user', rate='10/m', block=True)
+def generate_vocab_list(request):
+    """
+    Generate a vocabulary list using the Vocabulary Agent.
+    Expects 'topic' and optional 'count', 'level', 'target_language'.
+    """
+    topic = request.data.get('topic')
+    if not topic:
+        return Response({'error': 'Topic is required'}, status=400)
+    
+    count = request.data.get('count', 10)
+    level = request.data.get('level', 'B1')
+    
+    # Get user languages
+    try:
+        profile = request.user.profile
+        target_lang_code = profile.target_language
+        # Map code to name if needed, but agent handles string
+        lang_map = {'de': 'German', 'en': 'English', 'es': 'Spanish', 'fr': 'French'}
+        target_language = lang_map.get(target_lang_code, 'German') 
+    except:
+        target_language = 'German'
+
+    # Check Gateway Keys
+    ai_status = get_ai_status(request.user)
+    if not ai_status['has_gateway_keys']:
+        return Response({'error': 'No AI keys configured.'}, status=400)
+
+    try:
+        from .agents.vocabulary_agent import run_vocabulary_agent
+        vocab_list = run_vocabulary_agent(
+            user=request.user, 
+            topic=topic, 
+            level=level, 
+            target_language=target_language, 
+            count=count
+        )
+        return Response(vocab_list)
+    except Exception as e:
+         return Response({'error': str(e)}, status=500)
+
+
+# =============================================================================
+# AI GATEWAY KEY MANAGEMENT
+# =============================================================================
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def ai_gateway_keys(request):
+    """
+    Manage AI Gateway API keys.
+    GET: List all user's keys (masked)
+    POST: Add a new key
+    """
+    from .ai_gateway.models import UserAPIKey
+    
+    if request.method == 'GET':
+        keys = UserAPIKey.objects.filter(user=request.user).order_by('-created_at')
+        result = []
+        for key in keys:
+            # Get last 4 chars of encrypted key (just for display, not actual key)
+            masked = f"...{key.api_key_encrypted[-4:]}" if len(key.api_key_encrypted) > 4 else "****"
+            result.append({
+                'id': key.id,
+                'provider': key.provider,
+                'label': key.key_nickname or '',
+                'is_active': key.is_active,
+                'health_score': key.health_score,
+                'requests_today': key.requests_today,
+                'created_at': key.created_at.isoformat(),
+                'masked_key': masked,
+            })
+        return Response(result)
+    
+    elif request.method == 'POST':
+        provider = request.data.get('provider')
+        api_key = request.data.get('api_key')
+        label = request.data.get('label', '')
+        
+        if not provider or not api_key:
+            return Response({'error': 'provider and api_key are required'}, status=400)
+        
+        valid_providers = ['gemini', 'openrouter', 'groq', 'huggingface']
+        if provider not in valid_providers:
+            return Response({'error': f'Invalid provider. Must be one of: {valid_providers}'}, status=400)
+        
+        # Create the key with correct field names
+        key = UserAPIKey.objects.create(
+            user=request.user,
+            provider=provider,
+            api_key_encrypted=api_key,  # Store as encrypted (model handles this)
+            key_nickname=label,
+            is_active=True
+        )
+        
+        return Response({
+            'id': key.id,
+            'provider': key.provider,
+            'label': key.key_nickname,
+            'is_active': key.is_active,
+            'message': 'API key added successfully'
+        }, status=201)
+
+
+@api_view(['GET', 'PATCH', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def ai_gateway_key_detail(request, key_id):
+    """
+    Manage a single AI Gateway key.
+    GET: View key details
+    PATCH: Update key (enable/disable, update label)
+    DELETE: Remove the key
+    """
+    from .ai_gateway.models import UserAPIKey
+    
+    try:
+        key = UserAPIKey.objects.get(id=key_id, user=request.user)
+    except UserAPIKey.DoesNotExist:
+        return Response({'error': 'Key not found'}, status=404)
+    
+    if request.method == 'GET':
+        masked = f"...{key.api_key_encrypted[-4:]}" if len(key.api_key_encrypted) > 4 else "****"
+        return Response({
+            'id': key.id,
+            'provider': key.provider,
+            'label': key.key_nickname or '',
+            'is_active': key.is_active,
+            'health_score': key.health_score,
+            'requests_today': key.requests_today,
+            'created_at': key.created_at.isoformat(),
+            'masked_key': masked,
+        })
+    
+    elif request.method == 'PATCH':
+        if 'is_active' in request.data:
+            key.is_active = request.data['is_active']
+        if 'label' in request.data:
+            key.key_nickname = request.data['label']
+        key.save()
+        
+        return Response({
+            'id': key.id,
+            'provider': key.provider,
+            'is_active': key.is_active,
+            'label': key.key_nickname,
+            'message': 'Key updated successfully'
+        })
+    
+    elif request.method == 'DELETE':
+        key.delete()
+        return Response({'message': 'Key deleted successfully'})
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@ratelimit(key='user', rate='20/m', block=True)
+def generate_quiz(request):
+    """
+    Generate quick quiz questions using AI.
+    Expects 'topic', 'count', 'level', 'target_language' in request body.
+    """
+    topic = request.data.get('topic')
+    count = int(request.data.get('count', 3))
+    
+    # Defaults handled by profile or fallback
+    try:
+        profile = request.user.profile
+        level = request.data.get('level', profile.level or 'B1')
+        target_lang = request.data.get('target_language', profile.target_language or 'de')
+    except:
+        level = request.data.get('level', 'B1')
+        target_lang = request.data.get('target_language', 'de')
+
+    if not topic:
+        return Response({'error': 'Topic is required'}, status=400)
+
+    # Check keys
+    ai_status = get_ai_status(request.user)
+    if not ai_status['has_gateway_keys']:
+        return Response({'error': 'No AI keys configured.'}, status=400)
+
+    # Language Map (Expand as needed)
+    lang_map = {
+        'de': 'German', 'en': 'English', 'es': 'Spanish', 'fr': 'French', 
+        'it': 'Italian', 'pt': 'Portuguese', 'ru': 'Russian', 'ja': 'Japanese',
+        'zh': 'Chinese', 'ko': 'Korean', 'ar': 'Arabic', 'hi': 'Hindi'
+    }
+    target_lang_name = lang_map.get(target_lang, target_lang)
+
+    prompt = f"""
+    Create a quick {count}-question multiple-choice quiz for a {level} level student learning {target_lang_name}.
+    Topic: {topic}
+    
+    Return a JSON array of objects. Each object must have:
+    - question: The question text (in {target_lang_name})
+    - options: Array of 4 answer choices
+    - answer: The correct option string (must match one of the options)
+    
+    Example JSON structure:
+    [
+      {{ "question": "...", "options": ["A", "B", "C", "D"], "answer": "A" }}
+    ]
+    JSON ONLY. No markdown blocks.
+    """
+
+    try:
+        # Request JSON mode if supported by the provider, otherwise relying on prompt
+        response = generate_ai_content(request.user, prompt, json_mode=True)
+        
+        # Parse JSON
+        text = response.text.strip()
+        if text.startswith('```json'): text = text[7:]
+        if text.startswith('```'): text = text[3:]
+        if text.endswith('```'): text = text[:-3]
+        
+        try:
+             data = json.loads(text)
+        except json.JSONDecodeError:
+             # Fallback: simple text cleaner or retry logic (omitted for brevity)
+             # If AI fails to give JSON, try to extract list from text
+             import ast
+             try:
+                data = ast.literal_eval(text)
+             except:
+                raise ValueError("AI did not return valid JSON")
+
+        return Response(data)
+
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+

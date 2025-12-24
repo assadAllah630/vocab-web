@@ -1,80 +1,60 @@
 # Semantic Search Module Context
 
 ## Purpose
-
-Vector-based semantic search for vocabulary:
-- Generate embeddings for vocabulary
-- Find semantically similar words
-- Natural language vocabulary queries
-
----
-
-## Architecture
-
-### Flow
-
-```mermaid
-flowchart TD
-    A[Search Query] --> B[Generate Query Embedding]
-    B --> C[Cosine Similarity]
-    C --> D[Vocabulary Embeddings]
-    D --> E[Sort by Similarity]
-    E --> F[Return Top Results]
-```
-
-### Provider
-- **OpenRouter API** - text-embedding-3-small model
-- **Dimension**: 1536
+Vector-based similarity search for vocabulary and content using embeddings.
 
 ---
 
 ## Key Files
 
-### Backend
-- [semantic_search_views.py](file:///e:/vocab_web/server/api/semantic_search_views.py)
-- [embedding_service.py](file:///e:/vocab_web/server/api/embedding_service.py)
+| File | Size | Purpose |
+|------|------|---------|
+| `semantic_search_views.py` | 6KB | Search endpoints |
+| `embedding_service.py` | 5KB | Embedding generation |
 
 ---
 
-## API Endpoints
+## Endpoints
 
 | Endpoint | Method | Purpose |
 |----------|--------|---------|
-| `/api/vocab/semantic-search/` | POST | Search vocabulary |
-| `/api/vocab/generate-embeddings/` | POST | Generate embeddings |
-| `/api/vocab/validate-openrouter/` | POST | Validate API key |
+| `/vocab/semantic-search/` | POST | Find similar words |
+| `/vocab/generate-embeddings/` | POST | Generate embeddings for vocab |
+| `/vocab/validate-openrouter/` | POST | Validate embedding API key |
+
+---
+
+## How It Works
+
+1. **Embedding Generation**
+   - Uses OpenAI-compatible embedding APIs
+   - Stores vectors in `SavedText.embedding` (PostgreSQL array)
+
+2. **Similarity Search**
+   - Cosine similarity calculation
+   - Returns ranked results
 
 ---
 
 ## Usage Example
 
-```json
-POST /api/vocab/semantic-search/
-{
-    "query": "words about food and eating",
-    "api_key": "sk-or-...",
-    "limit": 10
-}
-
-Response:
-{
-    "results": [
-        {"vocab": {...}, "similarity": 0.85},
-        {"vocab": {...}, "similarity": 0.82}
-    ],
-    "total": 15
-}
+```python
+# Search for semantically similar words
+response = await api.post('/vocab/semantic-search/', {
+    'query': 'transportation',
+    'limit': 10
+})
+# Returns words related to "transportation" by meaning
 ```
 
 ---
 
-## Key Decisions
+## Integration
 
-### Decision: OpenRouter for embeddings
-- **Why**: Unified API, access to OpenAI models
-- **Consequences**: Requires API key, per-request cost
-- **Date**: 2025-11-27
+- `Vocabulary.related_concepts` uses semantic similarity
+- Smart Reader uses embeddings for content matching
+- Recommendation engine uses for content discovery
 
 ---
 
-*Version: 1.0 | Created: 2025-12-10*
+*Version: 1.1 | Updated: 2025-12-24*

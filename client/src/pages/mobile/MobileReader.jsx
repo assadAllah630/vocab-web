@@ -33,7 +33,8 @@ import {
     Library,
     Trash2,
     Clock,
-    RotateCcw
+    RotateCcw,
+    Monitor
 } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 
@@ -49,25 +50,76 @@ const getFileIcon = (type) => {
     }
 };
 
-function MobileReader() {
+
+
+function MobileReader({ assignment, onComplete, initialContent }) {
     const navigate = useNavigate();
     const { t } = useTranslation();
 
+    // Assignment Mode Check
+    const isAssignment = !!assignment;
+
     // UI State
-    const [activeTab, setActiveTab] = useState('import'); // 'import' | 'read' | 'library'
-    const [importMode, setImportMode] = useState(null); // 'url' | 'file' | 'youtube'
+    const [activeTab, setActiveTab] = useState(initialContent || isAssignment ? 'read' : 'import');
+    const [importMode, setImportMode] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
-    const [savedContent, setSavedContent] = useState([]); // Library items
+    const [savedContent, setSavedContent] = useState([]);
 
     // Content State
-    const [content, setContent] = useState('');
-    const [title, setTitle] = useState('');
-    const [sourceType, setSourceType] = useState('');
-    const [language, setLanguage] = useState('');
-    const [wordCount, setWordCount] = useState(0);
-    const [metadata, setMetadata] = useState({});
+    const [content, setContent] = useState(initialContent?.content || '');
+    const [title, setTitle] = useState(initialContent?.title || '');
+    const [sourceType, setSourceType] = useState(initialContent?.sourceType || '');
+    const [language, setLanguage] = useState(initialContent?.language || '');
+    const [wordCount, setWordCount] = useState(initialContent?.wordCount || 0);
+    const [metadata, setMetadata] = useState(initialContent?.metadata || {});
+
+    // Assignment Tracking
+    const [readingTime, setReadingTime] = useState(0);
+    const [frictionWords, setFrictionWords] = useState([]); // Words looked up
+
+    // Assignment Timer
+    useEffect(() => {
+        if (!isAssignment || activeTab !== 'read') return;
+
+        const timer = setInterval(() => {
+            setReadingTime(prev => prev + 1);
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [isAssignment, activeTab]);
+
+    // Initialize Assignment Content
+    useEffect(() => {
+        if (assignment && assignment.content) {
+            // If the assignment object has content embedded (from start_assignment)
+            // Or if we need to fetch it.
+            // Assuming assignment.content is the story object
+            if (assignment.metadata?.story_text) {
+                setContent(assignment.metadata.story_text);
+                setTitle(assignment.title);
+                setSourceType('story');
+                setActiveTab('read');
+            }
+        }
+    }, [assignment]);
+
+    const handleAssignmentSubmit = async () => {
+        // Logic to report progress
+        if (assignment.metadata?.min_time && readingTime < assignment.metadata.min_time) {
+            const mins = Math.ceil(assignment.metadata.min_time / 60);
+            alert(`Please read for at least ${mins} minutes before finishing.`);
+            return;
+        }
+
+        if (onComplete) {
+            onComplete({
+                read_time: readingTime,
+                friction_words: frictionWords
+            });
+        }
+    };
 
     // Input State
     const [urlInput, setUrlInput] = useState('');
@@ -107,7 +159,7 @@ function MobileReader() {
         }
     }, []);
 
-    // Save content to library
+    // Save content to library (Local Storage)
     const saveToLibrary = () => {
         if (!content || !title) return;
 
@@ -127,6 +179,33 @@ function MobileReader() {
         localStorage.setItem('readerLibrary', JSON.stringify(updated));
         setSuccess('Saved to library!');
         setTimeout(() => setSuccess(null), 2000);
+    };
+
+    // Save to Studio (Backend GeneratedContent)
+    const saveToStudio = async () => {
+        if (!content || !title) return;
+        setIsLoading(true);
+
+        try {
+            await api.post('/ai/save-material/', {
+                title,
+                content_type: 'article', // Generic article for saved reader content
+                topic: sourceType || 'Reader Import',
+                level: 'B1', // Default
+                content_data: {
+                    sections: [
+                        { title: '', content: content }
+                    ]
+                }
+            });
+            setSuccess('✨ Saved to Teacher Studio Hub!');
+            setTimeout(() => setSuccess(null), 3000);
+        } catch (err) {
+            console.error('Save to studio failed:', err);
+            setError('Failed to save to Studio.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     // Load content from library
@@ -475,10 +554,16 @@ function MobileReader() {
                         className="sticky top-0 z-40 px-4 py-3 border-b border-[#27272A] flex items-center justify-between"
                         style={{ backgroundColor: 'rgba(9, 9, 11, 0.95)', backdropFilter: 'blur(10px)' }}
                     >
+                        {/* Assignment Logic: Disable Back if required? No, allow back but warn */}
                         <motion.button
                             whileTap={{ scale: 0.9 }}
                             onClick={() => {
-                                if (activeTab === 'read' && content) {
+                                if (isAssignment) {
+                                    // Assignment specific back/exit
+                                    if (window.confirm("Leave assignment? Progress may be lost.")) {
+                                        navigate(-1);
+                                    }
+                                } else if (activeTab === 'read' && content) {
                                     setActiveTab('import');
                                 } else {
                                     navigate(-1);
@@ -540,7 +625,16 @@ function MobileReader() {
                                         )}
                                     </motion.button>
 
-                                    {/* Save to Library Button */}
+                                    {/* Save to Studio Button (Material Hub) */}
+                                    <motion.button
+                                        whileTap={{ scale: 0.9 }}
+                                        onClick={saveToStudio}
+                                        className="w-10 h-10 rounded-xl flex items-center justify-center text-indigo-400 bg-indigo-500/10 border border-indigo-500/20"
+                                        title="Save to Studio Hub"
+                                    >
+                                        <Monitor size={20} />
+                                    </motion.button>
+
                                     <motion.button
                                         whileTap={{ scale: 0.9 }}
                                         onClick={saveToLibrary}
@@ -567,6 +661,17 @@ function MobileReader() {
                                     >
                                         <Maximize2 size={20} />
                                     </motion.button>
+                                    {/* Assignment Finish Button */}
+                                    {isAssignment && (
+                                        <motion.button
+                                            whileTap={{ scale: 0.9 }}
+                                            onClick={handleAssignmentSubmit}
+                                            className="w-10 h-10 rounded-xl flex items-center justify-center bg-green-500/20 text-green-400"
+                                            title="Finish Reading"
+                                        >
+                                            <CheckCircle2 size={20} />
+                                        </motion.button>
+                                    )}
                                 </>
                             )}
                         </div>

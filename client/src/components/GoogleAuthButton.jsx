@@ -2,6 +2,7 @@ import React from 'react';
 import { useGoogleLogin } from '@react-oauth/google';
 import api from '../api';
 import { motion } from 'framer-motion';
+import AuthService from '../services/AuthService';
 
 function GoogleAuthButton({ onSuccess, onError, className, children }) {
     const login = useGoogleLogin({
@@ -11,8 +12,11 @@ function GoogleAuthButton({ onSuccess, onError, className, children }) {
                     access_token: tokenResponse.access_token
                 });
 
-                localStorage.setItem('token', response.data.token);
-                localStorage.setItem('user', JSON.stringify(response.data.user));
+                // Use AuthService for proper session management
+                AuthService.setSession({
+                    ...response.data.user,
+                    token: response.data.token
+                });
 
                 if (onSuccess) onSuccess(response.data);
             } catch (error) {

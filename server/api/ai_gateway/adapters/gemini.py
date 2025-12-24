@@ -94,12 +94,18 @@ class GeminiAdapter(BaseAdapter):
         for model in models_to_try:
             url = f"{self.BASE_URL}/models/{model}:generateContent"
             
+            gen_config = {
+                "maxOutputTokens": max_tokens,
+                "temperature": temperature,
+            }
+            
+            # Support JSON mode (Gemini 1.5+)
+            if kwargs.get("json_mode"):
+                gen_config["responseMimeType"] = "application/json"
+
             payload = {
                 "contents": self._format_messages_gemini(messages),
-                "generationConfig": {
-                    "maxOutputTokens": max_tokens,
-                    "temperature": temperature,
-                }
+                "generationConfig": gen_config
             }
             
             # Add tools (e.g. google_search_retrieval) if provided

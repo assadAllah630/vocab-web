@@ -1,33 +1,46 @@
 # Frontend Reading Module Context
 
 ## Purpose
-
-Desktop reading and text processing:
-- Text reader
-- Mini games
+The "Smart Reader" for importing and reading external content (URLs, YouTube, Files).
 
 ---
 
-## Key Pages
+## Key Page
 
-### Text Reader
-- [TextReader.jsx](file:///e:/vocab_web/client/src/pages/TextReader.jsx) - 20KB
-  - URL extraction
-  - Text display
-  - Word lookup
-
-### Mini Games
-- [MiniGames.jsx](file:///e:/vocab_web/client/src/pages/MiniGames.jsx) - 9KB
-  - Game selection
-
-### Landing
-- [LandingPage.jsx](file:///e:/vocab_web/client/src/pages/LandingPage.jsx) - 26KB
-  - Public landing
-
-### Public Profile
-- [PublicProfile.jsx](file:///e:/vocab_web/client/src/pages/PublicProfile.jsx) - 11KB
-  - View other users
+### TextReader
+- [TextReader.jsx](file:///e:/vocab_web/client/src/pages/TextReader.jsx) ~20KB
+  - **Import modes**:
+    - URL paste → `POST /api/extract-content/`.
+    - YouTube link → transcript extraction.
+    - File upload (PDF, DOCX, TXT).
+  - **AI Formatting**: "Quick Format" with AI for clean Markdown.
+  - **Vocabulary Extraction**:
+    - Select words in text.
+    - Add to vocabulary list.
+  - **TTS**: Read-aloud via browser or backend TTS.
 
 ---
 
-*Version: 1.0 | Created: 2025-12-10*
+## User Flow
+
+```
+Paste URL → Extract → (Optional) AI Format → Read → Highlight Words → Add to Vocab
+```
+
+---
+
+## API Integration
+
+```javascript
+// Extract content from URL
+const { data } = await api.post('/extract-content/', { url: 'https://...' });
+// data.content contains raw text
+
+// Quick AI formatting
+const formatted = await api.post('/quick-format/', { text: data.content });
+// formatted.formatted_content contains Markdown
+```
+
+---
+
+*Version: 1.1 | Updated: 2025-12-24*

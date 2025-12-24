@@ -3,11 +3,11 @@
     "short_name": "VocabMaster",
     "description": "Master your vocabulary with AI and Spaced Repetition",
     "theme_color": "#4f46e5",
-    "background_color": "#ffffff",
+    "background_color": "#0a0a0b",
     "display": "standalone",
     "orientation": "portrait",
     "scope": "/",
-    "start_url": "/",
+    "start_url": "/m",
     "icons": [
         {
             "src": "/pwa-192x192.png",
@@ -21,5 +21,61 @@
             "type": "image/png",
             "purpose": "any maskable"
         }
-    ]
+    ],
+    "shortcuts": [
+        {
+            "name": "My Classes",
+            "short_name": "Classes",
+            "description": "View your enrolled classrooms",
+            "url": "/m/classes",
+            "icons": [
+                {
+                    "src": "/pwa-192x192.png",
+                    "sizes": "192x192"
+                }
+            ]
+        },
+        {
+            "name": "Join Class",
+            "short_name": "Join",
+            "description": "Join a classroom with invite code",
+            "url": "/m/join-class",
+            "icons": [
+                {
+                    "src": "/pwa-192x192.png",
+                    "sizes": "192x192"
+                }
+            ]
+        },
+        {
+            "name": "Practice",
+            "short_name": "Practice",
+            "description": "Practice your vocabulary",
+            "url": "/m/practice",
+            "icons": [
+                {
+                    "src": "/pwa-192x192.png",
+                    "sizes": "192x192"
+                }
+            ]
+        },
+        {
+            "name": "Live Sessions",
+            "short_name": "Sessions",
+            "description": "View upcoming live sessions",
+            "url": "/m/sessions",
+            "icons": [
+                {
+                    "src": "/pwa-192x192.png",
+                    "sizes": "192x192"
+                }
+            ]
+        }
+    ],
+    "categories": [
+        "education",
+        "productivity"
+    ],
+    "lang": "en",
+    "dir": "ltr"
 }

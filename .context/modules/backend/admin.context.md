@@ -1,79 +1,50 @@
-# Admin Module Context
+# Admin Backend Module Context
 
 ## Purpose
-
-Admin panel backend for system management:
-- User management (list, edit, ban)
-- Analytics and metrics
-- System monitoring
-- Content moderation
-
----
-
-## Architecture
-
-### Admin Flow
-
-```mermaid
-flowchart TD
-    A[Admin Panel] --> B[Admin API]
-    B --> C{Auth Check}
-    C -->|is_staff| D[Admin Views]
-    C -->|Not Staff| E[403 Forbidden]
-    
-    D --> F[User Management]
-    D --> G[Analytics]
-    D --> H[Monitoring]
-```
+Backend-only admin infrastructure (separate from admin-client frontend).
 
 ---
 
 ## Key Files
 
-### Backend
-- [admin_views.py](file:///e:/vocab_web/server/api/admin_views.py) - Admin endpoints
-- [admin_models.py](file:///e:/vocab_web/server/api/admin_models.py) - Admin-specific models
-- [admin_permissions.py](file:///e:/vocab_web/server/api/admin_permissions.py) - Permission classes
-- [admin_urls.py](file:///e:/vocab_web/server/api/admin_urls.py) - URL routing
-- [analytics_views.py](file:///e:/vocab_web/server/api/analytics_views.py)
-- [analytics_service.py](file:///e:/vocab_web/server/api/analytics_service.py)
-
-### Models
-- Role-based access control
-- ActivityLog for audit
+| File | Size | Purpose |
+|------|------|---------|
+| `admin.py` | 2KB | Django admin registration |
+| `admin_models.py` | 6KB | Admin-specific models |
+| `admin_views.py` | 22KB | Admin API endpoints |
+| `admin_urls.py` | 3KB | Admin URL routing |
+| `admin_permissions.py` | 5KB | Permission classes |
 
 ---
 
-## API Endpoints
+## Admin Models
+See `admin_models.py`:
 
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/api/admin/users/` | GET | List users |
-| `/api/admin/users/{id}/` | GET/PUT | User details |
-| `/api/admin/analytics/` | GET | Dashboard stats |
-| `/api/admin/analytics/user-growth/` | GET | User growth chart |
-| `/api/admin/system/health/` | GET | System status |
+- **AdminSettings** - Platform configuration
+- **AuditLog** - Action logging
+- **SystemMetric** - Performance metrics
+
+---
+
+## Admin Endpoints
+
+| Endpoint | Purpose |
+|----------|---------|
+| `/admin/activity/` | Global activity feed |
+| `/admin/users/` | User management |
+| `/admin/analytics/` | Platform analytics |
+| `/admin/system/` | System health |
 
 ---
 
 ## Permissions
 
-| Role | Capabilities |
-|------|--------------|
-| **Superuser** | Full access |
-| **Staff** | User management, analytics |
-| **Moderator** | Content moderation only |
+| Class | Purpose |
+|-------|---------|
+| `IsSuperAdmin` | Superuser only |
+| `IsStaffOrAdmin` | Staff + admin |
+| `IsSchoolAdmin` | Organization admin |
 
 ---
 
-## Analytics Metrics
-
-- Total users, active users
-- Content generated (stories, exams)
-- AI provider usage
-- Error rates
-- User growth over time
-
----
-
-*Version: 1.0 | Created: 2025-12-10*
+*Version: 1.1 | Updated: 2025-12-24*

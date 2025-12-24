@@ -324,6 +324,49 @@ def get_generated_content(request, pk):
     })
 
 
+@api_view(['PUT', 'PATCH'])
+@permission_classes([IsAuthenticated])
+def update_generated_content(request, pk):
+    """
+    Update generated content (Edit Story/Article/Dialogue)
+    Used by Teacher Workspace to refine AI results.
+    """
+    content = get_object_or_404(
+        GeneratedContent,
+        pk=pk,
+        user=request.user
+    )
+
+    # Fields allowed to update
+    if 'title' in request.data:
+        content.title = request.data['title']
+    if 'level' in request.data:
+        content.level = request.data['level']
+    if 'topic' in request.data:
+        content.topic = request.data['topic']
+    
+    # Update the JSON content structure
+    if 'content_data' in request.data:
+        # Validate structure if needed, or just trust the teacher/frontend
+        content.content_data = request.data['content_data']
+        
+        # Recalculate meta-data
+        content.total_words = _count_words_in_content(content.content_data, content.content_type)
+        content.vocabulary_used = _extract_vocabulary_used(content.content_data, content.content_type)
+        content.grammar_used = _extract_grammar_used(content.content_data, content.content_type)
+
+    if 'is_favorite' in request.data:
+        content.is_favorite = request.data['is_favorite']
+
+    content.save()
+
+    return Response({
+        'id': content.id,
+        'title': content.title,
+        'updated_at': timezone.now()
+    })
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_image_generation_status(request, pk):
@@ -512,6 +555,34 @@ def delete_generated_content(request, pk):
     content.delete()
     
     return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def save_material(request):
+    """Save content from Reader or other sources to Studio library"""
+    data = request.data
+    
+    content = GeneratedContent.objects.create(
+        user=request.user,
+        content_type=data.get('content_type', 'article'),
+        title=data.get('title', 'Untitled Material'),
+        topic=data.get('topic', 'Imported'),
+        level=data.get('level', 'B1'),
+        target_language=request.user.studentprofile.target_language if hasattr(request.user, 'studentprofile') else 'en',
+        content_data=data.get('content_data', {}),
+        total_words=0 # Will be calculated if needed
+    )
+    
+    # Calculate metadata
+    content.total_words = _count_words_in_content(content.content_data, content.content_type)
+    content.save()
+    
+    return Response({
+        "success": True,
+        "id": content.id,
+        "message": "Saved to Studio Hub"
+    }, status=status.HTTP_201_CREATED)
 
 
 # ========== Helper Functions ==========

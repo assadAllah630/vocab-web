@@ -1,51 +1,57 @@
 # Frontend Exams Module Context
 
 ## Purpose
-
-Desktop exam page (58KB - major feature):
-- Exam creation
-- Taking exams
-- AI grading
-- Score tracking
+Full exam experience: generation, taking, and reviewing results.
 
 ---
 
 ## Key Page
 
-### ExamPage (58KB!)
-- [ExamPage.jsx](file:///e:/vocab_web/client/src/pages/ExamPage.jsx) - 58KB
-
-**Features:**
-1. **Create Exam**
-   - Topic selection
-   - CEFR level
-   - Question types (MCQ, fill-in, translation, essay)
-   - Vocabulary targeting
-   - Grammar focus
-
-2. **Take Exam**
-   - Multiple sections
-   - Timer
-   - Progress tracking
-
-3. **AI Grading**
-   - Automatic scoring
-   - Detailed feedback
-   - Explanation per question
-
-4. **History**
-   - Past attempts
-   - Best scores
-   - Retry option
+### ExamPage
+- [ExamPage.jsx](file:///e:/vocab_web/client/src/pages/ExamPage.jsx) ~58KB (Largest desktop page)
+  - **Tabs**: Create, Take, Review.
+  - AI Generation:
+    - Topic/Level selection.
+    - Question count slider.
+    - Calls `POST /api/ai/generate-exam/`.
+  - Exam Taking:
+    - Timer.
+    - Progress bar.
+    - MCQ / Fill-in-the-blank / Open-ended.
+  - Review:
+    - Per-question feedback.
+    - Score breakdown.
+    - "Retake" action.
 
 ---
 
-## Backend Dependencies
-
-- `agent_exam.py` - LangGraph exam agent
-- `ai_views.py` - generate_exam endpoint
-- `models.py` - Exam, ExamAttempt models
+## State Management
+This page uses complex local state:
+- `exam`: The current exam object.
+- `answers`: User's submitted answers.
+- `phase`: `generating` | `idle` | `taking` | `reviewing`.
 
 ---
 
-*Version: 1.0 | Created: 2025-12-10*
+## API Integration
+
+```javascript
+// Generate exam
+const { data } = await api.post('/ai/generate-exam/', {
+  topic: 'German Verbs',
+  count: 10,
+  difficulty: 'medium'
+});
+
+// Save attempt
+await api.post('/exams/', {
+  topic,
+  questions: exam.questions,
+  user_answers: answers,
+  score: calculatedScore
+});
+```
+
+---
+
+*Version: 1.1 | Updated: 2025-12-24*

@@ -1,98 +1,34 @@
 # Exams Module Context
 
 ## Purpose
+The **Exams Module** handles assessment creation, execution, and grading. It supports both manual creation and AI-generated exams.
 
-AI-powered exam generation and grading:
-- Multiple question types (multiple choice, fill-in, translation, essay)
-- AI grading with feedback
-- Attempt tracking and scoring
-- CEFR level targeting
+## Key Models
+See `server/api/models.py`.
 
----
+- **Exam**: The exam definition.
+  - `questions`: JSON array of question objects.
+  - `is_template`: Boolean. If true, acts as a master copy (not an attempt).
+  - `cloned_from`: Link to original template.
+- **ExamAttempt**: A student's specific instance of taking an exam.
+  - `user_answers`: JSON.
+  - `score`: Final grade.
+  - `feedback`: AI-generated feedback.
 
-## Architecture
+## Core Features
+1.  **Generation**: `POST /api/ai/generate-exam/`.
+    -   Uses `AgentExam` (LangGraph) to create questions based on topic/level.
+2.  **Taking Exams**:
+    -   `POST /api/exams/` with `topic` and `questions` creates a new exam instance.
+    -   Existing exams with same structure are treated as "Retakes" (new `ExamAttempt`).
+3.  **Community**:
+    -   `GET /api/exams/community/`: Fetch public exams from followed users.
 
-### Exam Flow
-
-```mermaid
-flowchart TD
-    A[Generate Exam] --> B[agent_exam.py]
-    B --> C[unified_ai.generate_ai_content]
-    C --> D[Parse Questions]
-    D --> E[Save Exam]
-    
-    F[Take Exam] --> G[Submit Answers]
-    G --> H[AI Grade]
-    H --> I[Save Attempt]
-    I --> J[Return Feedback]
-```
-
-### Data Models
-
-- **Exam**: title, topic, level, questions JSON, best_score, attempt_count
-- **ExamAttempt**: user_answers, feedback, score
-
----
+## Logic: Templates vs Attempts
+- **Template**: Created by teachers or system. `is_template=True`. No attempts directly on it.
+- **Instance**: When a user takes a template, a new `Exam` is NOT created if one exists for that user/topic; instead, a new `ExamAttempt` is added.
 
 ## Key Files
-
-### Backend
-- [agent_exam.py](file:///e:/vocab_web/server/api/agent_exam.py) - LangGraph exam agent
-- [ai_views.py](file:///e:/vocab_web/server/api/ai_views.py) - Exam endpoints
-- [models.py](file:///e:/vocab_web/server/api/models.py) - Exam, ExamAttempt models
-
-### Frontend
-- [ExamPage.jsx](file:///e:/vocab_web/client/src/pages/ExamPage.jsx) - Desktop exam (58k lines)
-- [MobileExam.jsx](file:///e:/vocab_web/client/src/pages/mobile/MobileExam.jsx)
-- [MobileExamCreate.jsx](file:///e:/vocab_web/client/src/pages/mobile/MobileExamCreate.jsx)
-- [MobileExamPlay.jsx](file:///e:/vocab_web/client/src/pages/mobile/MobileExamPlay.jsx)
-
----
-
-## Question Types
-
-| Type | Description | AI Grading |
-|------|-------------|------------|
-| multiple_choice | Select correct answer | Exact match |
-| fill_in_blank | Complete the sentence | Fuzzy match |
-| translation | Translate sentence | Semantic comparison |
-| essay | Free-form writing | AI evaluation |
-
----
-
-## API Endpoints
-
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/api/generate-exam/` | POST | Generate new exam |
-| `/api/exams/` | GET | List user exams |
-| `/api/exams/{id}/` | GET | Get exam |
-| `/api/exams/{id}/submit/` | POST | Submit answers |
-
----
-
-## Request Example
-
-```json
-POST /api/generate-exam/
-{
-    "topic": "Restaurant vocabulary",
-    "level": "A2",
-    "language": "de",
-    "question_count": 10,
-    "question_types": ["multiple_choice", "fill_in_blank", "translation"]
-}
-```
-
----
-
-## Key Decisions
-
-### Decision: LangGraph for exam generation
-- **Why**: Complex multi-step generation needs state management
-- **Consequences**: Reliable generation, integrated with AI Gateway
-- **Date**: 2025-12-07
-
----
-
-*Version: 1.0 | Created: 2025-12-10*
+- `server/api/views/exam_views.py`: CRUD and Community logic.
+- `server/api/agent_exam.py`: LangGraph agent for generation.
+- `server/api/ai_views.py`: Endpoint for generation trigger.

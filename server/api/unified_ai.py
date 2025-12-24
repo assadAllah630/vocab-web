@@ -84,9 +84,11 @@ def generate_ai_content(user, prompt: str, max_tokens: int = 2048, temperature: 
     
     # Fallback: Legacy Profile Gemini Key
     try:
-        profile_key = getattr(user.profile, 'gemini_api_key', None)
-        if profile_key:
-            logger.info(f"[UnifiedAI] Falling back to Legacy Profile Key for user {user.username}")
+        # Check if user is provided and has a profile
+        if user and hasattr(user, 'profile'):
+            profile_key = getattr(user.profile, 'gemini_api_key', None)
+            if profile_key:
+                logger.info(f"[UnifiedAI] Falling back to Legacy Profile Key for user {user.username}")
             from .ai_gateway.adapters.gemini import GeminiAdapter
             
             # Use a default model for legacy fallback
@@ -237,16 +239,17 @@ def _try_gateway(user, prompt: str, max_tokens: int, temperature: float, require
                     )
                     
                     # Log for analytics
-                    UsageLog.objects.create(
-                        user=user,
-                        key=instance.api_key,
-                        provider=instance.model.provider,
-                        model=instance.model.model_id,
-                        status='success',
-                        latency_ms=latency_ms,
-                        tokens_input=response.tokens_input,
-                        tokens_output=response.tokens_output,
-                    )
+                    if user:
+                        UsageLog.objects.create(
+                            user=user,
+                            key=instance.api_key,
+                            provider=instance.model.provider,
+                            model=instance.model.model_id,
+                            status='success',
+                            latency_ms=latency_ms,
+                            tokens_input=response.tokens_input,
+                            tokens_output=response.tokens_output,
+                        )
                     
                     # Update Key Usage Stats (Missing Step Fix)
                     instance.api_key.requests_today = (instance.api_key.requests_today or 0) + 1

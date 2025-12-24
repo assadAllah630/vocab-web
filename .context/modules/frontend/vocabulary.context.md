@@ -1,45 +1,56 @@
 # Frontend Vocabulary Module Context
 
 ## Purpose
-
-Desktop vocabulary management pages:
-- Vocabulary list with filtering
-- Add/Edit words
-- Quiz practice
+Pages for managing vocabulary: adding words, reviewing lists, and practicing with quizzes.
 
 ---
 
 ## Key Pages
 
-### Vocabulary List
-- [VocabList.jsx](file:///e:/vocab_web/client/src/pages/VocabList.jsx) - 31KB
-  - Word list with search
-  - CSV import/export
-  - Bulk operations
-  - Semantic search
+### VocabList
+- [VocabList.jsx](file:///e:/vocab_web/client/src/pages/VocabList.jsx) ~32KB
+  - Tabbed view by status (New, Learning, Review, Mastered).
+  - Inline editing for word/translation.
+  - SRS indicators (next review date).
+  - Bulk actions (delete, reset).
 
-### Add Word
-- [AddWord.jsx](file:///e:/vocab_web/client/src/pages/AddWord.jsx) - 27KB
-  - Manual word entry
-  - AI enrichment
-  - Tag management
-  - Audio generation
+### AddWord
+- [AddWord.jsx](file:///e:/vocab_web/client/src/pages/AddWord.jsx) ~27KB
+  - Manual entry form.
+  - AI auto-fill (translations, examples).
+  - Bulk import (paste list).
 
 ### Quiz
-- [QuizSelector.jsx](file:///e:/vocab_web/client/src/pages/QuizSelector.jsx) - 4KB
-- [QuizPlay.jsx](file:///e:/vocab_web/client/src/pages/QuizPlay.jsx) - 29KB
-  - Practice modes
-  - Score tracking
-
-### Stats
-- [StatsDashboard.jsx](file:///e:/vocab_web/client/src/pages/StatsDashboard.jsx) - 5KB
-  - Learning statistics
-
-### Public
-- [SharedBank.jsx](file:///e:/vocab_web/client/src/pages/SharedBank.jsx) - 6KB
-  - Browse public vocab
-  - Copy words
+- [QuizSelector.jsx](file:///e:/vocab_web/client/src/pages/QuizSelector.jsx) ~4KB
+  - Mode selection (Flashcards, Multiple Choice, Typing).
+- [QuizPlay.jsx](file:///e:/vocab_web/client/src/pages/QuizPlay.jsx) ~29KB
+  - Quiz runner component.
+  - Scoring and feedback.
+  - SRS grade submission.
 
 ---
 
-*Version: 1.0 | Created: 2025-12-10*
+## Key Components
+Located in `client/src/components/`.
+
+| Component | Purpose |
+|-----------|---------|
+| `WordCard` | Single word display with flip animation. |
+| `VocabModal` | Detailed word view/edit popup. |
+
+---
+
+## API Hooks
+Common patterns used in this module:
+
+```javascript
+// Fetch words due for review
+const { data } = await api.get('/vocab/by-status/?status=review');
+
+// Submit quiz result (triggers SRS update)
+await api.post('/progress/update/', { vocab_id: 123, grade: 4 });
+```
+
+---
+
+*Version: 1.1 | Updated: 2025-12-24*

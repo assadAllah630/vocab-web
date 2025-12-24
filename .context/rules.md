@@ -16,8 +16,9 @@
 ├── conventions.md
 ├── glossary.md
 ├── rules.md
+├── plans/             ← Implementation plans
 ├── modules/
-│   ├── backend/       ← Backend modules (12 files)
+│   ├── backend/       ← Backend modules (13 files)
 │   ├── frontend/      ← Desktop pages (6 files)
 │   ├── mobile/        ← Mobile pages (5 files)
 │   └── admin/         ← Admin panel (4 files)
@@ -128,7 +129,8 @@ When making significant decisions, document in module context:
 3. ❌ AI provider changes require cost/fallback analysis
 4. ❌ No secrets in code - EVER
 5. ❌ No cross-domain repository calls
-6. ❌ No hidden architectural decisions outside context files
+7. ❌ **Update Context Rule**: whenever you find or update or do any think the context should alwas be match the ral system from the archetectuer to th detail functuin to frontto admin to all
+8. ✅ **Auto-Update Contexts**: Follow [CONTEXT_RULES.md](file:///e:/vocab_web/.context/CONTEXT_RULES.md) after EVERY file change
 
 ---
 
@@ -145,4 +147,4 @@ Before merging any PR:
 
 ---
 
-*Version: 1.0 | Created: 2025-12-10*
+*Version: 1.1 | Updated: 2025-12-24*

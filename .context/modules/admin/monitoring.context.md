@@ -1,40 +1,62 @@
-# Admin Monitoring Module Context
+# Admin Monitoring Context
 
 ## Purpose
-
-System monitoring pages:
-- Health checks
-- Error logs
-- Performance metrics
+System health, logs, and AI Gateway monitoring for administrators.
 
 ---
 
-## Key Pages
+## Pages (4)
 
-Location: `admin-client/src/pages/monitoring/`
+| File | Purpose |
+|------|---------|
+| `SystemHealth.jsx` | Server status, uptime, resources |
+| `AIGateway.jsx` | AI provider health, circuit breakers |
+| `ErrorLogs.jsx` | Application error tracking |
+| `AuditLogs.jsx` | User action audit trail |
 
-### System Health
-- Server status
-- Database health
+---
+
+## Location
+`admin-client/src/pages/monitoring/`
+
+---
+
+## Features
+
+### SystemHealth
+- Server uptime
+- Memory/CPU usage
+- Database connections
 - Redis status
+- Background job queue
 
-### Logs
-- Error logs
-- Access logs
-- AI request logs
+### AIGateway
+- Provider status cards
+- Health scores
+- Request/error rates
+- Quota usage
+- Circuit breaker states
 
-### Performance
-- Response times
-- API latency
-- Resource usage
+### ErrorLogs
+- Exception tracking
+- Stack traces
+- User context
+- Frequency analysis
+
+### AuditLogs
+- User actions
+- Admin operations
+- Login history
+- Data changes
 
 ---
 
-## Backend
-
-- Health endpoint: `/api/health/`
-- AI Gateway dashboard: `/api/ai-gateway/dashboard/`
+## API Endpoints Used
+- `GET /api/system/health/`
+- `GET /api/ai-gateway/status/`
+- `GET /api/admin/errors/`
+- `GET /api/admin/audit/`
 
 ---
 
-*Version: 1.0 | Created: 2025-12-10*
+*Version: 1.1 | Updated: 2025-12-24*

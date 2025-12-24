@@ -69,12 +69,21 @@ class NotificationLog(models.Model):
         ('practice_reminder', 'Practice Reminder'),
         ('achievement', 'Achievement'),
         ('custom', 'Custom'),
+        # Classroom notifications
+        ('assignment_new', 'New Assignment'),
+        ('assignment_due', 'Assignment Due Soon'),
+        ('assignment_graded', 'Assignment Graded'),
+        ('session_reminder', 'Session Reminder'),
+        ('session_starting', 'Session Starting'),
+        ('join_approved', 'Join Approved'),
+        ('streak_risk', 'Streak at Risk'),
     ]
     
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notification_logs')
     notification_type = models.CharField(max_length=30, choices=NOTIFICATION_TYPES)
     title = models.CharField(max_length=200)
     body = models.TextField()
+    data = models.JSONField(default=dict, blank=True)  # {classroom_id, assignment_id, etc.}
     sent_at = models.DateTimeField(auto_now_add=True)
     delivered = models.BooleanField(default=False)
     clicked = models.BooleanField(default=False)

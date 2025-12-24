@@ -10,7 +10,9 @@ import {
     ClipboardDocumentListIcon,
     BoltIcon,
     Bars3Icon,
-    XMarkIcon
+    XMarkIcon,
+    SparklesIcon,
+    AcademicCapIcon
 } from '@heroicons/react/24/outline';
 import api from '../api';
 import { ToastProvider } from './ui/Toast';
@@ -23,8 +25,13 @@ import { cn } from '../utils/cn';
 const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
     { name: 'Users', href: '/users', icon: UsersIcon },
+    { name: 'Teacher Requests', href: '/users/teacher-applications', icon: ClipboardDocumentListIcon },
+    { name: 'Global Activity', href: '/school/activity', icon: ClipboardDocumentListIcon },
+    { name: 'Global Classrooms', href: '/school/classrooms', icon: AcademicCapIcon },
+    { name: 'Teacher Directory', href: '/school/teachers', icon: UsersIcon },
+    { name: 'Curriculum / Paths', href: '/content/paths', icon: BookOpenIcon },
     { name: 'Vocabulary', href: '/content/vocabulary', icon: BookOpenIcon },
-    { name: 'AI Content', href: '/content/generated', icon: BookOpenIcon },
+    { name: 'AI Content', href: '/content/generated', icon: SparklesIcon },
     { name: 'User Analytics', href: '/analytics/users', icon: ChartBarIcon },
     { name: 'AI Analytics', href: '/analytics/ai', icon: ChartBarIcon },
     { name: 'Content Stats', href: '/analytics/content', icon: ChartBarIcon },
@@ -34,6 +41,7 @@ const navigation = [
     { name: 'Audit Logs', href: '/monitoring/audit', icon: ClipboardDocumentListIcon },
     { name: 'General Settings', href: '/settings/general', icon: CogIcon },
     { name: 'Admin Users', href: '/settings/admins', icon: UsersIcon },
+    { name: 'AI API Keys', href: '/settings/ai', icon: BoltIcon },
 ];
 
 export default function AdminLayout() {

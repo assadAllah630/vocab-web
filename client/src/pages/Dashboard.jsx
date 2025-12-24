@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import api from '../api';
+import api, { getMySkills } from '../api';
 import VocabularyMastery from '../components/VocabularyMastery';
+import SkillRadarChart from '../components/dashboard/SkillRadarChart';
+import CoachWidget from '../components/dashboard/CoachWidget';
+import RecommendationList from '../components/dashboard/RecommendationList';
 import ActivityHeatmap from '../components/ActivityHeatmap';
 import {
     BookOpenIcon,
@@ -19,6 +22,12 @@ import {
 } from '@heroicons/react/24/outline';
 
 function Dashboard({ user }) {
+    // Redirect teachers to their dashboard
+    if (user?.is_teacher) {
+        window.location.href = '/teacher/dashboard';
+        return null; // Don't render student dashboard
+    }
+
     const [stats, setStats] = useState({
         totalWords: 0,
         quizzesTaken: 0,
@@ -30,10 +39,21 @@ function Dashboard({ user }) {
     });
     const [loading, setLoading] = useState(true);
     const [showMastery, setShowMastery] = useState(false);
+    const [skills, setSkills] = useState([]);
 
     useEffect(() => {
         fetchStats();
+        fetchSkills();
     }, []);
+
+    const fetchSkills = async () => {
+        try {
+            const response = await getMySkills();
+            setSkills(response.data || []);
+        } catch (err) {
+            console.error("Failed to fetch skills:", err);
+        }
+    };
 
     const fetchStats = async () => {
         try {
@@ -282,6 +302,17 @@ function Dashboard({ user }) {
                 )}
             </AnimatePresence>
 
+            {/* AI Insights Section */}
+            <motion.div variants={item} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <SkillRadarChart data={skills} />
+                <CoachWidget />
+            </motion.div>
+
+            {/* Personalized Action Plan */}
+            <motion.div variants={item}>
+                <RecommendationList />
+            </motion.div>
+
             {/* Quick Actions - Moved Higher */}
             <motion.div variants={item} className="space-y-6">
                 <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
@@ -369,8 +400,8 @@ function StatCard({ label, value, subValue, icon: Icon, color, bg, trend, onClic
                 </div>
                 <div className="flex items-center gap-1">
                     <span className={`text-xs font-medium px-2 py-1 rounded-lg border ${trendPositive
-                            ? 'bg-green-50 text-green-600 border-green-100'
-                            : 'bg-slate-50 text-slate-500 border-slate-100'
+                        ? 'bg-green-50 text-green-600 border-green-100'
+                        : 'bg-slate-50 text-slate-500 border-slate-100'
                         }`}>
                         {trend}
                     </span>

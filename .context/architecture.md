@@ -34,18 +34,24 @@ graph TB
     subgraph "Feature Domains"
         CONTENT[/content - Stories & Dialogues]
         EXAMS[/exams - Exam Generation]
+        PODCAST_EXAM[/podcast_exam - Podcast Exams]
         READER[/reader - Smart Reader]
         GAMES[/games - Practice & Games]
+        CLASSROOM[/classroom - Teacher/Student Sync]
+        LPATH[/learning_path - Structured Paths]
+        EXTPOD[/external_podcast - RSS Podcasts]
     end
     
     subgraph "Support Domains"
         TTS[/tts - Text-to-Speech]
         NOTIFY[/notifications - Push Alerts]
         SEARCH[/semantic_search - Embeddings]
+        SESSIONS[/live_sessions - RTC & Scheduling]
     end
     
     subgraph "Admin Domain"
         ADMIN[/admin - Panel & Analytics]
+        ORG[/organization - Multi-tenancy]
     end
     
     FA --> AUTH
@@ -53,9 +59,14 @@ graph TB
     FC --> ADMIN
     CONTENT --> GATEWAY
     EXAMS --> GATEWAY
+    PODCAST_EXAM --> GATEWAY
     READER --> GATEWAY
     GAMES --> VOCAB
     SEARCH --> VOCAB
+    CLASSROOM --> NOTIFY
+    LPATH --> CLASSROOM
+    SESSIONS --> CLASSROOM
+    ORG --> FC
 ```
 
 **Rules:**
@@ -146,11 +157,18 @@ Request → KeySelector (health-based) → Adapter → CircuitBreaker → Respon
 |---------|----------|-------------|
 | Story Generator | `/generate-advanced-text/` | ✅ |
 | Exam Generator | `/generate-exam/` | ✅ |
+| **Podcast Exam** | `/generate-podcast-exam/` | ✅ |
 | Text Converter | `/convert-text/` | ✅ |
 | Smart Reader | `/extract-content/` | ✅ |
 | Vocabulary | `/vocab/` | ✅ (enrichment) |
 | TTS | `/tts/` | Provider-specific |
+| **Organization** | `/organizations/` | No |
+| **Classroom** | `/classrooms/` | No |
+| **Learning Path** | `/paths/` | No |
+| **Live Session** | `/sessions/` | No |
+| **Notifications**| `/notifications/` | No |
+| **External Podcast**| `/external-podcasts/` | No |
 
 ---
 
-*Document version: 1.0 | Created: 2025-12-10*
+*Document version: 1.2 | Updated: 2025-12-24*

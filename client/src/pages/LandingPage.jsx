@@ -44,6 +44,7 @@ const MobileMenu = ({ isOpen, onClose }) => {
                         <a href="#features" onClick={onClose} className="hover:text-indigo-600 transition-colors">Features</a>
                         <a href="#arcade" onClick={onClose} className="hover:text-indigo-600 transition-colors">Arcade</a>
                         <a href="#pricing" onClick={onClose} className="hover:text-indigo-600 transition-colors">Pricing</a>
+                        <Link to="/teacher-login" onClick={onClose} className="text-purple-600 hover:text-purple-700 transition-colors">Become a Teacher</Link>
                         <Link to="/login" onClick={onClose} className="hover:text-indigo-600 transition-colors">Log in</Link>
                         <Link to="/signup" onClick={onClose}>
                             <div className="px-8 py-4 bg-slate-900 text-white rounded-full shadow-xl">
@@ -92,7 +93,7 @@ const LandingPage = () => {
     const heroOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
 
     return (
-        <div className="bg-white overflow-x-hidden selection:bg-indigo-100 selection:text-indigo-900">
+        <div className="bg-white overflow-x-hidden selection:bg-indigo-100 selection:text-indigo-900 relative">
 
             <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
 
@@ -115,6 +116,10 @@ const LandingPage = () => {
                         <a href="#features" className="hover:text-indigo-600 transition-colors">Features</a>
                         <a href="#arcade" className="hover:text-indigo-600 transition-colors">Arcade</a>
                         <a href="#pricing" className="hover:text-indigo-600 transition-colors">Pricing</a>
+                        <Link to="/teacher-login" className="group flex items-center gap-1 px-4 py-2 rounded-full bg-purple-50 text-purple-600 font-bold hover:bg-purple-100 transition-all">
+                            <span>Teach</span>
+                            <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        </Link>
                     </div>
                     <div className="hidden md:flex items-center gap-4">
                         <Link to="/login" className="text-sm font-bold text-slate-600 hover:text-indigo-600 transition-colors">Log in</Link>
@@ -263,6 +268,59 @@ const LandingPage = () => {
                                 <StatsDemo />
                             </SpotlightCard>
                         </motion.div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Teacher Recruitment Section */}
+            <section className="py-20 bg-slate-900 overflow-hidden relative">
+                {/* Background Blobs */}
+                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-purple-600/30 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2"></div>
+                <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-600/30 rounded-full blur-[120px] translate-y-1/2 -translate-x-1/2"></div>
+
+                <div className="container mx-auto px-4 relative z-10">
+                    <div className="max-w-4xl mx-auto text-center">
+                        <span className="inline-block px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 font-bold text-sm mb-6 uppercase tracking-wider">
+                            For Educators
+                        </span>
+                        <h2 className="text-4xl md:text-5xl font-black text-white mb-6 tracking-tight">
+                            Share Your Knowledge with <br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">The World</span>
+                        </h2>
+                        <p className="text-xl text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">
+                            Join our elite network of teachers. Use our AI-powered classroom tools to manage students, create assignments, and track progress like never before.
+                        </p>
+
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                            <Link to="/teach">
+                                <button className="px-8 py-4 bg-white text-slate-900 rounded-xl font-bold text-lg hover:bg-purple-50 transition-colors shadow-xl shadow-purple-900/20 flex items-center gap-2">
+                                    Become a Teacher <ArrowRightIcon className="w-5 h-5" />
+                                </button>
+                            </Link>
+                            <Link to="/teach" className="px-8 py-4 text-slate-400 font-bold hover:text-white transition-colors">
+                                Learn More
+                            </Link>
+                        </div>
+
+                        {/* Stats / Proof */}
+                        <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 border-t border-slate-800 pt-10">
+                            <div>
+                                <div className="text-3xl font-black text-white mb-1">85%</div>
+                                <div className="text-xs text-slate-500 uppercase tracking-widest">Higher Earnings</div>
+                            </div>
+                            <div>
+                                <div className="text-3xl font-black text-white mb-1">0%</div>
+                                <div className="text-xs text-slate-500 uppercase tracking-widest">Platform Fees</div>
+                            </div>
+                            <div>
+                                <div className="text-3xl font-black text-white mb-1">10k+</div>
+                                <div className="text-xs text-slate-500 uppercase tracking-widest">Active Students</div>
+                            </div>
+                            <div>
+                                <div className="text-3xl font-black text-white mb-1">AI</div>
+                                <div className="text-xs text-slate-500 uppercase tracking-widest">Lesson Helper</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>

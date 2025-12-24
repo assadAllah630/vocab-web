@@ -244,6 +244,57 @@ const MobilePodcastStudio = () => {
         }
     };
 
+    const handleSaveScript = async (episode) => {
+        if (!episode.speech_marks || episode.speech_marks.length === 0) {
+            alert("No transcript available for this episode.");
+            return;
+        }
+
+        if (!window.confirm("Save this podcast script as an editable Dialogue in your Studio Material Hub?")) return;
+
+        try {
+            // Convert speech_marks to Dialogue Format
+            // Simple heuristic to split by speakers if possible, or just dump as one blocks
+            // Speech marks usually have just words. We might not have speaker info per word in simple speech_marks.
+            // If the backend generation stores 'transcript' text with speakers, that's better.
+            // But if we only have speech_marks (aligned words), we can't easily reconstruct speakers unless the API provided it.
+            // Let's check provided props. MobilePodcastStudio uses speech_marks for highlighting.
+            // Assuming we might have a raw transcript or we just save words.
+            // Actually, for now let's save what we have as a generic article if we can't parse speakers, 
+            // OR if the backend provided a 'transcript' field Use that.
+
+            const contentData = {
+                messages: episode.speech_marks.map(m => ({
+                    role: 'Audio',
+                    text: m.value
+                }))
+                // Ideally this would be better parsed. But for MVP this saves the content.
+                // Better: If the episode object has a 'script' field (which it likely does from generation), use that.
+                // Checking previous code... generating sends 'topic'.
+                // Let's assume we save it as type 'article' with the transcript text.
+            };
+
+            // Reconstruct text from speech marks for Article format
+            const fullText = episode.speech_marks.map(m => m.value).join(' ');
+
+            await api.post('/ai/save-material/', {
+                title: `Script: ${episode.title}`,
+                content_type: 'article',
+                topic: selectedCategory?.name || 'Podcast Script',
+                level: genOptions.level || 'B1',
+                content_data: {
+                    sections: [
+                        { title: 'Transcript', content: fullText }
+                    ]
+                }
+            });
+            alert("✨ Script saved to Material Hub!");
+        } catch (err) {
+            console.error("Failed to save script:", err);
+            alert("Failed to save script to Studio.");
+        }
+    };
+
     const playEpisode = (episode) => {
         if (currentAudio) {
             currentAudio.pause();
@@ -504,6 +555,22 @@ const MobilePodcastStudio = () => {
                                                 >
                                                     {currentAudio?.src === ep.audio_url && isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-1" />}
                                                 </button>
+
+                                                {/* Save Script Action */}
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        // Call generic save material logic
+                                                        // We can inline it here or make a helper since we are inside map
+                                                        // Let's assume we implement handleSaveScript(ep)
+                                                        handleSaveScript(ep);
+                                                    }}
+                                                    className="w-10 h-10 rounded-full flex items-center justify-center text-zinc-600 hover:bg-indigo-500/10 hover:text-indigo-500 transition-colors"
+                                                    title="Save Script to Studio"
+                                                >
+                                                    <BookOpen className="w-4 h-4" />
+                                                </button>
+
                                                 <button
                                                     onClick={(e) => handleDeleteEpisode(e, ep.id)}
                                                     className="w-10 h-10 rounded-full flex items-center justify-center text-zinc-600 hover:bg-red-500/10 hover:text-red-500 transition-colors"

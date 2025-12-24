@@ -5,10 +5,12 @@ import api from './api';
 
 // Eager load critical components (needed immediately)
 import Login from './pages/Login';
+import TeacherLogin from './pages/TeacherLogin';
 import LandingPage from './pages/LandingPage';
 import Sidebar from './components/Sidebar';
 import AIAssistant from './components/AIAssistant';
 import ErrorBoundary from './components/ErrorBoundary';
+import { AuthProvider, useAuth } from './context/AuthContext';
 
 // Mobile components
 import MobileLayout from './components/mobile/MobileLayout';
@@ -35,6 +37,8 @@ const MobileGenDialogue = lazy(() => import('./pages/mobile/MobileGenDialogue'))
 const MobileGenArticle = lazy(() => import('./pages/mobile/MobileGenArticle'));
 const MobileContentLibrary = lazy(() => import('./pages/mobile/MobileContentLibrary'));
 const MobileStoryViewer = lazy(() => import('./pages/mobile/MobileStoryViewer'));
+const MobileContentEditor = lazy(() => import('./pages/mobile/MobileContentEditor'));
+const MobileExamManualEditor = lazy(() => import('./pages/mobile/MobileExamManualEditor'));
 const MobileDialogueViewer = lazy(() => import('./pages/mobile/MobileDialogueViewer'));
 const MobileArticleViewer = lazy(() => import('./pages/mobile/MobileArticleViewer'));
 const MobileEditProfile = lazy(() => import('./pages/mobile/MobileEditProfile'));
@@ -47,6 +51,45 @@ const MobileHelp = lazy(() => import('./pages/mobile/MobileHelp'));
 const MobileAbout = lazy(() => import('./pages/mobile/MobileAbout'));
 const MobileAIGateway = lazy(() => import('./pages/mobile/MobileAIGateway'));
 const MobilePodcastStudio = lazy(() => import('./pages/mobile/MobilePodcastStudio'));
+const MobileExternalPodcastLibrary = lazy(() => import('./pages/mobile/MobileExternalPodcastLibrary'));
+const MobileExternalPodcastDetail = lazy(() => import('./pages/mobile/MobileExternalPodcastDetail'));
+const MobileExternalEpisodePlayer = lazy(() => import('./pages/mobile/MobileExternalEpisodePlayer'));
+const MobileTeacherHome = lazy(() => import('./pages/mobile/MobileTeacherHome'));
+const MobileClassroomCreate = lazy(() => import('./pages/mobile/MobileClassroomCreate'));
+const MobileClassroomDetail = lazy(() => import('./pages/mobile/MobileClassroomDetail'));
+const MobileMyClasses = lazy(() => import('./pages/mobile/MobileMyClasses'));
+const MobileJoinClass = lazy(() => import('./pages/mobile/MobileJoinClass'));
+const MobileClassroomStudent = lazy(() => import('./pages/mobile/MobileClassroomStudent'));
+const MobileTeacherProfileEditor = lazy(() => import('./pages/mobile/MobileTeacherProfileEditor'));
+const MobileAssignmentCreate = lazy(() => import('./pages/mobile/MobileAssignmentCreate'));
+const MobileAssignmentDetail = lazy(() => import('./pages/mobile/MobileAssignmentDetail'));
+const MobileGradeSubmission = lazy(() => import('./pages/mobile/MobileGradeSubmission'));
+const MobileClassAssignments = lazy(() => import('./pages/mobile/MobileClassAssignments'));
+const MobileAssignmentView = lazy(() => import('./pages/mobile/MobileAssignmentView'));
+const MobileAssignmentContent = lazy(() => import('./pages/mobile/MobileAssignmentContent'));
+const MobileAssignmentBuilder = lazy(() => import('./pages/mobile/MobileAssignmentBuilder'));
+const MobileWritingBuilder = lazy(() => import('./pages/mobile/MobileWritingBuilder'));
+const MobileGradingInterface = lazy(() => import('./pages/mobile/MobileGradingInterface'));
+const MobileTeacherLanding = lazy(() => import('./pages/mobile/MobileTeacherLanding'));
+const MobileTeacherApplication = lazy(() => import('./pages/mobile/MobileTeacherApplication'));
+const MobileTeacherStatus = lazy(() => import('./pages/mobile/MobileTeacherStatus'));
+const MobileTeacherDashboard = lazy(() => import('./pages/mobile/MobileTeacherDashboard'));
+const MobileTeacherWorkspace = lazy(() => import('./pages/mobile/MobileTeacherWorkspace'));
+const MobileTeacherClasses = lazy(() => import('./pages/mobile/MobileTeacherClasses'));
+const MobileActivityFeed = lazy(() => import('./pages/mobile/MobileActivityFeed'));
+const MobileStudentInsight = lazy(() => import('./pages/mobile/MobileStudentInsight'));
+const MobileLearningPaths = lazy(() => import('./pages/mobile/MobileLearningPaths'));
+const MobileLearningPathView = lazy(() => import('./pages/mobile/MobileLearningPathView'));
+const MobileLearningPathBuilder = lazy(() => import('./pages/mobile/MobileLearningPathBuilder'));
+const MobilePathNodePlayer = lazy(() => import('./pages/mobile/MobilePathNodePlayer'));
+const MobileSessionList = lazy(() => import('./pages/mobile/MobileSessionList'));
+const MobileSessionDetail = lazy(() => import('./pages/mobile/MobileSessionDetail'));
+const MobileCreateSession = lazy(() => import('./pages/mobile/MobileCreateSession'));
+const MobileOrgDashboard = lazy(() => import('./pages/mobile/MobileOrgDashboard'));
+const MobileOrgMembers = lazy(() => import('./pages/mobile/MobileOrgMembers'));
+const MobileGameBuilder = lazy(() => import('./pages/mobile/MobileGameBuilder'));
+const MobileGameLobby = lazy(() => import('./pages/mobile/MobileGameLobby'));
+const MobileGameArena = lazy(() => import('./pages/mobile/MobileGameArena'));
 
 
 // Lazy load pages (loaded on demand)
@@ -79,6 +122,12 @@ const DialogueViewer = lazy(() => import('./pages/DialogueViewer'));
 const ArticleViewer = lazy(() => import('./pages/ArticleViewer'));
 const GeneratedContentLibrary = lazy(() => import('./pages/GeneratedContentLibrary'));
 
+// Desktop Session Components
+const CreateSession = lazy(() => import('./pages/CreateSession'));
+const SessionDetail = lazy(() => import('./pages/SessionDetail'));
+const TeacherDashboard = lazy(() => import('./pages/TeacherDashboard'));
+const ClassroomDetail = lazy(() => import('./pages/ClassroomDetail'));
+
 // Loading fallback component
 const PageLoader = () => (
   <div className="flex justify-center items-center min-h-screen">
@@ -105,7 +154,7 @@ const MobileRedirect = ({ children }) => {
   const location = useLocation();
   const isMobile = isMobileDevice();
   const isMobilePath = location.pathname.startsWith('/m');
-  const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
+  const isAuthPage = ['/login', '/signup', '/teacher-login'].includes(location.pathname);
   const isLandingPage = location.pathname === '/';
 
   // Map desktop routes to mobile routes
@@ -122,6 +171,7 @@ const MobileRedirect = ({ children }) => {
     '/ai-generator': '/m/ai',
     '/generated-content': '/m/ai/library',
     '/ai-gateway': '/m/ai-gateway',
+    '/teach': '/m/teach',
   };
 
   // If mobile device and not already on mobile path (and not auth/landing)
@@ -137,7 +187,7 @@ const MobileRedirect = ({ children }) => {
 
 function Layout({ children, user, setUser }) {
   const location = useLocation();
-  const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
+  const isAuthPage = ['/login', '/signup', '/teacher-login'].includes(location.pathname);
   const isLandingPage = location.pathname === '/';
   const isMobilePath = location.pathname.startsWith('/m');
 
@@ -221,125 +271,239 @@ function App() {
     initUser();
   }, []);
 
+  // Protected route using new auth context
   const ProtectedRoute = ({ children }) => {
-    if (loading) return null; // Or a loading spinner
-    if (!user) return <Navigate to="/login" />;
+    const { isAuthenticated, loading } = useAuth();
+    const location = useLocation();
+    if (loading) return <PageLoader />;
+    if (!isAuthenticated) return <Navigate to="/login" state={{ from: location }} replace />;
     return children;
   };
 
   // Mobile protected route wrapper
   const MobileProtectedRoute = ({ children }) => {
+    const { isAuthenticated, loading } = useAuth();
+    const location = useLocation();
     if (loading) return <MobileLoader />;
-    if (!user) return <Navigate to="/login" />;
+    if (!isAuthenticated) return <Navigate to="/login" state={{ from: location }} replace />;
     return children;
   };
 
   return (
     <ErrorBoundary>
       <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-        <Router>
-          <LanguageProvider user={user} setUser={setUser}>
-            <ExamProvider>
-              <MobileRedirect>
-                <Layout user={user} setUser={setUser}>
-                  <Suspense fallback={<PageLoader />}>
-                    <Routes>
-                      {/* Auth Routes */}
-                      <Route path="/login" element={<Login setUser={setUser} />} />
-                      <Route path="/signup" element={<Login setUser={setUser} />} />
-                      <Route path="/" element={<LandingPage />} />
-
-                      {/* ===== MOBILE ROUTES ===== */}
-                      <Route path="/m" element={
-                        <MobileProtectedRoute>
-                          <Suspense fallback={<MobileLoader />}>
-                            <MobileLayout />
-                          </Suspense>
-                        </MobileProtectedRoute>
-                      }>
-                        <Route index element={<MobileHome user={user} />} />
-                        <Route path="words" element={<MobileWords />} />
-                        <Route path="words/add" element={<MobileAddWord user={user} />} />
-                        <Route path="words/edit/:id" element={<MobileAddWord user={user} />} />
-                        <Route path="practice" element={<MobilePractice />} />
-                        <Route path="practice/flashcard" element={<MobileFlashcard user={user} />} />
-                        <Route path="exam" element={<MobileExam />} />
-                        <Route path="exam/create" element={<MobileExamCreate />} />
-                        <Route path="exam/play" element={<MobileExamPlay />} />
-                        <Route path="exam/take/:id" element={<MobileExamPlay />} />
-                        <Route path="exam/retake/:id" element={<MobileExamPlay />} />
-                        <Route path="exam/review/:id" element={<MobileExamPlay />} />
-                        <Route path="games" element={<MobileGames />} />
-                        <Route path="games/memory" element={<MobileMemoryMatch />} />
-                        <Route path="games/speed" element={<MobileTimeChallenge />} />
-                        <Route path="games/builder" element={<MobileWordBuilder />} />
-                        <Route path="grammar" element={<MobileGrammar />} />
-                        <Route path="grammar/generate" element={<MobileGrammarGenerate />} />
-                        <Route path="grammar/:id" element={<MobileGrammarReader />} />
-                        <Route path="reader" element={<MobileReader />} />
-                        <Route path="ai" element={<MobileAIGenerator />} />
-                        <Route path="ai/story" element={<MobileGenStory />} />
-                        <Route path="ai/dialogue" element={<MobileGenDialogue />} />
-                        <Route path="ai/article" element={<MobileGenArticle />} />
-                        <Route path="ai/library" element={<MobileContentLibrary />} />
-                        {/* Mobile content viewers */}
-                        <Route path="ai/story/:id" element={<MobileStoryViewer />} />
-                        <Route path="ai/dialogue/:id" element={<MobileDialogueViewer />} />
-                        <Route path="ai/article/:id" element={<MobileArticleViewer />} />
-                        <Route path="me" element={<MobileProfile user={user} setUser={setUser} />} />
-                        <Route path="me/edit" element={<MobileEditProfile user={user} setUser={setUser} />} />
-                        <Route path="me/language" element={<MobileLanguageSettings user={user} setUser={setUser} />} />
-                        <Route path="me/language" element={<MobileLanguageSettings user={user} setUser={setUser} />} />
-                        <Route path="notifications" element={<MobileNotifications />} /> {/* New Notification Center */}
-                        <Route path="me/notifications" element={<MobileNotificationSettings user={user} />} />
-                        <Route path="me/api-keys" element={<MobileAPISettings user={user} setUser={setUser} />} />
-                        <Route path="me/security" element={<MobileSecuritySettings user={user} />} />
-                        <Route path="me/help" element={<MobileHelp />} />
-                        <Route path="me/about" element={<MobileAbout />} />
-                        <Route path="me/about" element={<MobileAbout />} />
-                        <Route path="ai-gateway" element={<MobileAIGateway />} />
-                        <Route path="podcast-studio" element={<MobilePodcastStudio />} />
-                      </Route>
-
-                      {/* ===== DESKTOP ROUTES ===== */}
-                      <Route path="/dashboard" element={<ProtectedRoute><Dashboard user={user} /></ProtectedRoute>} />
-                      <Route path="/vocab" element={<ProtectedRoute><VocabList /></ProtectedRoute>} />
-                      <Route path="/vocab/add" element={<ProtectedRoute><AddWord user={user} /></ProtectedRoute>} />
-                      <Route path="/vocab/edit/:id" element={<ProtectedRoute><AddWord user={user} /></ProtectedRoute>} />
-                      <Route path="/quiz" element={<ProtectedRoute><QuizSelector /></ProtectedRoute>} />
-                      <Route path="/practice" element={<ProtectedRoute><QuizSelector /></ProtectedRoute>} />
-                      <Route path="/quiz/play/:mode" element={<ProtectedRoute><QuizPlay user={user} /></ProtectedRoute>} />
-                      <Route path="/profile" element={<ProtectedRoute><Profile user={user} /></ProtectedRoute>} />
-                      <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-                      <Route path="/games" element={<ProtectedRoute><MiniGames /></ProtectedRoute>} />
-                      <Route path="/games/memory" element={<ProtectedRoute><MemoryMatch /></ProtectedRoute>} />
-                      <Route path="/shared" element={<ProtectedRoute><SharedBank /></ProtectedRoute>} />
-                      <Route path="/stats" element={<ProtectedRoute><StatsDashboard /></ProtectedRoute>} />
-
-                      {/* Advanced Text Generator */}
-                      <Route path="/advanced-text-generator" element={<ProtectedRoute><AdvancedTextGenerator /></ProtectedRoute>} />
-                      <Route path="/story/:id" element={<ProtectedRoute><StoryViewer /></ProtectedRoute>} />
-                      <Route path="/dialogue/:id" element={<ProtectedRoute><DialogueViewer /></ProtectedRoute>} />
-                      <Route path="/article/:id" element={<ProtectedRoute><ArticleViewer /></ProtectedRoute>} />
-                      <Route path="/generated-content" element={<ProtectedRoute><GeneratedContentLibrary /></ProtectedRoute>} />
-                      <Route path="/grammar" element={<ProtectedRoute><GrammarPage /></ProtectedRoute>} />
-                      <Route path="/grammar/generate" element={<ProtectedRoute><GrammarGenerator /></ProtectedRoute>} />
-                      <Route path="/exams" element={<ProtectedRoute><ExamPage /></ProtectedRoute>} />
-                      <Route path="/text-generator" element={<ProtectedRoute><TextGenerator /></ProtectedRoute>} />
-                      <Route path="/podcast-creator" element={<ProtectedRoute><PodcastCreator /></ProtectedRoute>} />
-                      <Route path="/podcasts" element={<ProtectedRoute><MyPodcasts /></ProtectedRoute>} />
-                      <Route path="/reader" element={<ProtectedRoute><TextReader /></ProtectedRoute>} />
-                      <Route path="/ai-gateway" element={<ProtectedRoute><AIGateway /></ProtectedRoute>} />
-                    </Routes>
-                  </Suspense>
-                  <FloatingExamTimer />
-                </Layout>
-              </MobileRedirect>
-            </ExamProvider>
-          </LanguageProvider>
-        </Router>
+        <AuthProvider>
+          <Router>
+            <AppContent user={user} setUser={setUser} loading={loading}
+              ProtectedRoute={ProtectedRoute} MobileProtectedRoute={MobileProtectedRoute} />
+          </Router>
+        </AuthProvider>
       </GoogleOAuthProvider>
     </ErrorBoundary>
+  );
+}
+
+// Extracted AppContent to have access to useAuth within Router context
+function AppContent({ user, setUser, ProtectedRoute, MobileProtectedRoute }) {
+  const auth = useAuth();
+  // Use auth context user if available, fallback to prop
+  const currentUser = auth.user || user;
+  const setCurrentUser = auth.setUser || setUser;
+
+  return (
+    <LanguageProvider user={currentUser} setUser={setCurrentUser}>
+      <ExamProvider>
+        <MobileRedirect>
+          <Layout user={currentUser} setUser={setCurrentUser}>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                {/* Auth Routes */}
+                <Route path="/login" element={<Login setUser={setCurrentUser} />} />
+                <Route path="/teacher-login" element={<TeacherLogin setUser={setCurrentUser} />} />
+                <Route path="/signup" element={<Login setUser={setCurrentUser} />} />
+                <Route path="/" element={<LandingPage />} />
+
+                {/* Public Mobile Routes (No Auth Required) */}
+                <Route path="/m/teach" element={<Suspense fallback={<MobileLoader />}><MobileTeacherLanding /></Suspense>} />
+                <Route path="/teach" element={<Navigate to="/m/teach" replace />} />
+
+                {/* ===== MOBILE ROUTES ===== */}
+
+                {/* ===== MOBILE ROUTES ===== */}
+                <Route path="/m" element={
+                  <MobileProtectedRoute>
+                    <Suspense fallback={<MobileLoader />}>
+                      <MobileLayout />
+                    </Suspense>
+                  </MobileProtectedRoute>
+                }>
+                  <Route index element={<MobileHome user={user} />} />
+
+                  {/* Core Vocabulary */}
+                  <Route path="words" element={<MobileWords />} />
+                  <Route path="words/add" element={<MobileAddWord user={user} />} />
+                  <Route path="words/edit/:id" element={<MobileAddWord user={user} />} />
+                  <Route path="words/:id" element={<MobileWords />} /> {/* Re-using MobileWords for detail if needed, or specific detail component if exists */}
+
+                  {/* Practice & Assessment */}
+                  <Route path="practice" element={<MobilePractice />} />
+                  <Route path="practice/flashcard" element={<MobileFlashcard user={user} />} />
+                  <Route path="exam" element={<MobileExam />} />
+                  <Route path="exam/create" element={<MobileExamCreate />} />
+                  <Route path="exam/play" element={<MobileExamPlay />} />
+                  <Route path="exam/take/:id" element={<MobileExamPlay />} />
+                  <Route path="exam/retake/:id" element={<MobileExamPlay />} />
+                  <Route path="exam/review/:id" element={<MobileExamPlay />} />
+
+                  {/* Games */}
+                  <Route path="games" element={<MobileGames />} />
+                  <Route path="games/memory" element={<MobileMemoryMatch />} />
+                  <Route path="games/speed" element={<MobileTimeChallenge />} />
+                  <Route path="games/builder" element={<MobileWordBuilder />} />
+
+                  {/* AI Generation */}
+                  <Route path="ai" element={<MobileAIGenerator />} />
+                  <Route path="ai/story" element={<MobileGenStory />} />
+                  <Route path="ai/dialogue" element={<MobileGenDialogue />} />
+                  <Route path="ai/article" element={<MobileGenArticle />} />
+                  <Route path="ai/library" element={<MobileContentLibrary />} />
+                  <Route path="ai/story/:id" element={<MobileStoryViewer />} />
+                  <Route path="teacher/edit/:id" element={<MobileContentEditor />} />
+                  <Route path="teacher/exam/:id/edit" element={<MobileExamManualEditor />} />
+                  <Route path="ai/dialogue/:id" element={<MobileDialogueViewer />} />
+                  <Route path="ai/article/:id" element={<MobileArticleViewer />} />
+
+                  {/* Reader & Grammar */}
+                  <Route path="reader" element={<MobileReader />} />
+                  <Route path="grammar" element={<MobileGrammar />} />
+                  <Route path="grammar/generate" element={<MobileGrammarGenerate />} />
+                  <Route path="grammar/:id" element={<MobileGrammarReader />} />
+
+                  {/* Profile & Settings */}
+                  <Route path="me" element={<MobileProfile user={user} setUser={setUser} />} />
+                  <Route path="me/edit" element={<MobileEditProfile user={user} setUser={setUser} />} />
+                  <Route path="me/language" element={<MobileLanguageSettings user={user} setUser={setUser} />} />
+                  <Route path="me/api-keys" element={<MobileAPISettings user={user} setUser={setUser} />} />
+                  <Route path="me/security" element={<MobileSecuritySettings user={user} />} />
+                  <Route path="me/help" element={<MobileHelp />} />
+                  <Route path="me/about" element={<MobileAbout />} />
+                  <Route path="notifications" element={<MobileNotifications />} />
+
+                  {/* Classroom System (Teacher Side) */}
+                  <Route path="dashboard" element={<MobileTeacherDashboard />} />
+                  <Route path="teacher" element={<MobileTeacherHome />} />
+                  <Route path="teacher/profile" element={<MobileTeacherProfileEditor />} />
+                  <Route path="classroom/create" element={<MobileClassroomCreate />} />
+                  <Route path="classroom/:id" element={<MobileClassroomDetail />} />
+                  <Route path="classroom/:id/assign" element={<MobileAssignmentCreate />} />
+                  <Route path="activity" element={<MobileActivityFeed />} />
+                  <Route path="student/:classroomId/:studentId" element={<MobileStudentInsight />} />
+                  <Route path="assignment/:id/grade/:progressId" element={<MobileGradeSubmission />} />
+
+                  {/* Classroom System (Student Side) */}
+                  <Route path="classes" element={<MobileMyClasses />} />
+                  <Route path="join-class" element={<MobileJoinClass />} />
+                  <Route path="join/:code" element={<MobileJoinClass />} />
+                  <Route path="class/:id" element={<MobileClassroomStudent />} />
+                  <Route path="class/:id/assignments" element={<MobileClassAssignments />} />
+                  <Route path="assignment/builder" element={<MobileAssignmentBuilder />} />
+                  <Route path="assignment/writing/builder" element={<MobileWritingBuilder />} />
+                  <Route path="assignment/:id" element={<MobileAssignmentDetail />} />
+                  <Route path="assignment/:id/view" element={<MobileAssignmentView />} />
+                  <Route path="assignment/:id/do" element={<MobileAssignmentContent />} />
+                  <Route path="assignment/progress/:progressId/grade-writing" element={<MobileGradingInterface />} />
+
+                  {/* Learning Paths */}
+                  <Route path="paths" element={<MobileLearningPaths />} />
+                  <Route path="path/:id" element={<MobileLearningPathView />} />
+                  <Route path="path/:id/build" element={<MobileLearningPathBuilder />} />
+                  <Route path="path/create/build" element={<MobileLearningPathBuilder />} />
+                  <Route path="path/:pathId/node/:nodeId" element={<MobilePathNodePlayer />} />
+
+                  {/* Live Sessions */}
+                  <Route path="sessions" element={<MobileSessionList />} />
+                  <Route path="session/:id" element={<MobileSessionDetail />} />
+                  <Route path="classroom/:id/schedule" element={<MobileCreateSession />} />
+
+                  {/* Podcasts */}
+                  <Route path="podcast-studio" element={<MobilePodcastStudio />} />
+                  <Route path="podcast-library" element={<MobileExternalPodcastLibrary />} />
+                  <Route path="podcasts/external" element={<MobileExternalPodcastLibrary />} />
+                  <Route path="external-podcast/:id" element={<MobileExternalPodcastDetail />} />
+                  <Route path="external-episode/:id/play" element={<MobileExternalEpisodePlayer />} />
+
+                  {/* Organizations */}
+                  <Route path="org/:slug" element={<MobileOrgDashboard />} />
+                  <Route path="org/:slug/members" element={<MobileOrgMembers />} />
+
+                  <Route path="ai-gateway" element={<MobileAIGateway />} />
+
+
+
+                  {/* Teacher Application (Protected) */}
+                  {/* Landing is public at /m/teach */}
+                  <Route path="teach/apply" element={<MobileTeacherApplication />} />
+                  <Route path="teach/status" element={<MobileTeacherStatus />} />
+
+                  {/* Teacher Dashboard */}
+                  <Route path="teacher/dashboard" element={<MobileTeacherDashboard />} />
+                  <Route path="teacher/workspace" element={<MobileTeacherWorkspace />} />
+                  <Route path="teacher/classes" element={<MobileTeacherClasses />} />
+                  <Route path="teacher/activity" element={<MobileActivityFeed />} />
+                  <Route path="teacher/student/:classroomId/:studentId" element={<MobileStudentInsight />} />
+
+                  {/* Classroom Arena - Games */}
+                  <Route path="game/builder" element={<MobileGameBuilder />} />
+                  <Route path="game/lobby/:id" element={<MobileGameLobby />} />
+                  <Route path="game/arena/:id" element={<MobileGameArena />} />
+                </Route>
+
+                {/* ===== DESKTOP ROUTES ===== */}
+                <Route path="/dashboard" element={<ProtectedRoute><Dashboard user={user} /></ProtectedRoute>} />
+                <Route path="/vocab" element={<ProtectedRoute><VocabList /></ProtectedRoute>} />
+                <Route path="/vocab/add" element={<ProtectedRoute><AddWord user={user} /></ProtectedRoute>} />
+                <Route path="/vocab/edit/:id" element={<ProtectedRoute><AddWord user={user} /></ProtectedRoute>} />
+                <Route path="/quiz" element={<ProtectedRoute><QuizSelector /></ProtectedRoute>} />
+                <Route path="/practice" element={<ProtectedRoute><QuizSelector /></ProtectedRoute>} />
+                <Route path="/quiz/play/:mode" element={<ProtectedRoute><QuizPlay user={user} /></ProtectedRoute>} />
+                <Route path="/profile" element={<ProtectedRoute><Profile user={user} /></ProtectedRoute>} />
+                <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                <Route path="/games" element={<ProtectedRoute><MiniGames /></ProtectedRoute>} />
+                <Route path="/games/memory" element={<ProtectedRoute><MemoryMatch /></ProtectedRoute>} />
+                <Route path="/shared" element={<ProtectedRoute><SharedBank /></ProtectedRoute>} />
+                <Route path="/stats" element={<ProtectedRoute><StatsDashboard /></ProtectedRoute>} />
+
+                {/* Advanced Text Generator */}
+                <Route path="/advanced-text-generator" element={<ProtectedRoute><AdvancedTextGenerator /></ProtectedRoute>} />
+                <Route path="/story/:id" element={<ProtectedRoute><StoryViewer /></ProtectedRoute>} />
+                <Route path="/dialogue/:id" element={<ProtectedRoute><DialogueViewer /></ProtectedRoute>} />
+                <Route path="/article/:id" element={<ProtectedRoute><ArticleViewer /></ProtectedRoute>} />
+                <Route path="/generated-content" element={<ProtectedRoute><GeneratedContentLibrary /></ProtectedRoute>} />
+                <Route path="/grammar" element={<ProtectedRoute><GrammarPage /></ProtectedRoute>} />
+                <Route path="/grammar/generate" element={<ProtectedRoute><GrammarGenerator /></ProtectedRoute>} />
+                <Route path="/exams" element={<ProtectedRoute><ExamPage /></ProtectedRoute>} />
+                <Route path="/text-generator" element={<ProtectedRoute><TextGenerator /></ProtectedRoute>} />
+                <Route path="/podcast-creator" element={<ProtectedRoute><PodcastCreator /></ProtectedRoute>} />
+                <Route path="/podcasts" element={<ProtectedRoute><MyPodcasts /></ProtectedRoute>} />
+                <Route path="/reader" element={<ProtectedRoute><TextReader /></ProtectedRoute>} />
+                <Route path="/ai-gateway" element={<ProtectedRoute><AIGateway /></ProtectedRoute>} />
+
+                {/* Desktop Session Management */}
+                <Route path="/session/:id" element={<ProtectedRoute><SessionDetail /></ProtectedRoute>} />
+                <Route path="/classroom/:id/schedule" element={<ProtectedRoute><CreateSession /></ProtectedRoute>} />
+
+                {/* Desktop Teacher Tools */}
+                <Route path="/teacher/dashboard" element={<ProtectedRoute><TeacherDashboard /></ProtectedRoute>} />
+                <Route path="/teacher/classes" element={<ProtectedRoute><TeacherDashboard /></ProtectedRoute>} /> {/* Re-use Dashboard for now */}
+                <Route path="/classroom/:id" element={<ProtectedRoute><ClassroomDetail /></ProtectedRoute>} />
+                <Route path="/classroom/create" element={<ProtectedRoute><TeacherDashboard /></ProtectedRoute>} /> {/* Redirect to dashboard or add modal */}
+              </Routes>
+            </Suspense>
+            <FloatingExamTimer />
+          </Layout>
+        </MobileRedirect>
+      </ExamProvider>
+    </LanguageProvider>
   );
 }
 

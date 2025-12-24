@@ -185,7 +185,15 @@ def verify_email(request):
     
     # Auto Login
     login(request, user)
-    return Response(UserSerializer(user).data)
+    
+    # Generate or get auth token for API calls
+    from rest_framework.authtoken.models import Token
+    token, _ = Token.objects.get_or_create(user=user)
+    
+    # Return user data with token
+    user_data = UserSerializer(user).data
+    user_data['token'] = token.key
+    return Response(user_data)
 
 # @rate_limit_otp
 @api_view(['POST'])
@@ -257,7 +265,15 @@ def signin(request):
                 }, status=status.HTTP_403_FORBIDDEN)
                 
             login(request, user)
-            return Response(UserSerializer(user).data)
+            
+            # Generate or get auth token for API calls
+            from rest_framework.authtoken.models import Token
+            token, _ = Token.objects.get_or_create(user=user)
+            
+            # Return user data with token
+            user_data = UserSerializer(user).data
+            user_data['token'] = token.key
+            return Response(user_data)
             
         return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
@@ -270,13 +286,30 @@ def signin(request):
             'traceback': error_details
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 @permission_classes([permissions.AllowAny])
 def check_username(request):
-    username = request.query_params.get('username')
+    if request.method == 'POST':
+        username = request.data.get('username')
+    else:
+        username = request.query_params.get('username')
+        
     if not username:
         return Response({'error': 'Username required'}, status=status.HTTP_400_BAD_REQUEST)
     
     # Case insensitive check
     exists = User.objects.filter(username__iexact=username).exists()
     return Response({'exists': exists, 'available': not exists})
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def logout(request):
+    """
+    Logout the current user.
+    For SessionAuthentication, this clears the session.
+    Since we are using custom Token auth in some places, 
+    the client should also remove the token from localStorage.
+    """
+    from django.contrib.auth import logout as django_logout
+    django_logout(request)
+    return Response({"message": "Successfully logged out"}, status=status.HTTP_200_OK)

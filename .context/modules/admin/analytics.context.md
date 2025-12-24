@@ -1,46 +1,55 @@
-# Admin Analytics Module Context
+# Admin Analytics Context
 
 ## Purpose
-
-Analytics and metrics pages:
-- User growth
-- Content stats
-- AI usage
-- System metrics
+Platform-wide analytics dashboards for tracking usage, engagement, and AI performance.
 
 ---
 
-## Key Pages
+## Pages (4)
 
-Location: `admin-client/src/pages/analytics/`
-
-### Analytics Overview
-- Overview charts
-- KPI dashboard
-
-### User Growth
-- Registration trends
-- Active users
-- Retention
-
-### Content Stats
-- Generated content
-- Popular topics
-- Usage patterns
-
-### API Usage
-- AI provider stats
-- Quota tracking
-- Cost analysis
+| File | Purpose |
+|------|---------|
+| `AIAnalytics.jsx` | AI Gateway usage, provider stats, costs |
+| `CohortAnalytics.jsx` | User cohort analysis, retention |
+| `ContentAnalytics.jsx` | Content creation metrics, popularity |
+| `UserAnalytics.jsx` | User growth, engagement, activity |
 
 ---
 
-## Backend
-
-- [analytics_views.py](file:///e:/vocab_web/server/api/analytics_views.py) - 7KB
-- [analytics_service.py](file:///e:/vocab_web/server/api/analytics_service.py) - 3KB
-- [system_metrics_views.py](file:///e:/vocab_web/server/api/system_metrics_views.py) - 2KB
+## Location
+`admin-client/src/pages/analytics/`
 
 ---
 
-*Version: 1.0 | Created: 2025-12-10*
+## Data Sources
+
+### AIAnalytics
+- `/api/ai-gateway/stats/` - Provider usage
+- `/api/ai-gateway/keys/` - Key health
+- `UsageLog` model aggregation
+
+### CohortAnalytics
+- User signup dates
+- Retention calculations
+- Activity cohorts
+
+### ContentAnalytics
+- `GeneratedContent` counts
+- Exam statistics
+- Podcast metrics
+
+### UserAnalytics
+- Daily/Weekly/Monthly active users
+- Signup funnel
+- Feature adoption
+
+---
+
+## Chart Components Used
+- `LineChart.jsx` - Trends
+- `PieChart.jsx` - Distributions
+- `StatCard.jsx` - KPI cards
+
+---
+
+*Version: 1.1 | Updated: 2025-12-24*

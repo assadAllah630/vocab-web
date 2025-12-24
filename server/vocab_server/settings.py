@@ -86,7 +86,9 @@ ASGI_APPLICATION = 'vocab_server.asgi.application'
 import dj_database_url
 
 DATABASE_URL = os.environ.get('DATABASE_URL')
-if DATABASE_URL:
+
+# Only use DATABASE_URL if it's PostgreSQL (not SQLite)
+if DATABASE_URL and 'postgresql' in DATABASE_URL:
     # Production: Use Render's DATABASE_URL with connection pooling
     DATABASES = {
         'default': dj_database_url.config(
@@ -101,7 +103,7 @@ if DATABASE_URL:
         'connect_timeout': 10,  # Timeout after 10 seconds
     }
 else:
-    # Local development: Use individual env vars
+    # Local development: Use individual env vars for PostgreSQL
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -476,6 +478,11 @@ CELERY_BEAT_SCHEDULE = {
     'ai-gateway-cleanup-failure-logs': {
         'task': 'ai_gateway.cleanup_old_failure_logs',
         'schedule': crontab(hour=3, minute=0),
+    },
+    # Daily Podcast Digest (7 AM UTC)
+    'podcast-daily-digest': {
+        'task': 'api.services.external_podcast.tasks.check_new_episodes_and_notify',
+        'schedule': crontab(hour=7, minute=0),
     },
 }
 

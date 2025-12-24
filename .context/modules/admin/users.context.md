@@ -1,56 +1,55 @@
-# Admin Users Module Context
+# Admin Users Context
 
 ## Purpose
-
-User management pages:
-- User list
-- User details
-- Role management
-- Bulk operations
+User and teacher management for platform administrators.
 
 ---
 
-## Key Pages
+## Pages (5)
 
-Location: `admin-client/src/pages/users/`
+| File | Purpose |
+|------|---------|
+| `UserList.jsx` | All users table with search/filter |
+| `UserDetail.jsx` | Single user admin view |
+| `UserSheet.jsx` | Quick user info slide-over |
+| `EnhancedUserManagement.jsx` | Advanced bulk operations |
+| `TeacherApplicationsList.jsx` | Teacher application review |
 
-### User List
-- `UserList.jsx` - Browse all users
-- Search & filter
+---
+
+## Location
+`admin-client/src/pages/users/`
+
+---
+
+## Features
+
+### UserList
+- Search by name/email
+- Filter by status, role
+- Bulk actions (ban, promote)
 - Pagination
 
-### User Details
-- `UserDetails.jsx` - View user info
+### UserDetail
+- Profile info
 - Activity history
-- Statistics
+- API key management
+- Account actions
 
-### User Edit
-- `UserEdit.jsx` - Edit user data
-- Ban/unban
-- Reset password
-
-### Roles
-- `Roles.jsx` - Role management
-- Permission assignment
+### TeacherApplicationsList
+- Pending applications
+- Review queue
+- Approve/Reject actions
+- Application details modal
 
 ---
 
-## Backend
-
-- [admin_views.py](file:///e:/vocab_web/server/api/admin_views.py) - 22KB
-- [admin_permissions.py](file:///e:/vocab_web/server/api/admin_permissions.py) - 5KB
-- [bulk_user_views.py](file:///e:/vocab_web/server/api/bulk_user_views.py) - 8KB
-
----
-
-## Permissions
-
-| Role | Capabilities |
-|------|--------------|
-| Superuser | Full access |
-| Staff | User view, analytics |
-| Moderator | Content only |
+## API Endpoints Used
+- `GET /api/admin/users/`
+- `GET/PUT /api/admin/users/<id>/`
+- `GET /api/teachers/admin/applications/`
+- `POST /api/teachers/admin/applications/<id>/approve/`
 
 ---
 
-*Version: 1.0 | Created: 2025-12-10*
+*Version: 1.1 | Updated: 2025-12-24*

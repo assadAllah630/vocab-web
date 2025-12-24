@@ -20,6 +20,7 @@ from .auth_views import (
     verify_email,
     resend_otp,
     check_username,
+    logout,
 )
 
 # Vocabulary views
@@ -63,6 +64,7 @@ from .exam_views import (
 # Monitoring views
 from .monitoring_views import (
     health_check,
+    admin_activity_feed
 )
 
 # Pagination
@@ -75,6 +77,7 @@ __all__ = [
     'verify_email',
     'resend_otp',
     'check_username',
+    'logout',
     # Vocabulary
     'VocabularyViewSet',
     'PublicVocabularyViewSet',
@@ -100,6 +103,7 @@ __all__ = [
     'ExamViewSet',
     # Monitoring
     'health_check',
+    'admin_activity_feed',
     # Utils
     'StandardResultsSetPagination',
 ]

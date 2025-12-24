@@ -218,9 +218,20 @@ def list_notifications(request):
         'type': n.notification_type,
         'title': n.title,
         'body': n.body,
+        'data': n.data,
         'sent_at': n.sent_at,
         'is_read': n.clicked,
         'error': n.error
     } for n in notifications]
     
     return Response(data)
+
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def unread_count(request):
+    """
+    Get count of unread notifications (for badge).
+    """
+    count = NotificationLog.objects.filter(user=request.user, clicked=False).count()
+    return Response({'count': count})

@@ -1,66 +1,31 @@
 # Notifications Module Context
 
 ## Purpose
+The **Notifications Module** delivers alerts to users via Firebase Cloud Messaging (FCM) for mobile and Web Push for browsers. It manages subscriptions and user preferences.
 
-Push notifications for user engagement:
-- Daily practice reminders
-- Streak warnings
-- Achievement notifications
-- Device subscription management
+## Key Models
+See `server/api/notification_models.py`.
 
----
+- **PushSubscription**: Web Push endpoint storage.
+  - `endpoint`, `p256dh_key`, `auth_key`.
+- **NotificationPreferences**: User-specific settings.
+  - Toggles: `daily_reminder`, `streak_warning`, `achievement`.
+  - Quiet Hours: `quiet_start`, `quiet_end`.
+- **NotificationLog**: History of all sent messages.
+  - `delivered`, `clicked` for analytics.
 
-## Architecture
+## Core Features
+1.  **FCM Registration**: `POST /api/notifications/register-fcm/` stores token on `UserProfile.fcm_token`.
+2.  **Web Push**: `POST /api/notifications/subscribe/` for browser subscriptions.
+3.  **Preferences**: `GET/PUT /api/notifications/preferences/`.
+4.  **Inbox**: `GET /api/notifications/list/` fetches notification history.
+5.  **Badge Count**: `GET /api/notifications/unread-count/`.
 
-### Flow
-
-```mermaid
-flowchart TD
-    A[User Device] --> B[Subscribe Push]
-    B --> C[Save PushSubscription]
-    D[Scheduled Job] --> E[Check Due Reviews]
-    E --> F{User Has Subscriptions?}
-    F -->|Yes| G[Send Push Notification]
-    F -->|No| H[Skip]
-```
-
-### Data Models
-
-- **PushSubscription**: endpoint, p256dh_key, auth_key, user_agent
-- **NotificationPreferences**: daily_reminder, streak_warning, quiet_hours
-- **NotificationLog**: audit trail of sent notifications
-
----
+## Sending Notifications
+Sending is abstracted. The actual push is handled by:
+-   `firebase-admin` SDK for FCM (Mobile/Web).
+-   `pywebpush` for legacy Web Push.
 
 ## Key Files
-
-### Backend
-- [notification_views.py](file:///e:/vocab_web/server/api/notification_views.py)
-- [notification_models.py](file:///e:/vocab_web/server/api/notification_models.py)
-
----
-
-## API Endpoints
-
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/api/notifications/subscribe/` | POST | Subscribe device |
-| `/api/notifications/unsubscribe/` | POST | Unsubscribe device |
-| `/api/notifications/preferences/` | GET/PUT | Manage preferences |
-| `/api/notifications/status/` | GET | Check subscription status |
-| `/api/notifications/test/` | POST | Send test notification |
-
----
-
-## Notification Types
-
-| Type | Trigger | Content |
-|------|---------|---------|
-| daily_reminder | Scheduled | "Time to practice!" |
-| streak_warning | 23h no activity | "Don't lose your streak!" |
-| achievement | Milestone reached | "You mastered 100 words!" |
-| new_content | Content ready | "Your story is ready!" |
-
----
-
-*Version: 1.0 | Created: 2025-12-10*
+-   `server/api/notification_views.py`: Main view logic.
+-   `server/api/notification_models.py`: Database schema for notifications.

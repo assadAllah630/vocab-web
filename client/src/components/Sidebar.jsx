@@ -35,8 +35,17 @@ function Sidebar({ user, setUser }) {
         navigate('/login');
     };
 
+    const isTeacher = user?.is_staff || user?.teacher_profile;
+
     const navItems = [
-        { to: '/dashboard', label: 'Dashboard', icon: HomeIcon },
+        // Teacher Routes
+        ...(isTeacher ? [
+            { to: '/teacher/dashboard', label: 'Teacher Command', icon: ChartBarIcon },
+            /* { to: '/classroom/create', label: 'New Class', icon: PlusIcon }, */ // Optional shortcut
+        ] : []),
+
+        // Common/Student Routes
+        { to: '/dashboard', label: isTeacher ? 'Student View' : 'Dashboard', icon: HomeIcon },
         { to: '/vocab', label: 'Vocabulary', icon: BookOpenIcon },
         { to: '/grammar', label: 'Grammar', icon: AcademicCapIcon },
         { to: '/exams', label: 'AI Exams', icon: PencilSquareIcon },

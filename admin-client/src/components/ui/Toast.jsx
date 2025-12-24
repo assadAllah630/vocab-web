@@ -32,7 +32,7 @@ export const ToastProvider = ({ children }) => {
     }, []);
 
     return (
-        <ToastContext.Provider value={{ addToast, removeToast }}>
+        <ToastContext.Provider value={{ addToast, removeToast, showToast: addToast }}>
             {children}
             <div className="fixed top-4 right-4 z-50 flex flex-col gap-2 w-full max-w-sm pointer-events-none">
                 <AnimatePresence mode="popLayout">

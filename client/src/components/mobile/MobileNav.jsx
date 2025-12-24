@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -6,6 +6,10 @@ import {
     BookText,
     GraduationCap,
     UserCircle,
+    LayoutDashboard,
+    PlusCircle,
+    Swords,
+    School,
     // Filled variants for active state
     Home,
     BookOpen,
@@ -13,49 +17,63 @@ import {
     User
 } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
+import { checkTeacherStatus } from '../../api';
 
 function MobileNav() {
     const location = useLocation();
     const navigate = useNavigate();
     const { t } = useTranslation();
+    const [isTeacher, setIsTeacher] = useState(false);
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-    // Tabs with translated labels
-    const tabs = [
-        {
-            id: 'home',
-            path: '/m',
-            label: t('home'),
-            icon: House,
-            activeIcon: Home
-        },
-        {
-            id: 'words',
-            path: '/m/words',
-            label: t('words'),
-            icon: BookText,
-            activeIcon: BookOpen
-        },
-        {
-            id: 'practice',
-            path: '/m/practice',
-            label: t('learn'),
-            icon: GraduationCap,
-            activeIcon: Sparkles
-        },
-        {
-            id: 'me',
-            path: '/m/me',
-            label: t('profile'),
-            icon: UserCircle,
-            activeIcon: User
-        }
+    // Check teacher status on mount
+    useEffect(() => {
+        const fetchTeacherStatus = async () => {
+            try {
+                const res = await checkTeacherStatus();
+                setIsTeacher(res.data?.is_teacher || false);
+            } catch (err) {
+                // Not a teacher or not logged in
+                setIsTeacher(false);
+            }
+        };
+        fetchTeacherStatus();
+    }, []);
+
+    // Tabs with translated labels - Home path changes based on teacher status
+    const tabs = isTeacher ? [
+        { id: 'home', path: '/m/dashboard', label: 'Dashboard', icon: LayoutDashboard, activeIcon: LayoutDashboard },
+        { id: 'classes', path: '/m/teacher/classes', label: 'Classes', icon: School, activeIcon: School },
+        ((user.is_staff || user.is_superuser) ?
+            { id: 'create', path: '/m/path/create/build', label: 'Create', icon: PlusCircle, activeIcon: PlusCircle } :
+            { id: 'studio', path: '/m/teacher/workspace', label: 'Studio', icon: LayoutDashboard, activeIcon: LayoutDashboard }
+        ),
+        { id: 'profile', path: '/m/teacher/profile', label: 'Profile', icon: UserCircle, activeIcon: User }
+    ] : [
+        { id: 'home', path: '/m', label: t('home'), icon: House, activeIcon: Home },
+        { id: 'classes', path: '/m/classes', label: 'Classes', icon: School, activeIcon: School },
+        { id: 'practice', path: '/m/practice', label: 'Practice', icon: BookText, activeIcon: Sparkles },
+        { id: 'profile', path: '/m/me', label: t('profile'), icon: UserCircle, activeIcon: User }
     ];
 
     const getActiveTab = () => {
         const path = location.pathname;
         if (path.startsWith('/m/words')) return 'words';
         if (path.startsWith('/m/practice')) return 'practice';
+
+        // Fix for teacher navigation active states
+        if (isTeacher) {
+            if (path.startsWith('/m/dashboard')) return 'home';
+            if (path.startsWith('/m/teacher/workspace') || path.startsWith('/m/teacher/edit')) return 'studio';
+            if (path.startsWith('/m/teacher/classes') || path.startsWith('/m/classroom')) return 'classes';
+            if (path.startsWith('/m/teacher/profile')) return 'profile';
+        }
+
+        if (path.startsWith('/m/teacher') || path.startsWith('/m/classroom')) return 'teacher'; // Fallback logic?
         if (path.startsWith('/m/me')) return 'me';
+        // For teachers, dashboard is home
+        if (isTeacher && path.startsWith('/m/dashboard')) return 'home';
+        if (path === '/m') return 'home';
         return 'home';
     };
 

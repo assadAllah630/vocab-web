@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../api';
+import AuthService from '../services/AuthService';
 import Logo from '../components/Logo';
 import {
     UserIcon,
@@ -37,6 +38,8 @@ function Login({ setUser }) {
 
 
     const navigate = useNavigate();
+    const location = useLocation();
+    const from = location.state?.from?.pathname || '/dashboard';
 
     // Password strength checker
     const checkPasswordStrength = (pwd) => {
@@ -101,10 +104,11 @@ function Login({ setUser }) {
         try {
             if (verificationMode) {
                 const response = await api.post('auth/verify-email/', { email, otp });
-                const user = response.data;
-                localStorage.setItem('user', JSON.stringify(user));
-                setUser(user);
-                navigate('/dashboard');
+                const userData = response.data;
+                // Use AuthService for proper session management
+                AuthService.setSession(userData);
+                setUser(userData);
+                navigate(from, { replace: true });
             } else {
                 const endpoint = isLogin ? 'auth/signin/' : 'auth/signup/';
                 const data = isLogin
@@ -114,10 +118,11 @@ function Login({ setUser }) {
                 const response = await api.post(endpoint, data);
 
                 if (isLogin) {
-                    const user = response.data;
-                    localStorage.setItem('user', JSON.stringify(user));
-                    setUser(user);
-                    navigate('/dashboard');
+                    const userData = response.data;
+                    // Use AuthService for proper session management
+                    AuthService.setSession(userData);
+                    setUser(userData);
+                    navigate(from, { replace: true });
                 } else {
                     setVerificationMode(true);
                     setError('');
@@ -416,7 +421,7 @@ function Login({ setUser }) {
                                     <GoogleAuthButton
                                         onSuccess={(data) => {
                                             setUser(data.user);
-                                            navigate('/dashboard');
+                                            navigate(from, { replace: true });
                                         }}
                                         onError={() => setError('Google login failed.')}
                                         className="w-full flex justify-center items-center py-3.5 px-4 border-2 border-surface-300 rounded-xl text-sm font-semibold text-surface-700 bg-white hover:bg-surface-50 transition-all"
@@ -435,6 +440,14 @@ function Login({ setUser }) {
                                         {isLogin ? 'Sign up' : 'Log in'}
                                     </button>
                                 </p>
+
+                                <div className="mt-8 pt-6 border-t border-surface-200">
+                                    <Link to="/teacher-login" className="flex items-center justify-center gap-2 text-sm font-medium text-slate-500 hover:text-purple-600 transition-colors group">
+                                        Are you a teacher?
+                                        <span className="underline decoration-2 decoration-transparent group-hover:decoration-purple-200">Sign in here</span>
+                                        <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                    </Link>
+                                </div>
                             </div>
                         )}
                     </div>
