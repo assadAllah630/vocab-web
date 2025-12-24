@@ -1,7 +1,7 @@
-# Safe Deployment Script for VocabMaster Client
-# Target: vocab-web-4ywv.vercel.app (Production Only)
+# Safe Deployment Script for VocabMaster Admin Panel
+# Target: admin-client (Vercel)
 
-Write-Host "Deploying to Production..." -ForegroundColor Cyan
+Write-Host "Deploying Admin Panel to Production..." -ForegroundColor Cyan
 
 # 1. Check if Vercel CLI is available
 if (-not (Get-Command vercel -ErrorAction SilentlyContinue)) {
@@ -11,13 +11,17 @@ if (-not (Get-Command vercel -ErrorAction SilentlyContinue)) {
 
 # 2. Key Check: Ensure we are in root (look for scripts/)
 if (-not (Test-Path "scripts")) {
-    Write-Warning "Please run this from the project root (e.g., .\scripts\deploy-client.ps1)"
+    Write-Warning "Please run this from the project root (e.g., .\scripts\deploy-admin.ps1)"
     # Try to adjust if inside scripts/
-    if (Test-Path "..\client") { Set-Location .. }
+    if (Test-Path "..\admin-client") { Set-Location .. }
 }
 
-# 3. Navigate to Client
-Set-Location "client"
+# 3. Navigate to Admin Client
+if (-not (Test-Path "admin-client")) {
+    Write-Error "Error: 'admin-client' directory not found."
+    exit 1
+}
+Set-Location "admin-client"
 
 Write-Host "Building and Deploying to Vercel (Production)..." -ForegroundColor Cyan
 
@@ -40,6 +44,6 @@ if ($LASTEXITCODE -ne 0) {
 # 5. Return to Root
 Set-Location ..
 
-# 6. Show ONLY the Official URL
+# 6. Success Message (URL will be in the output above)
 Write-Host "UPDATE COMPLETE" -ForegroundColor Green
-Write-Host "Official URL: https://vocab-web-4ywv.vercel.app/" -ForegroundColor White -BackgroundColor Blue
+Write-Host "Check output above for the official Admin Panel URL." -ForegroundColor White -BackgroundColor Blue

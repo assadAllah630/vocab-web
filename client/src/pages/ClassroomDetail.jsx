@@ -117,8 +117,8 @@ const ClassroomDetail = () => {
                                 <Button isIconOnly variant="light"><Plus size={20} /></Button>
                             </div>
                             <Card className="p-4 bg-white border border-slate-100 flex items-center gap-4">
-                                <Avatar src={user?.avatar || `https://i.pravatar.cc/150?u=${user?.id}`} size="lg" />
-                                <div className="font-bold text-lg">{user?.username}</div>
+                                <Avatar src={classroom.teacher?.avatar || `https://i.pravatar.cc/150?u=${classroom.teacher?.id}`} size="lg" />
+                                <div className="font-bold text-lg">{classroom.teacher?.username || 'Teacher'}</div>
                             </Card>
 
                             <div className="flex justify-between items-center mt-12 mb-6 border-b border-indigo-600 pb-2">

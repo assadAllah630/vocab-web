@@ -110,6 +110,7 @@ export const leaveClassroom = (id) => api.post(`/classrooms/${id}/leave/`);
 
 // Assignment API
 export const getClassroomAssignments = (cid) => api.get(`/assignments/?classroom=${cid}`);
+export const getAssignments = (params) => api.get('/assignments/', { params });
 export const createAssignment = (data) => api.post('/assignments/', data);
 export const updateAssignment = (id, data) => api.patch(`/assignments/${id}/`, data);
 export const deleteAssignment = (id) => api.delete(`/assignments/${id}/`);
@@ -118,6 +119,7 @@ export const startAssignment = (id) => api.post(`/assignments/${id}/start/`);
 export const submitAssignment = (id, data) => api.post(`/assignments/${id}/submit/`, data);
 export const getMyAssignments = () => api.get('/assignments/');
 export const getMyAssignmentProgress = (id) => api.get(`/assignments/${id}/my_progress/`);
+export const gradeSubmission = (id, data) => api.post(`/assignments/progress/${id}/grade/`, data);
 
 // Teacher Dashboard API
 export const getDashboardOverview = () => api.get('/teacher/dashboard/');
@@ -168,6 +170,7 @@ export const getWeaknessList = () => api.get('/weakness/');
 
 // Live Sessions
 export const getSessions = (params) => api.get('/sessions/', { params });
+export const getClassroomSessions = (classroomId) => api.get('/sessions/', { params: { classroom: classroomId } });
 export const getSessionDetail = (id) => api.get(`/sessions/${id}/`);
 export const createSession = (data) => api.post('/sessions/', data);
 export const updateSession = (id, data) => api.put(`/sessions/${id}/`, data);

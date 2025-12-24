@@ -116,10 +116,10 @@ const MobileJoinClass = () => {
                         onChange={(e) => setInviteCode(e.target.value.toUpperCase().slice(0, 8))}
                         placeholder="ABC12XYZ"
                         className={`w-full bg-slate-800 border-2 rounded-2xl px-4 py-4 text-center text-2xl font-mono tracking-widest uppercase focus:outline-none transition-colors ${error
-                                ? 'border-red-500/50 focus:border-red-500'
-                                : preview
-                                    ? 'border-green-500/50 focus:border-green-500'
-                                    : 'border-slate-700 focus:border-indigo-500'
+                            ? 'border-red-500/50 focus:border-red-500'
+                            : preview
+                                ? 'border-green-500/50 focus:border-green-500'
+                                : 'border-slate-700 focus:border-indigo-500'
                             }`}
                     />
                     {loading && (
@@ -155,7 +155,7 @@ const MobileJoinClass = () => {
                                 {preview.level}
                             </span>
                             <span className="bg-slate-700/50 px-2.5 py-1 rounded-lg text-xs font-medium text-slate-300">
-                                {preview.language.toUpperCase()}
+                                {preview.target_language?.toUpperCase() || 'N/A'}
                             </span>
                             <span className="bg-slate-700/50 px-2.5 py-1 rounded-lg text-xs font-medium text-slate-300">
                                 {preview.student_count} / {preview.max_students} Students
@@ -176,8 +176,8 @@ const MobileJoinClass = () => {
                     onClick={handleJoin}
                     disabled={!preview || !!error || joining}
                     className={`w-full py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${preview && !error
-                            ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/30'
-                            : 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                        ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/30'
+                        : 'bg-slate-800 text-slate-500 cursor-not-allowed'
                         }`}
                 >
                     {joining ? (

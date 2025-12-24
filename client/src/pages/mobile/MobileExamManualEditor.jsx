@@ -6,7 +6,7 @@ import {
     CheckCircle, Type, GraduationCap
 } from 'lucide-react';
 import { Button, Card } from '@heroui/react';
-import { getExam, api } from '../../api'; // Assuming a generic api update for exams or using a specific one
+import api, { getExam } from '../../api'; // Assuming a generic api update for exams or using a specific one
 import MobileExamEditor from './MobileExamEditor';
 
 const MobileExamManualEditor = () => {

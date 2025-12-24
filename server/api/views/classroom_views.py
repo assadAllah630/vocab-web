@@ -428,7 +428,8 @@ def validate_invite_code(request, code):
             'name': classroom.name,
             'description': classroom.description,
             'level': classroom.level,
-            'language': classroom.language,
+            'target_language': classroom.target_language,
+            'speaking_language': classroom.speaking_language,
             'teacher_name': classroom.teacher.user.username,
             'student_count': current_students,
             'max_students': classroom.max_students

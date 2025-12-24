@@ -46,7 +46,7 @@ const PodcastDemo = () => {
                         <motion.div
                             key={i}
                             animate={{
-                                height: isPlaying ? [10, Math.random() * 50 + 10, 10] : 10,
+                                height: isPlaying ? [10, 20 + (i % 5) * 8, 10] : 10,
                                 opacity: isPlaying ? 1 : 0.3
                             }}
                             transition={{

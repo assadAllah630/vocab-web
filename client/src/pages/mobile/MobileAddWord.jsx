@@ -162,7 +162,6 @@ function MobileAddWord({ user }) {
                             type="text"
                             value={formData.word}
                             onChange={e => setFormData({ ...formData, word: e.target.value })}
-                            onChange={e => setFormData({ ...formData, word: e.target.value })}
                             placeholder={t('enterWord')}
                             className="w-full px-4 rtl:pl-12 ltr:pr-12 py-3.5 rounded-xl text-base outline-none"
                             style={inputStyle}
@@ -189,8 +188,6 @@ function MobileAddWord({ user }) {
                     </label>
                     <input
                         type="text"
-                        value={formData.translation}
-                        onChange={e => setFormData({ ...formData, translation: e.target.value })}
                         value={formData.translation}
                         onChange={e => setFormData({ ...formData, translation: e.target.value })}
                         placeholder={t('enterTranslation')}
