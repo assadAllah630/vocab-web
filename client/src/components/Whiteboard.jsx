@@ -1,11 +1,10 @@
-import React, { useEffect, useState, useCallback, Component } from 'react';
+import React, { useEffect, useState, useCallback, useRef, Component } from 'react';
 import { useLocalParticipant, useRoomContext } from "@livekit/components-react";
 import { DataPacket_Kind } from "livekit-client";
-import { Tldraw, useEditor } from 'tldraw'
-import 'tldraw/tldraw.css'
-import { X, Save, AlertCircle, Loader2 } from 'lucide-react';
+import { Excalidraw, MainMenu, WelcomeScreen, Sidebar, Footer, LiveCollaborationTrigger } from "@excalidraw/excalidraw";
+import { X, AlertCircle, Loader2 } from 'lucide-react';
 
-// Error Boundary for tldraw
+// Error Boundary for Excalidraw
 class WhiteboardErrorBoundary extends Component {
     constructor(props) {
         super(props);
@@ -15,7 +14,7 @@ class WhiteboardErrorBoundary extends Component {
         return { hasError: true, error };
     }
     componentDidCatch(error, errorInfo) {
-        console.error("Whiteboard Error:", error, errorInfo);
+        console.error("Excalidraw Error:", error, errorInfo);
     }
     render() {
         if (this.state.hasError) {
@@ -24,7 +23,7 @@ class WhiteboardErrorBoundary extends Component {
                     <div className="text-center p-8">
                         <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
                         <h3 className="text-xl font-bold text-white mb-2">Whiteboard Error</h3>
-                        <p className="text-gray-400 mb-4">Something went wrong loading the whiteboard.</p>
+                        <p className="text-gray-400 mb-4">Excalidraw failed to load.</p>
                         <button
                             onClick={this.props.onClose}
                             className="px-6 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30"
@@ -40,18 +39,67 @@ class WhiteboardErrorBoundary extends Component {
 }
 
 /**
- * Professional Whiteboard powered by tldraw
- * Features: Infinite canvas, shapes, sticky notes, multiplayer sync
+ * Professional Whiteboard powered by Excalidraw (100% FREE & Open Source)
+ * Features: Infinite canvas, hand-drawn style, real-time collaboration
  */
-const Whiteboard = ({ isOpen, onClose }) => {
+const Whiteboard = ({ isOpen, onClose, isTeacher }) => {
     const room = useRoomContext();
     const { localParticipant } = useLocalParticipant();
+    const [excalidrawAPI, setExcalidrawAPI] = useState(null);
     const [isLoaded, setIsLoaded] = useState(false);
 
-    // Store persistence key (unique per session to avoid mixing rooms)
-    const persistenceKey = room ? `whiteboard-${room.name}` : 'whiteboard-local';
+    // Sync state tracking
+    const lastVersionRef = useRef(0);
 
     if (!isOpen) return null;
+
+    // --- BROADCAST LOGIC ---
+    const broadcastUpdate = (elements, appState) => {
+        if (!room || !localParticipant) return;
+
+        // Naive broadcast of everything for now
+        // In production, we'd use a smarter diffing or CRDT
+        const op = JSON.stringify({
+            type: 'WB_SYNC',
+            elements,
+            appState: {
+                viewBackgroundColor: appState.viewBackgroundColor,
+                gridSize: appState.gridSize,
+                // Add other syncable appStates if needed
+            }
+        });
+
+        room.localParticipant.publishData(
+            new TextEncoder().encode(op),
+            { kind: DataPacket_Kind.RELIABLE }
+        );
+    };
+
+    // --- RECEIVE LOGIC ---
+    useEffect(() => {
+        if (!room || !excalidrawAPI) return;
+
+        const handleData = (payload, participant) => {
+            if (participant.identity === localParticipant.identity) return;
+
+            try {
+                const data = JSON.parse(new TextDecoder().decode(payload));
+                if (data.type === 'WB_SYNC') {
+                    // Update the scene without triggering an onChange loop
+                    excalidrawAPI.updateScene({
+                        elements: data.elements,
+                        appState: data.appState,
+                        commitToHistory: false
+                    });
+                }
+            } catch (e) {
+                // Ignore malformed data
+            }
+        };
+
+        room.on('dataReceived', handleData);
+        return () => room.off('dataReceived', handleData);
+    }, [room, excalidrawAPI, localParticipant]);
 
     return (
         <WhiteboardErrorBoundary onClose={onClose}>
@@ -59,127 +107,48 @@ const Whiteboard = ({ isOpen, onClose }) => {
                 {/* Backdrop */}
                 <div className="absolute inset-0 bg-black/60 backdrop-blur-sm -z-10" />
 
-                {/* Main Editor Container - h-[100dvh] ensures it fills dynamic mobile screen */}
+                {/* Main Editor Container */}
                 <div className="flex-grow w-full h-[calc(100dvh-64px)] relative bg-[#191919] border-t border-white/10 overflow-hidden">
-                    {!isLoaded && (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-[#191919]">
-                            <Loader2 className="w-10 h-10 text-indigo-500 animate-spin mb-2" />
-                            <span className="text-zinc-500 text-sm">Initializing Canvas...</span>
-                        </div>
-                    )}
-                    <Tldraw
-                        licenseKey="tldraw-2026-04-03/WyJoVEdGTnFpaCIsWyIqIl0sMTYsIjIwMjYtMDQtMDMiXQ.uJ3z/mofgs1ZR3SV4rzjgA+7z41ldnVklGB1Gt8zBAlzNOykZiGZSOKTZaGdeers1iI3jPtc3R/EMcU7dgDARQ"
-                        persistenceKey={persistenceKey}
-                        autoFocus={true}
-                        onMount={(editor) => {
-                            setIsLoaded(true);
-                            console.log("Whiteboard Mounted Successfully");
-                            try {
-                                editor.user.updateUserPreferences({ colorScheme: 'dark' });
-                            } catch (e) { }
-                        }}
-                    >
-                        <WhiteboardSync room={room} localParticipant={localParticipant} />
-                        <CustomToolbar onClose={onClose} />
-                    </Tldraw>
+                    <div className="w-full h-full">
+                        <Excalidraw
+                            excalidrawAPI={(api) => {
+                                setExcalidrawAPI(api);
+                                setIsLoaded(true);
+                            }}
+                            theme="dark"
+                            onChange={(elements, appState) => {
+                                // Only broadcast if it's a "real" change (v > lastV)
+                                // Excalidraw elements have versions
+                                const currentVersion = elements.reduce((acc, el) => acc + el.version, 0);
+                                if (currentVersion > lastVersionRef.current) {
+                                    lastVersionRef.current = currentVersion;
+                                    broadcastUpdate(elements, appState);
+                                }
+                            }}
+                        >
+                            <MainMenu>
+                                <MainMenu.DefaultItems.SaveAsImage />
+                                <MainMenu.DefaultItems.ClearCanvas />
+                                <MainMenu.Separator />
+                                <MainMenu.DefaultItems.ChangeCanvasBackground />
+                            </MainMenu>
+                            <WelcomeScreen />
+                        </Excalidraw>
+                    </div>
+
+                    {/* Custom Close Button (Top Right) */}
+                    <div className="absolute top-4 right-4 z-[1000]">
+                        <button
+                            onClick={onClose}
+                            className="w-10 h-10 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 flex items-center justify-center hover:bg-red-500/20 active:scale-95 transition-all shadow-xl backdrop-blur-md"
+                        >
+                            <X size={20} />
+                        </button>
+                    </div>
                 </div>
             </div>
         </WhiteboardErrorBoundary>
     );
-};
-
-// --- Sync Logic Component ---
-const WhiteboardSync = ({ room, localParticipant }) => {
-    const editor = useEditor();
-    const [isSynced, setIsSynced] = useState(false);
-
-    // 1. Listen for local changes and broadcast
-    useEffect(() => {
-        if (!room || !editor) return;
-
-        const cleanup = editor.store.listen((update) => {
-            // Filter out ephemeral changes if needed
-            // For now, naive broadcast of 'changes' object
-            if (update.source === 'user') {
-                const changes = update.changes; // added, updated, removed
-
-                // Op: { type: 'UPDATE', payload: changes }
-                const op = JSON.stringify({
-                    type: 'WB_UPDATE',
-                    payload: changes
-                });
-
-                room.localParticipant.publishData(
-                    new TextEncoder().encode(op),
-                    DataPacket_Kind.RELIABLE
-                );
-            }
-        });
-
-        return cleanup;
-    }, [editor, room]);
-
-    // 2. Listen for remote changes
-    useEffect(() => {
-        if (!room || !editor) return;
-
-        const handleData = (payload, participant) => {
-            if (participant.identity === localParticipant.identity) return;
-
-            try {
-                const data = JSON.parse(new TextDecoder().decode(payload));
-                if (data.type === 'WB_UPDATE') {
-                    // Apply remote changes to store
-                    // store.mergeRemoteChanges(changes)
-                    // Note: tldraw's mergeRemoteChanges expects specific format
-                    // We might need to transform the raw 'changes' object back to what tldraw expects
-                    // Or iterate and put.
-
-                    const { added, updated, removed } = data.payload;
-
-                    editor.store.mergeRemoteChanges(() => {
-                        if (added) Object.values(added).forEach(r => editor.store.put([r]));
-                        if (updated) Object.values(updated).forEach(r => editor.store.put([r[1]])); // [from, to]
-                        if (removed) Object.values(removed).forEach(r => editor.store.remove([r.id]));
-                    });
-                }
-            } catch (e) {
-                console.error("WB Sync Error", e);
-            }
-        };
-
-        room.on('dataReceived', handleData);
-        return () => room.off('dataReceived', handleData);
-    }, [editor, room, localParticipant]);
-
-    return null;
-};
-
-// --- Custom UI Components ---
-
-const CustomToolbar = ({ onClose }) => {
-    return (
-        <div className="absolute top-4 right-4 z-[300] flex gap-2">
-            <button
-                onClick={onClose}
-                className="w-10 h-10 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 flex items-center justify-center hover:bg-red-500/20 active:scale-95 transition-all"
-            >
-                <X size={20} />
-            </button>
-        </div>
-    );
-};
-
-// UI Overrides to clean up the interface ("Zen Mode")
-const uiOverrides = {
-    actions: (editor, actions) => {
-        // Remove unwanted actions if needed
-        return actions;
-    },
-    tools: (editor, tools) => {
-        // Customize tools
-        return tools;
-    },
 };
 
 export default Whiteboard;
