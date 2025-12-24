@@ -454,6 +454,7 @@ function AppContent({ user, setUser, ProtectedRoute, MobileProtectedRoute }) {
 
                   {/* Classroom Arena - Games */}
                   <Route path="game/builder" element={<MobileGameBuilder />} />
+                  <Route path="game/lobby" element={<MobileGameLobby />} />
                   <Route path="game/lobby/:id" element={<MobileGameLobby />} />
                   <Route path="game/arena/:id" element={<MobileGameArena />} />
                 </Route>

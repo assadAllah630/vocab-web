@@ -15,6 +15,7 @@ const MobileControls = ({
     onLeave,
     isChatOpen,
     setIsChatOpen,
+    isTeacher = false,
     toggleWhiteboard,
     toggleQuiz,
     toggleBreakout
@@ -160,31 +161,39 @@ const MobileControls = ({
 
                             {view === 'main' ? (
                                 <>
-                                    <div className="grid grid-cols-4 gap-4 mb-8">
-                                        <SheetItem
-                                            icon={PenTool}
-                                            label="Whiteboard"
-                                            onClick={() => { vibrate(); toggleWhiteboard(); setIsMoreOpen(false); }}
-                                            color="bg-purple-500/20 text-purple-400"
-                                        />
-                                        <SheetItem
-                                            icon={BarChart2}
-                                            label="Quiz"
-                                            onClick={() => { vibrate(); toggleQuiz(); setIsMoreOpen(false); }}
-                                            color="bg-emerald-500/20 text-emerald-400"
-                                        />
-                                        <SheetItem
-                                            icon={Users}
-                                            label="Breakout"
-                                            onClick={() => { vibrate(); toggleBreakout(); setIsMoreOpen(false); }}
-                                            color="bg-blue-500/20 text-blue-400"
-                                        />
-                                        <SheetItem
-                                            icon={isScreenShareEnabled ? MonitorOff : MonitorUp}
-                                            label={isScreenShareEnabled ? "Stop Share" : "Share"}
-                                            onClick={toggleScreenShare}
-                                            color={isScreenShareEnabled ? "bg-green-500/20 text-green-400" : "bg-orange-500/20 text-orange-400"}
-                                        />
+                                    <div className={`grid ${isTeacher ? 'grid-cols-4' : 'grid-cols-1'} gap-4 mb-8`}>
+                                        {/* Teacher-only controls */}
+                                        {isTeacher && (
+                                            <>
+                                                <SheetItem
+                                                    icon={PenTool}
+                                                    label="Whiteboard"
+                                                    onClick={() => { vibrate(); toggleWhiteboard(); setIsMoreOpen(false); }}
+                                                    color="bg-purple-500/20 text-purple-400"
+                                                />
+                                                <SheetItem
+                                                    icon={BarChart2}
+                                                    label="Quiz"
+                                                    onClick={() => { vibrate(); toggleQuiz(); setIsMoreOpen(false); }}
+                                                    color="bg-emerald-500/20 text-emerald-400"
+                                                />
+                                                <SheetItem
+                                                    icon={Users}
+                                                    label="Breakout"
+                                                    onClick={() => { vibrate(); toggleBreakout(); setIsMoreOpen(false); }}
+                                                    color="bg-blue-500/20 text-blue-400"
+                                                />
+                                            </>
+                                        )}
+                                        {/* Screen share - available to teacher only (or remove entirely for students) */}
+                                        {isTeacher && (
+                                            <SheetItem
+                                                icon={isScreenShareEnabled ? MonitorOff : MonitorUp}
+                                                label={isScreenShareEnabled ? "Stop Share" : "Share"}
+                                                onClick={toggleScreenShare}
+                                                color={isScreenShareEnabled ? "bg-green-500/20 text-green-400" : "bg-orange-500/20 text-orange-400"}
+                                            />
+                                        )}
                                     </div>
 
                                     <button
@@ -235,8 +244,8 @@ const DeviceSelector = ({ kind, label, icon: Icon }) => {
                         key={device.deviceId}
                         onClick={() => setActiveMediaDevice(device.deviceId)}
                         className={`w-full text-left p-3 rounded-xl flex items-center justify-between transition-colors ${activeDeviceId === device.deviceId
-                                ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
-                                : 'bg-white/5 text-white/80 border border-transparent active:bg-white/10'
+                            ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
+                            : 'bg-white/5 text-white/80 border border-transparent active:bg-white/10'
                             }`}
                     >
                         <span className="truncate text-sm">{device.label || `${label} ${device.deviceId.slice(0, 4)}...`}</span>

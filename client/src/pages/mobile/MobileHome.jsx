@@ -170,7 +170,7 @@ function MobileHome({ user }) {
                                 animate={{ scale: 1, opacity: 1 }}
                                 exit={{ scale: 0.9, opacity: 0 }}
                                 whileTap={{ scale: 0.98 }}
-                                onClick={() => navigate(`/m/game/lobby?joinCode=${c.invite_code}`)} // Defaulting to game lobby for now, or session list
+                                onClick={() => navigate(`/m/session/${c.active_session_id}`)} // Go directly to the active session
                                 className="bg-gradient-to-r from-red-600 to-pink-600 rounded-2xl p-4 shadow-lg shadow-red-900/20 relative overflow-hidden"
                             >
                                 <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay" />
@@ -208,8 +208,8 @@ function MobileHome({ user }) {
                         whileTap={{ scale: 0.98 }}
                         onClick={() => navigate(`/m/path/${activePath.id}`)}
                         className={`border rounded-2xl p-5 relative overflow-hidden ${activePath.isClassPath
-                                ? 'bg-gradient-to-br from-indigo-900/50 to-purple-900/50 border-indigo-500/30'
-                                : 'bg-gradient-to-br from-[#1C1C1F] to-[#27272A] border-[#3F3F46]'
+                            ? 'bg-gradient-to-br from-indigo-900/50 to-purple-900/50 border-indigo-500/30'
+                            : 'bg-gradient-to-br from-[#1C1C1F] to-[#27272A] border-[#3F3F46]'
                             }`}
                     >
                         {/* Progress Bar Background */}

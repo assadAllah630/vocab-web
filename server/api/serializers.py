@@ -317,12 +317,13 @@ class ClassroomSerializer(serializers.ModelSerializer):
     language = serializers.CharField(source='target_language', read_only=True)
     student_count = serializers.SerializerMethodField()
     is_active_session = serializers.SerializerMethodField()
+    active_session_id = serializers.SerializerMethodField()
     
     class Meta:
         model = Classroom
         fields = ['id', 'name', 'description', 'level', 'language', 'target_language', 'speaking_language', 'max_students',
                   'invite_code', 'is_active', 'requires_approval', 'teacher_name',
-                  'student_count', 'is_active_session', 'created_at', 'updated_at', 'linked_path']
+                  'student_count', 'is_active_session', 'active_session_id', 'created_at', 'updated_at', 'linked_path']
         read_only_fields = ['id', 'invite_code', 'created_at', 'updated_at']
     
     def get_student_count(self, obj):
@@ -330,9 +331,12 @@ class ClassroomSerializer(serializers.ModelSerializer):
 
     def get_is_active_session(self, obj):
         # Check if there is any session with status 'live' associated with this classroom
-        # We need to import LiveSession here to avoid circular imports if possible, 
-        # or rely on reverse relationship if defined
         return obj.sessions.filter(status='live').exists()
+
+    def get_active_session_id(self, obj):
+        # Return the ID of the active live session, if any
+        live_session = obj.sessions.filter(status='live').first()
+        return live_session.id if live_session else None
 
 
 class ClassroomDetailSerializer(ClassroomSerializer):

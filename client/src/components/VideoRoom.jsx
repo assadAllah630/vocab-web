@@ -27,7 +27,7 @@ import MobileControls from './MobileControls';
  * Inner Component - Consumes LiveKit Context
  * Handles Layout, Tools, and Filtering
  */
-const VideoRoomContent = ({ onLeave }) => {
+const VideoRoomContent = ({ onLeave, isTeacher }) => {
     const [isChatOpen, setIsChatOpen] = useState(false);
 
     // Tools State
@@ -67,6 +67,7 @@ const VideoRoomContent = ({ onLeave }) => {
                 onLeave={onLeave}
                 isChatOpen={isChatOpen}
                 setIsChatOpen={setIsChatOpen}
+                isTeacher={isTeacher}
                 toggleWhiteboard={() => setIsWhiteboardOpen(!isWhiteboardOpen)}
                 toggleQuiz={() => setIsQuizOpen(!isQuizOpen)}
                 toggleBreakout={() => setIsBreakoutOpen(!isBreakoutOpen)}
@@ -76,6 +77,7 @@ const VideoRoomContent = ({ onLeave }) => {
                 onLeave={onLeave}
                 isChatOpen={isChatOpen}
                 setIsChatOpen={setIsChatOpen}
+                isTeacher={isTeacher}
                 toggleWhiteboard={() => setIsWhiteboardOpen(!isWhiteboardOpen)}
                 toggleQuiz={() => setIsQuizOpen(!isQuizOpen)}
                 toggleBreakout={() => setIsBreakoutOpen(!isBreakoutOpen)}
@@ -89,13 +91,12 @@ const VideoRoomContent = ({ onLeave }) => {
             <BreakoutSystem
                 isOpen={isBreakoutOpen}
                 onClose={() => setIsBreakoutOpen(false)}
-                isTeacher={true} // TOOD: Pass actual teacher status
-                // Passing a setter to let BreakoutSystem control visibility directly
+                isTeacher={isTeacher}
                 setVisibleIdentities={setVisibleIdentities}
             />
 
             {/* Reactions & Engagement */}
-            <ReactionSystem isTeacher={true} /> {/* Assuming teacher for now for demo */}
+            <ReactionSystem isTeacher={isTeacher} />
         </>
     );
 };
@@ -103,7 +104,7 @@ const VideoRoomContent = ({ onLeave }) => {
 /**
  * VideoRoom Component - Connects to Livekit for live video sessions
  */
-const VideoRoom = ({ sessionId, sessionTitle, onLeave }) => {
+const VideoRoom = ({ sessionId, sessionTitle, onLeave, isTeacher = false }) => {
     const [token, setToken] = useState("");
     const [serverUrl, setServerUrl] = useState("");
     const [loading, setLoading] = useState(true);
@@ -185,7 +186,7 @@ const VideoRoom = ({ sessionId, sessionTitle, onLeave }) => {
                 style={{ height: '100vh' }}
                 onDisconnected={onLeave}
             >
-                <VideoRoomContent onLeave={onLeave} />
+                <VideoRoomContent onLeave={onLeave} isTeacher={isTeacher} />
             </LiveKitRoom>
         </div>
     );

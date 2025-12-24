@@ -10,6 +10,7 @@ const DesktopControls = ({
     onLeave,
     isChatOpen,
     setIsChatOpen,
+    isTeacher = false,
     toggleWhiteboard,
     toggleQuiz,
     toggleBreakout
@@ -57,13 +58,16 @@ const DesktopControls = ({
                     {isCameraEnabled ? <Video size={24} /> : <VideoOff size={24} />}
                 </button>
 
-                <button
-                    onClick={toggleScreenShare}
-                    className={`p-4 rounded-full transition-all ${isScreenShareEnabled ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30' : 'bg-white/10 hover:bg-white/20 text-white'}`}
-                    title={isScreenShareEnabled ? "Stop Sharing" : "Share Screen"}
-                >
-                    {isScreenShareEnabled ? <MonitorOff size={24} /> : <MonitorUp size={24} />}
-                </button>
+                {/* Screen Share - Teacher only */}
+                {isTeacher && (
+                    <button
+                        onClick={toggleScreenShare}
+                        className={`p-4 rounded-full transition-all ${isScreenShareEnabled ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30' : 'bg-white/10 hover:bg-white/20 text-white'}`}
+                        title={isScreenShareEnabled ? "Stop Sharing" : "Share Screen"}
+                    >
+                        {isScreenShareEnabled ? <MonitorOff size={24} /> : <MonitorUp size={24} />}
+                    </button>
+                )}
 
                 <button
                     onClick={() => setIsChatOpen(!isChatOpen)}
@@ -73,32 +77,36 @@ const DesktopControls = ({
                     <MessageSquare size={24} />
                 </button>
 
-                <div className="h-8 w-[1px] bg-white/10 mx-2" />
+                {/* Teacher-only Classroom Tools */}
+                {isTeacher && (
+                    <>
+                        <div className="h-8 w-[1px] bg-white/10 mx-2" />
 
-                {/* Classroom Tools */}
-                <button
-                    onClick={toggleWhiteboard}
-                    className="p-4 rounded-full bg-white/10 hover:bg-white/20 text-white hover:text-indigo-300"
-                    title="Open Whiteboard"
-                >
-                    <PenTool size={24} />
-                </button>
+                        <button
+                            onClick={toggleWhiteboard}
+                            className="p-4 rounded-full bg-white/10 hover:bg-white/20 text-white hover:text-indigo-300"
+                            title="Open Whiteboard"
+                        >
+                            <PenTool size={24} />
+                        </button>
 
-                <button
-                    onClick={toggleQuiz}
-                    className="p-4 rounded-full bg-white/10 hover:bg-white/20 text-white hover:text-indigo-300"
-                    title="Live Quiz / Exam"
-                >
-                    <BarChart2 size={24} />
-                </button>
+                        <button
+                            onClick={toggleQuiz}
+                            className="p-4 rounded-full bg-white/10 hover:bg-white/20 text-white hover:text-indigo-300"
+                            title="Live Quiz / Exam"
+                        >
+                            <BarChart2 size={24} />
+                        </button>
 
-                <button
-                    onClick={toggleBreakout}
-                    className="p-4 rounded-full bg-white/10 hover:bg-white/20 text-white hover:text-indigo-300"
-                    title="Breakout Groups"
-                >
-                    <Users size={24} />
-                </button>
+                        <button
+                            onClick={toggleBreakout}
+                            className="p-4 rounded-full bg-white/10 hover:bg-white/20 text-white hover:text-indigo-300"
+                            title="Breakout Groups"
+                        >
+                            <Users size={24} />
+                        </button>
+                    </>
+                )}
 
                 <div className="h-8 w-[1px] bg-white/10 mx-2" />
 

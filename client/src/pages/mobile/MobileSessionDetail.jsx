@@ -74,7 +74,7 @@ const MobileSessionDetail = () => {
     if (showVideoRoom) {
         return (
             <div className="min-h-screen bg-black">
-                <VideoRoom sessionId={id} sessionTitle={session.title} onLeave={() => setShowVideoRoom(false)} />
+                <VideoRoom sessionId={id} sessionTitle={session.title} isTeacher={isTeacher} onLeave={() => setShowVideoRoom(false)} />
             </div>
         );
     }

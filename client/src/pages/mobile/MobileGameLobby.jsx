@@ -18,18 +18,41 @@ const AVATARS = ['🦊', '🐻', '🦁', '🐯', '🐨', '🐼', '🐸', '🦄',
 
 function MobileGameLobby() {
     const navigate = useNavigate();
-    const { id } = useParams();
+    const { id: routeId } = useParams();
     const location = useLocation();
-    const initialJoinCode = location.state?.join_code;
+    const queryParams = new URLSearchParams(location.search);
+    const joinCodeFromQuery = queryParams.get('joinCode');
+    const initialJoinCode = location.state?.join_code || joinCodeFromQuery;
 
     const [session, setSession] = useState(null);
+    const [sessionId, setSessionId] = useState(routeId);
+    const [error, setError] = useState(null);
+
+    // If no routeId but joinCode exists, lookup session by code
+    useEffect(() => {
+        const joinByCode = async () => {
+            if (!routeId && joinCodeFromQuery) {
+                try {
+                    // Try to join or get session by code
+                    const res = await api.post('game-sessions/join/', { join_code: joinCodeFromQuery });
+                    if (res.data?.id) {
+                        setSessionId(res.data.id);
+                    }
+                } catch (e) {
+                    console.error('Failed to join by code:', e);
+                    setError(e.response?.data?.error || 'Invalid or expired join code');
+                }
+            }
+        };
+        joinByCode();
+    }, [routeId, joinCodeFromQuery]);
 
     // Redirect legacy/invalid 'global' route to games menu
     useEffect(() => {
-        if (id === 'global') {
+        if (sessionId === 'global') {
             navigate('/m/games', { replace: true });
         }
-    }, [id, navigate]);
+    }, [sessionId, navigate]);
 
     const [loading, setLoading] = useState(true);
     const [isHost, setIsHost] = useState(false);
@@ -38,8 +61,12 @@ function MobileGameLobby() {
     const [isReady, setIsReady] = useState(false);
 
     const loadSession = useCallback(async () => {
+        if (!sessionId) {
+            setLoading(false);
+            return;
+        }
         try {
-            const res = await api.get(`game-sessions/${id}/`);
+            const res = await api.get(`game-sessions/${sessionId}/`);
             setSession(res.data);
 
             // Check if current user is host
@@ -50,22 +77,25 @@ function MobileGameLobby() {
 
             // If game started, redirect to arena
             if (res.data.status === 'active') {
-                navigate(`/m/game/arena/${id}`);
+                navigate(`/m/game/arena/${sessionId}`);
             }
         } catch (e) {
             console.error('Failed to load session', e);
+            setError('Failed to load game session');
         } finally {
             setLoading(false);
         }
-    }, [id, navigate]);
+    }, [sessionId, navigate]);
 
     useEffect(() => {
-        loadSession();
+        if (sessionId) {
+            loadSession();
 
-        // Poll for updates every 2 seconds
-        const interval = setInterval(loadSession, 2000);
-        return () => clearInterval(interval);
-    }, [loadSession]);
+            // Poll for updates every 2 seconds
+            const interval = setInterval(loadSession, 2000);
+            return () => clearInterval(interval);
+        }
+    }, [sessionId, loadSession]);
 
     const handleCopyCode = () => {
         const code = session?.join_code || initialJoinCode;
