@@ -85,7 +85,7 @@ const LiveQuiz = ({ isOpen, onClose, classLevel = 'B1', targetLanguage = 'German
 
     const startPoll = (qText = question, opts = options) => {
         if (!qText.trim()) return;
-        constvalidOptions = opts.filter(o => o.trim());
+        const validOptions = opts.filter(o => o.trim());
         if (validOptions.length < 2) return;
 
         const pollData = {

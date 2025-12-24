@@ -1,9 +1,43 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, Component } from 'react';
 import { useLocalParticipant, useRoomContext } from "@livekit/components-react";
 import { DataPacket_Kind } from "livekit-client";
 import { Tldraw, useEditor } from 'tldraw'
 import 'tldraw/tldraw.css'
-import { X, Save } from 'lucide-react';
+import { X, Save, AlertCircle, Loader2 } from 'lucide-react';
+
+// Error Boundary for tldraw
+class WhiteboardErrorBoundary extends Component {
+    constructor(props) {
+        super(props);
+        this.state = { hasError: false, error: null };
+    }
+    static getDerivedStateFromError(error) {
+        return { hasError: true, error };
+    }
+    componentDidCatch(error, errorInfo) {
+        console.error("Whiteboard Error:", error, errorInfo);
+    }
+    render() {
+        if (this.state.hasError) {
+            return (
+                <div className="fixed inset-0 z-[60] bg-black flex items-center justify-center">
+                    <div className="text-center p-8">
+                        <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
+                        <h3 className="text-xl font-bold text-white mb-2">Whiteboard Error</h3>
+                        <p className="text-gray-400 mb-4">Something went wrong loading the whiteboard.</p>
+                        <button
+                            onClick={this.props.onClose}
+                            className="px-6 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30"
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+        return this.props.children;
+    }
+}
 
 /**
  * Professional Whiteboard powered by tldraw
@@ -12,6 +46,7 @@ import { X, Save } from 'lucide-react';
 const Whiteboard = ({ isOpen, onClose }) => {
     const room = useRoomContext();
     const { localParticipant } = useLocalParticipant();
+    const [isLoaded, setIsLoaded] = useState(false);
 
     // Store persistence key (unique per session to avoid mixing rooms)
     const persistenceKey = room ? `whiteboard-${room.name}` : 'whiteboard-local';
@@ -19,38 +54,48 @@ const Whiteboard = ({ isOpen, onClose }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[60] animate-in fade-in duration-200">
-            <div className="absolute inset-0 bg-black/5 backdrop-blur-sm" />
+        <WhiteboardErrorBoundary onClose={onClose}>
+            <div className="fixed inset-0 z-[60] animate-in fade-in duration-200">
+                <div className="absolute inset-0 bg-black/5 backdrop-blur-sm" />
 
-            {/* Main Editor Container */}
-            <div className="absolute inset-0 flex flex-col">
-                <div className="relative w-full h-full bg-[#101011]">
-                    <Tldraw
-                        persistenceKey={persistenceKey}
-                        darkMode={true}
-                        hideUi={false} // We will customize via overrides
-                        overrides={uiOverrides}
-                        components={{
-                            HelpMenu: null,
-                            MainMenu: null,
-                            NavigationPanel: null,
-                            DebugMenu: null,
-                            PageMenu: null, // Keep it simple, one page
-                            SharePanel: null,
-                        }}
-                        onMount={(editor) => {
-                            // Initial setup can go here
-                            editor.user.updateUserPreferences({
-                                colorScheme: 'dark',
-                            });
-                        }}
-                    >
-                        <WhiteboardSync room={room} localParticipant={localParticipant} />
-                        <CustomToolbar onClose={onClose} />
-                    </Tldraw>
+                {/* Main Editor Container */}
+                <div className="absolute inset-0 flex flex-col">
+                    <div className="relative w-full h-full bg-[#101011]">
+                        {!isLoaded && (
+                            <div className="absolute inset-0 flex items-center justify-center z-10 bg-[#101011]">
+                                <Loader2 className="w-10 h-10 text-indigo-500 animate-spin" />
+                            </div>
+                        )}
+                        <Tldraw
+                            persistenceKey={persistenceKey}
+                            hideUi={false}
+                            overrides={uiOverrides}
+                            components={{
+                                HelpMenu: null,
+                                MainMenu: null,
+                                NavigationPanel: null,
+                                DebugMenu: null,
+                                PageMenu: null,
+                                SharePanel: null,
+                            }}
+                            onMount={(editor) => {
+                                setIsLoaded(true);
+                                try {
+                                    editor.user.updateUserPreferences({
+                                        colorScheme: 'dark',
+                                    });
+                                } catch (e) {
+                                    console.warn("Could not set dark mode:", e);
+                                }
+                            }}
+                        >
+                            <WhiteboardSync room={room} localParticipant={localParticipant} />
+                            <CustomToolbar onClose={onClose} />
+                        </Tldraw>
+                    </div>
                 </div>
             </div>
-        </div>
+        </WhiteboardErrorBoundary>
     );
 };
 
