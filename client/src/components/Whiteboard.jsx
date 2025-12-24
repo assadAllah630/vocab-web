@@ -59,34 +59,29 @@ const Whiteboard = ({ isOpen, onClose }) => {
                 {/* Backdrop */}
                 <div className="absolute inset-0 bg-black/60 backdrop-blur-sm -z-10" />
 
-                {/* Main Editor Container */}
-                <div className="flex-grow w-full h-full relative bg-[#191919] border-t border-white/10 overflow-hidden">
+                {/* Main Editor Container - h-[100dvh] ensures it fills dynamic mobile screen */}
+                <div className="flex-grow w-full h-[calc(100dvh-64px)] relative bg-[#191919] border-t border-white/10 overflow-hidden">
                     {!isLoaded && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-[#191919]">
                             <Loader2 className="w-10 h-10 text-indigo-500 animate-spin mb-2" />
-                            <span className="text-zinc-500 text-sm">Initializing Whiteboard...</span>
+                            <span className="text-zinc-500 text-sm">Initializing Canvas...</span>
                         </div>
                     )}
-                    <div className="w-full h-full">
-                        <Tldraw
-                            persistenceKey={persistenceKey}
-                            autoFocus={true}
-                            onMount={(editor) => {
-                                setIsLoaded(true);
-                                console.log("Whiteboard Mounted Successfully");
-                                try {
-                                    editor.user.updateUserPreferences({
-                                        colorScheme: 'dark',
-                                    });
-                                } catch (e) {
-                                    console.warn("Could not set dark mode:", e);
-                                }
-                            }}
-                        >
-                            <WhiteboardSync room={room} localParticipant={localParticipant} />
-                            <CustomToolbar onClose={onClose} />
-                        </Tldraw>
-                    </div>
+                    <Tldraw
+                        licenseKey="tldraw-2026-04-03/WyJoVEdGTnFpaCIsWyIqIl0sMTYsIjIwMjYtMDQtMDMiXQ.uJ3z/mofgs1ZR3SV4rzjgA+7z41ldnVklGB1Gt8zBAlzNOykZiGZSOKTZaGdeers1iI3jPtc3R/EMcU7dgDARQ"
+                        persistenceKey={persistenceKey}
+                        autoFocus={true}
+                        onMount={(editor) => {
+                            setIsLoaded(true);
+                            console.log("Whiteboard Mounted Successfully");
+                            try {
+                                editor.user.updateUserPreferences({ colorScheme: 'dark' });
+                            } catch (e) { }
+                        }}
+                    >
+                        <WhiteboardSync room={room} localParticipant={localParticipant} />
+                        <CustomToolbar onClose={onClose} />
+                    </Tldraw>
                 </div>
             </div>
         </WhiteboardErrorBoundary>
