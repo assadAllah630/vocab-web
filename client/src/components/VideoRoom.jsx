@@ -9,6 +9,7 @@ import {
     ControlBar,
     useTracks,
     useLocalParticipant,
+    useRoomContext,
 } from "@livekit/components-react";
 import "@livekit/components-styles";
 import { Loader2, AlertCircle, ChevronLeft, Mic, MicOff, Video, VideoOff, PhoneOff, MessageSquare, MonitorUp, MonitorOff, PenTool, BarChart2, Users } from 'lucide-react';
@@ -20,6 +21,7 @@ import BreakoutSystem from './BreakoutSystem';
 import ReactionSystem from './ReactionSystem';
 import DesktopControls from './DesktopControls';
 import MobileControls from './MobileControls';
+import { DataPacket_Kind } from "livekit-client";
 
 
 
@@ -29,12 +31,37 @@ import MobileControls from './MobileControls';
  */
 const VideoRoomContent = ({ onLeave, isTeacher }) => {
     const [isChatOpen, setIsChatOpen] = useState(false);
+    const room = useRoomContext();
 
     // Tools State
     const [isWhiteboardOpen, setIsWhiteboardOpen] = useState(false);
     const [isQuizOpen, setIsQuizOpen] = useState(false);
     const [isBreakoutOpen, setIsBreakoutOpen] = useState(false);
     const [breakoutFilter, setBreakoutFilter] = useState('ALL'); // 'ALL' or groupId
+
+    // Auto-open Quiz for students when teacher starts a poll
+    useEffect(() => {
+        if (!room || isTeacher) return;
+
+        const handleData = (payload, participant) => {
+            try {
+                const data = JSON.parse(new TextDecoder().decode(payload));
+                if (data.type === 'POLL_START') {
+                    // Auto-open quiz for students when teacher starts poll
+                    setIsQuizOpen(true);
+                }
+                if (data.type === 'WB_UPDATE' || data.type === 'WB_START') {
+                    // Auto-open whiteboard for students when teacher uses it
+                    setIsWhiteboardOpen(true);
+                }
+            } catch (e) {
+                // Ignore non-JSON data
+            }
+        };
+
+        room.on('dataReceived', handleData);
+        return () => room.off('dataReceived', handleData);
+    }, [room, isTeacher]);
 
     // Track Filtering for Breakouts - NOW SAFE (Inside Context)
     const tracks = useTracks(
@@ -52,6 +79,22 @@ const VideoRoomContent = ({ onLeave, isTeacher }) => {
         return tracks.filter(t => visibleIdentities.includes(t.participant.identity));
     }, [tracks, visibleIdentities]);
 
+    const toggleWhiteboard = () => {
+        const nextState = !isWhiteboardOpen;
+        setIsWhiteboardOpen(nextState);
+        if (nextState && isTeacher && room) {
+            const payload = JSON.stringify({ type: 'WB_START' });
+            room.localParticipant.publishData(
+                new TextEncoder().encode(payload),
+                { kind: DataPacket_Kind.RELIABLE }
+            );
+        }
+    };
+
+    const toggleQuiz = () => {
+        setIsQuizOpen(!isQuizOpen);
+    };
+
     return (
         <>
             {/* Standard or Filtered Grid */}
@@ -62,14 +105,13 @@ const VideoRoomContent = ({ onLeave, isTeacher }) => {
             <RoomAudioRenderer />
 
             {/* Custom Overlay Controls */}
-            {/* Custom Overlay Controls */}
             <DesktopControls
                 onLeave={onLeave}
                 isChatOpen={isChatOpen}
                 setIsChatOpen={setIsChatOpen}
                 isTeacher={isTeacher}
-                toggleWhiteboard={() => setIsWhiteboardOpen(!isWhiteboardOpen)}
-                toggleQuiz={() => setIsQuizOpen(!isQuizOpen)}
+                toggleWhiteboard={toggleWhiteboard}
+                toggleQuiz={toggleQuiz}
                 toggleBreakout={() => setIsBreakoutOpen(!isBreakoutOpen)}
             />
 
@@ -78,8 +120,8 @@ const VideoRoomContent = ({ onLeave, isTeacher }) => {
                 isChatOpen={isChatOpen}
                 setIsChatOpen={setIsChatOpen}
                 isTeacher={isTeacher}
-                toggleWhiteboard={() => setIsWhiteboardOpen(!isWhiteboardOpen)}
-                toggleQuiz={() => setIsQuizOpen(!isQuizOpen)}
+                toggleWhiteboard={toggleWhiteboard}
+                toggleQuiz={toggleQuiz}
                 toggleBreakout={() => setIsBreakoutOpen(!isBreakoutOpen)}
             />
 
