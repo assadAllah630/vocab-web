@@ -18,10 +18,11 @@ const MobileControls = ({
     isTeacher = false,
     toggleWhiteboard,
     toggleQuiz,
-    toggleBreakout
+    toggleBreakout,
+    isHandRaised,
+    toggleHand
 }) => {
     const { localParticipant, isMicrophoneEnabled, isCameraEnabled, isScreenShareEnabled } = useLocalParticipant();
-    const [isHandRaised, setIsHandRaised] = useState(false);
     const [isMoreOpen, setIsMoreOpen] = useState(false);
     const [view, setView] = useState('main'); // 'main' | 'settings'
 
@@ -49,12 +50,7 @@ const MobileControls = ({
         }
     };
 
-    const toggleHand = () => {
-        vibrate();
-        // TODO: Connect to actual LiveKit metadata/ReactionSystem if needed
-        // For now, local state visual feedback
-        setIsHandRaised(!isHandRaised);
-    };
+    // Unified toggleHand now comes from props
 
     const toggleScreenShare = async () => {
         vibrate();

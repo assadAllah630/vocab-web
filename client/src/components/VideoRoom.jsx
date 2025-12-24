@@ -95,6 +95,26 @@ const VideoRoomContent = ({ onLeave, isTeacher }) => {
         setIsQuizOpen(!isQuizOpen);
     };
 
+    // Unified Hand Raise State
+    const [isHandRaised, setIsHandRaised] = useState(false);
+
+    const toggleHand = () => {
+        const newState = !isHandRaised;
+        setIsHandRaised(newState);
+
+        // Instant broadcast signal to room (P2P for speed)
+        if (room) {
+            const payload = JSON.stringify({
+                type: 'HAND_TOGGLE',
+                raised: newState
+            });
+            room.localParticipant.publishData(
+                new TextEncoder().encode(payload),
+                { kind: DataPacket_Kind.RELIABLE }
+            );
+        }
+    };
+
     return (
         <>
             {/* Standard or Filtered Grid */}
@@ -113,6 +133,8 @@ const VideoRoomContent = ({ onLeave, isTeacher }) => {
                 toggleWhiteboard={toggleWhiteboard}
                 toggleQuiz={toggleQuiz}
                 toggleBreakout={() => setIsBreakoutOpen(!isBreakoutOpen)}
+                isHandRaised={isHandRaised}
+                toggleHand={toggleHand}
             />
 
             <MobileControls
@@ -123,6 +145,8 @@ const VideoRoomContent = ({ onLeave, isTeacher }) => {
                 toggleWhiteboard={toggleWhiteboard}
                 toggleQuiz={toggleQuiz}
                 toggleBreakout={() => setIsBreakoutOpen(!isBreakoutOpen)}
+                isHandRaised={isHandRaised}
+                toggleHand={toggleHand}
             />
 
             {/* Overlays */}
@@ -137,8 +161,14 @@ const VideoRoomContent = ({ onLeave, isTeacher }) => {
                 setVisibleIdentities={setVisibleIdentities}
             />
 
-            {/* Reactions & Engagement */}
-            <ReactionSystem isTeacher={isTeacher} />
+            {/* Reactions & Engagement - Hide when other overlays are open to avoid clutter */}
+            <ReactionSystem
+                isTeacher={isTeacher}
+                isHandRaised={isHandRaised}
+                toggleHand={toggleHand}
+                setIsHandRaised={setIsHandRaised}
+                isVisible={!isChatOpen && !isQuizOpen && !isWhiteboardOpen && !isBreakoutOpen}
+            />
         </>
     );
 };

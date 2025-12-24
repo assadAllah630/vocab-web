@@ -55,31 +55,25 @@ const Whiteboard = ({ isOpen, onClose }) => {
 
     return (
         <WhiteboardErrorBoundary onClose={onClose}>
-            <div className="fixed inset-0 z-[60] animate-in fade-in duration-200">
-                <div className="absolute inset-0 bg-black/5 backdrop-blur-sm" />
+            <div className="fixed inset-0 z-[60] animate-in fade-in duration-200 flex flex-col pt-16">
+                {/* Backdrop */}
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-sm -z-10" />
 
                 {/* Main Editor Container */}
-                <div className="absolute inset-0 flex flex-col">
-                    <div className="relative w-full h-full bg-[#101011]">
-                        {!isLoaded && (
-                            <div className="absolute inset-0 flex items-center justify-center z-10 bg-[#101011]">
-                                <Loader2 className="w-10 h-10 text-indigo-500 animate-spin" />
-                            </div>
-                        )}
+                <div className="flex-grow w-full h-full relative bg-[#191919] border-t border-white/10 overflow-hidden">
+                    {!isLoaded && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-[#191919]">
+                            <Loader2 className="w-10 h-10 text-indigo-500 animate-spin mb-2" />
+                            <span className="text-zinc-500 text-sm">Initializing Whiteboard...</span>
+                        </div>
+                    )}
+                    <div className="w-full h-full">
                         <Tldraw
                             persistenceKey={persistenceKey}
-                            hideUi={false}
-                            overrides={uiOverrides}
-                            components={{
-                                HelpMenu: null,
-                                MainMenu: null,
-                                NavigationPanel: null,
-                                DebugMenu: null,
-                                PageMenu: null,
-                                SharePanel: null,
-                            }}
+                            autoFocus={true}
                             onMount={(editor) => {
                                 setIsLoaded(true);
+                                console.log("Whiteboard Mounted Successfully");
                                 try {
                                     editor.user.updateUserPreferences({
                                         colorScheme: 'dark',

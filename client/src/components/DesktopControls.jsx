@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
     Mic, MicOff, Video, VideoOff, PhoneOff,
     MessageSquare, MonitorUp, MonitorOff,
-    PenTool, BarChart2, Users
+    PenTool, BarChart2, Users, Hand
 } from 'lucide-react';
 import { useLocalParticipant } from "@livekit/components-react";
 
+/**
+ * DesktopControls - Desktop specific controls for the video room
+ */
 const DesktopControls = ({
     onLeave,
     isChatOpen,
@@ -13,7 +16,9 @@ const DesktopControls = ({
     isTeacher = false,
     toggleWhiteboard,
     toggleQuiz,
-    toggleBreakout
+    toggleBreakout,
+    isHandRaised,
+    toggleHand
 }) => {
     const { localParticipant, isMicrophoneEnabled, isCameraEnabled, isScreenShareEnabled } = useLocalParticipant();
 
@@ -29,19 +34,28 @@ const DesktopControls = ({
         }
     };
 
-    const toggleScreenShare = async () => {
+    const toggleScreenShare = () => {
         if (localParticipant) {
-            try {
-                await localParticipant.setScreenShareEnabled(!isScreenShareEnabled, { audio: false });
-            } catch (e) {
-                console.error("Error toggling screen share:", e);
-            }
+            localParticipant.setScreenShareEnabled(!isScreenShareEnabled, { audio: false })
+                .catch(e => console.error("Error toggling screen share:", e));
         }
     };
 
     return (
         <div className="fixed bottom-8 left-0 right-0 z-50 hidden md:flex justify-center items-center gap-6 pointer-events-none">
             <div className="flex items-center gap-4 bg-black/60 backdrop-blur-xl p-4 rounded-3xl border border-white/10 shadow-2xl pointer-events-auto">
+
+                {/* Hand Raise */}
+                <button
+                    onClick={toggleHand}
+                    className={`p-4 rounded-full transition-all ${isHandRaised ? 'bg-yellow-500 text-black animate-pulse' : 'bg-white/10 hover:bg-white/20 text-white'}`}
+                    title={isHandRaised ? "Lower Hand" : "Raise Hand"}
+                >
+                    <Hand size={24} className={isHandRaised ? "fill-current" : ""} />
+                </button>
+
+                <div className="h-8 w-[1px] bg-white/10 mx-2" />
+
                 <button
                     onClick={toggleMic}
                     className={`p-4 rounded-full transition-all ${isMicrophoneEnabled ? 'bg-white/10 hover:bg-white/20 text-white' : 'bg-red-500/20 text-red-500 hover:bg-red-500/30'}`}
@@ -62,7 +76,7 @@ const DesktopControls = ({
                 {isTeacher && (
                     <button
                         onClick={toggleScreenShare}
-                        className={`p-4 rounded-full transition-all ${isScreenShareEnabled ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30' : 'bg-white/10 hover:bg-white/20 text-white'}`}
+                        className={`p-4 rounded-full transition-all ${isScreenShareEnabled ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30' : 'bg-white/10 hover:bg-white/10 text-white'}`}
                         title={isScreenShareEnabled ? "Stop Sharing" : "Share Screen"}
                     >
                         {isScreenShareEnabled ? <MonitorOff size={24} /> : <MonitorUp size={24} />}
