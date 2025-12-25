@@ -51,21 +51,16 @@ const Whiteboard = ({ isOpen, onClose, isTeacher }) => {
     // Sync state tracking
     const lastVersionRef = useRef(0);
 
-    if (!isOpen) return null;
-
     // --- BROADCAST LOGIC ---
-    const broadcastUpdate = (elements, appState) => {
-        if (!room || !localParticipant) return;
+    const broadcastUpdate = useCallback((elements, appState) => {
+        if (!isOpen || !room || !localParticipant) return;
 
-        // Naive broadcast of everything for now
-        // In production, we'd use a smarter diffing or CRDT
         const op = JSON.stringify({
             type: 'WB_SYNC',
             elements,
             appState: {
                 viewBackgroundColor: appState.viewBackgroundColor,
                 gridSize: appState.gridSize,
-                // Add other syncable appStates if needed
             }
         });
 
@@ -73,11 +68,11 @@ const Whiteboard = ({ isOpen, onClose, isTeacher }) => {
             new TextEncoder().encode(op),
             { kind: DataPacket_Kind.RELIABLE }
         );
-    };
+    }, [isOpen, room, localParticipant]);
 
     // --- RECEIVE LOGIC ---
     useEffect(() => {
-        if (!room || !excalidrawAPI) return;
+        if (!isOpen || !room || !excalidrawAPI) return;
 
         const handleData = (payload, participant) => {
             if (participant.identity === localParticipant.identity) return;
@@ -85,21 +80,20 @@ const Whiteboard = ({ isOpen, onClose, isTeacher }) => {
             try {
                 const data = JSON.parse(new TextDecoder().decode(payload));
                 if (data.type === 'WB_SYNC') {
-                    // Update the scene without triggering an onChange loop
                     excalidrawAPI.updateScene({
                         elements: data.elements,
                         appState: data.appState,
                         commitToHistory: false
                     });
                 }
-            } catch (e) {
-                // Ignore malformed data
-            }
+            } catch (e) { }
         };
 
         room.on('dataReceived', handleData);
         return () => room.off('dataReceived', handleData);
-    }, [room, excalidrawAPI, localParticipant]);
+    }, [isOpen, room, excalidrawAPI, localParticipant]);
+
+    if (!isOpen) return null;
 
     return (
         <WhiteboardErrorBoundary onClose={onClose}>
