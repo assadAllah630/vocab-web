@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useCallback, useRef, Component } from 'react';
 import { useLocalParticipant, useRoomContext } from "@livekit/components-react";
 import { DataPacket_Kind } from "livekit-client";
-import { Excalidraw, MainMenu, WelcomeScreen, Sidebar, Footer, LiveCollaborationTrigger } from "@excalidraw/excalidraw";
-import { X, AlertCircle, Loader2 } from 'lucide-react';
+import { Excalidraw, MainMenu, Sidebar, Footer, LiveCollaborationTrigger } from "@excalidraw/excalidraw";
+import "@excalidraw/excalidraw/index.css";
+import { X, AlertCircle, Loader2, Library } from 'lucide-react';
 
 // Error Boundary for Excalidraw
 class WhiteboardErrorBoundary extends Component {
@@ -93,6 +94,30 @@ const Whiteboard = ({ isOpen, onClose, isTeacher }) => {
         return () => room.off('dataReceived', handleData);
     }, [isOpen, room, excalidrawAPI, localParticipant]);
 
+    // --- LIBRARY LOADING ---
+    const loadSharedLibrary = async () => {
+        if (!excalidrawAPI) return;
+        try {
+            // Load icons by default if possible
+            const response = await fetch('/libraries/icons.excalidrawlib');
+            if (response.ok) {
+                const libraryData = await response.json();
+                excalidrawAPI.updateLibrary({
+                    libraryItems: libraryData.libraryItems,
+                    merge: true,
+                });
+            }
+        } catch (e) {
+            console.error("Library Load Error", e);
+        }
+    };
+
+    useEffect(() => {
+        if (isLoaded && excalidrawAPI) {
+            loadSharedLibrary();
+        }
+    }, [isLoaded, excalidrawAPI]);
+
     if (!isOpen) return null;
 
     return (
@@ -111,8 +136,6 @@ const Whiteboard = ({ isOpen, onClose, isTeacher }) => {
                             }}
                             theme="dark"
                             onChange={(elements, appState) => {
-                                // Only broadcast if it's a "real" change (v > lastV)
-                                // Excalidraw elements have versions
                                 const currentVersion = elements.reduce((acc, el) => acc + el.version, 0);
                                 if (currentVersion > lastVersionRef.current) {
                                     lastVersionRef.current = currentVersion;
@@ -125,8 +148,15 @@ const Whiteboard = ({ isOpen, onClose, isTeacher }) => {
                                 <MainMenu.DefaultItems.ClearCanvas />
                                 <MainMenu.Separator />
                                 <MainMenu.DefaultItems.ChangeCanvasBackground />
+                                <MainMenu.Separator />
+                                <button
+                                    onClick={loadSharedLibrary}
+                                    className="dropdown-menu-item flex items-center gap-2 px-4 py-2 hover:bg-zinc-800 w-full text-left text-zinc-300"
+                                >
+                                    <Library size={16} />
+                                    <span>Load Shared Libraries</span>
+                                </button>
                             </MainMenu>
-                            <WelcomeScreen />
                         </Excalidraw>
                     </div>
 
